@@ -4,6 +4,7 @@ import com.timestr.backend.model.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 
@@ -47,10 +49,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
+        String token = null;
+
+        // First, try to get the token from the Authorization header (Bearer token)
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+            token = bearerToken.substring(7);
         }
-        return null;
+
+        // If no token is found in the Authorization header, check for it in cookies
+        if (token == null) {
+            Cookie cookie = WebUtils.getCookie(request, "JWT");
+            if (cookie != null) {
+                token = cookie.getValue();
+            }
+        }
+
+        return token;
     }
 }
