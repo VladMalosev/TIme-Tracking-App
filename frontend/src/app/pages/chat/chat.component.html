@@ -1,0 +1,22 @@
+<div class="chat-container">
+  <div class="user-selection">
+    <h3>Select a Chat Partner</h3>
+    <select [(ngModel)]="recipientEmail" (change)="onRecipientChange()">
+      <option *ngFor="let user of onlineUsers" [value]="user">
+        {{ user }}
+      </option>
+    </select>
+    <p *ngIf="onlineUsers.length === 0">No users online</p>
+  </div>
+
+  <div class="chat-messages">
+    <div *ngFor="let message of messages" class="message">
+      <strong>{{ message.sender.email }}:</strong> {{ message.content }}
+    </div>
+  </div>
+
+  <div class="message-input">
+    <input [(ngModel)]="newMessage" placeholder="Type your message..." />
+    <button (click)="sendMessage()">Send</button>
+  </div>
+</div>

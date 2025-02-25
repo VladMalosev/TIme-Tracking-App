@@ -1,3 +1,7 @@
+TODO:
+1. fetch user chats in clusters
+2. read more about user chat history storage (maybe some data needs to be encrypted)
+
 ## Database Structure (sql)
 ![img.png](img.png)
 ```

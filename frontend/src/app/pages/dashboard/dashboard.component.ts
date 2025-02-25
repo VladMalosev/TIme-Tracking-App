@@ -24,6 +24,9 @@ export class DashboardComponent implements OnInit {
       (error) => {
         console.error('Error fetching dashboard data', error);
       }
+
     );
+
   }
+
 }

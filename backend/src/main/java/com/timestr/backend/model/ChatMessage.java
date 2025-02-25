@@ -26,24 +26,23 @@ public class ChatMessage {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @ManyToOne
-    @JoinColumn(name = "recipient_id", nullable = false)
-    private User recipient;
+    @Column(nullable = false)
+    private String recipientEmail;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Constructors
+
     public ChatMessage() {}
 
-    public ChatMessage(String content, User sender, User recipient) {
+    public ChatMessage(String content, User sender, String recipientEmail) {
         this.content = content;
         this.sender = sender;
-        this.recipient = recipient;
+        this.recipientEmail = recipientEmail;
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
+
     public UUID getId() {
         return id;
     }
@@ -68,12 +67,12 @@ public class ChatMessage {
         this.sender = sender;
     }
 
-    public User getRecipient() {
-        return recipient;
+    public String getRecipientEmail() {
+        return recipientEmail;
     }
 
-    public void setRecipient(User recipient) {
-        this.recipient = recipient;
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
     }
 
     public LocalDateTime getCreatedAt() {
