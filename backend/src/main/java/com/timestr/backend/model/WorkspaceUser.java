@@ -1,16 +1,14 @@
 package com.timestr.backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tasks")
-public class Task {
+@Table(name = "workspace_users")
+public class WorkspaceUser {
 
     @Id
     @UuidGenerator
@@ -18,21 +16,16 @@ public class Task {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @NotBlank(message = "Name cannot be blank")
-    @Size(max = 150, message = "Name cannot exceed 150 characters")
-    @Column(nullable = false, length = 150)
-    private String name;
-
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
-    @Column(length = 500)
-    private String description;
+    @ManyToOne
+    @JoinColumn(name = "workspace_id", nullable = false)
+    private Workspace workspace;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TaskStatus status = TaskStatus.PENDING;
+    private Role role;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -54,36 +47,28 @@ public class Task {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
+    public User getUser() {
+        return user;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String getName() {
-        return name;
+    public Workspace getWorkspace() {
+        return workspace;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
     }
 
-    public String getDescription() {
-        return description;
+    public Role getRole() {
+        return role;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public LocalDateTime getCreatedAt() {

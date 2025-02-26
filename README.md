@@ -3,7 +3,7 @@ TODO:
 2. read more about user chat history storage (maybe some data needs to be encrypted)
 
 ## Database Structure (sql) v1.1
-![img_1.png](img_1.png)
+![img.png](img.png)
 link to the dbdiagram
 https://dbdiagram.io/d/67bf0126263d6cf9a086c6d4
 
@@ -100,6 +100,15 @@ CREATE TABLE time_logs (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+CREATE TABLE chat_messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    content VARCHAR(1000) NOT NULL,
+    sender_id UUID NOT NULL,
+    recipient_email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 ```

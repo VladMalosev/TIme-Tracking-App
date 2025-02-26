@@ -32,17 +32,7 @@ public class ChatMessage {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-
-    public ChatMessage() {}
-
-    public ChatMessage(String content, User sender, String recipientEmail) {
-        this.content = content;
-        this.sender = sender;
-        this.recipientEmail = recipientEmail;
-        this.createdAt = LocalDateTime.now();
-    }
-
-
+    // Getters and Setters
     public UUID getId() {
         return id;
     }

@@ -5,7 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collections;
 import java.util.Set;
 
-public enum Roles {
+public enum Role {
     ADMIN,
     USER,
     MANAGER;

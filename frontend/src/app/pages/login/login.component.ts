@@ -3,7 +3,7 @@ import {AuthService} from '../../auth.service';
 import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {provideHttpClient} from '@angular/common/http';
+import {HttpClient, provideHttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +19,7 @@ export class LoginComponent {
 
   errorMessage = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private http: HttpClient) {}
 
 
   login() {
@@ -34,6 +34,10 @@ export class LoginComponent {
         this.errorMessage = err.error.message || 'Login failed';
       }
     });
+  }
+
+  loginWithGoogle() {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   }
 
 }

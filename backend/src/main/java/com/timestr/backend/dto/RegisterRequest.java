@@ -1,7 +1,7 @@
 package com.timestr.backend.dto;
 
 
-import com.timestr.backend.model.Roles;
+import com.timestr.backend.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -18,7 +18,7 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    private Roles role;
+    private Role role;
 
     public void setName(String name) {
         this.name = name;
@@ -32,7 +32,7 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public void setRole(Roles role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -48,7 +48,7 @@ public class RegisterRequest {
         return password;
     }
 
-    public Roles getRole() {
+    public Role getRole() {
         return role;
     }
 }

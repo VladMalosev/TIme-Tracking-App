@@ -1,6 +1,6 @@
 package com.timestr.backend.security;
 
-import com.timestr.backend.model.Roles;
+import com.timestr.backend.model.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String username = jwtTokenProvider.getUsernameFromToken(token);
-            Roles role = jwtTokenProvider.getRoleFromToken(token);
+            Role role = jwtTokenProvider.getRoleFromToken(token);
 
             // Get authorities based on the user's role
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -51,13 +51,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtFromRequest(HttpServletRequest request) {
         String token = null;
 
-        // First, try to get the token from the Authorization header (Bearer token)
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             token = bearerToken.substring(7);
         }
 
-        // If no token is found in the Authorization header, check for it in cookies
         if (token == null) {
             Cookie cookie = WebUtils.getCookie(request, "JWT");
             if (cookie != null) {

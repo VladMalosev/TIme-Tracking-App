@@ -1,6 +1,6 @@
 package com.timestr.backend.security;
 
-import com.timestr.backend.model.Roles;
+import com.timestr.backend.model.Role;
 import com.timestr.backend.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -47,9 +47,9 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    public Roles getRoleFromToken(String token) {
+    public Role getRoleFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
-        return Roles.valueOf(claims.get("role", String.class));
+        return Role.valueOf(claims.get("role", String.class));
     }
     public boolean validateToken(String token) {
         try {

@@ -26,6 +26,8 @@ public class AuthController {
 
     @Autowired
     private final JwtTokenProvider jwtTokenProvider;
+
+
     private OnlineUserTracker onlineUserTracker;
 
     public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker) {

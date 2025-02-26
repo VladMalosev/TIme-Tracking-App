@@ -39,7 +39,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Roles roles;
+    private Role role;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -93,12 +93,12 @@ public class User {
         this.phone = phone;
     }
 
-    public Roles getRoles() {
-        return roles;
+    public Role getRoles() {
+        return role;
     }
 
-    public void setRoles(Roles roles) {
-        this.roles = roles;
+    public void setRoles(Role role) {
+        this.role = role;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -124,7 +124,7 @@ public class User {
         private String email;
         private String password;
         private String phone;
-        private Roles roles;
+        private Role role;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -158,8 +158,8 @@ public class User {
             return this;
         }
 
-        public Builder setRoles(Roles roles) {
-            this.roles = roles;
+        public Builder setRoles(Role role) {
+            this.role = role;
             return this;
         }
 
@@ -180,7 +180,7 @@ public class User {
             user.setEmail(email);
             user.setPassword(password);
             user.setPhone(phone);
-            user.setRoles(roles);
+            user.setRoles(role);
             user.setCreatedAt(createdAt);
             user.setUpdatedAt(updatedAt);
             return user;
