@@ -78,4 +78,18 @@ public class ChatController {
             throw e;
         }
     }
+
+    @GetMapping("/previous-chat-partners")
+    public ResponseEntity<List<String>> getPreviousChatMessages(@RequestParam String userEmail) {
+        try {
+            List<String> chatPartners = chatMessageRepository.findDistinctChatPartnersByUserEmail(userEmail);
+
+            return ResponseEntity.ok(chatPartners);
+        } catch (Exception e) {
+            logger.error("Error fetching messages", e);
+            throw e;
+        }
+    }
+
+
 }

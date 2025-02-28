@@ -18,12 +18,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   public recipientEmail: string = '';
   public currentUserEmail: string = '';
   public onlineUsers: string[] = [];
+  public previousChatPartners: string[] = [];
 
   constructor(
     private webSocketService: WebSocketService,
     private authService: AuthService,
     private http: HttpClient
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
@@ -37,6 +39,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           });
 
           this.fetchOnlineUsers();
+          this.fetchPreviousChatPartners();
         },
         (error) => {
           console.error('Error fetching current user email:', error);
@@ -61,7 +64,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   fetchMessages(senderEmail: string, recipientEmail: string): void {
     this.http.get<ChatMessage[]>(`http://localhost:8080/api/chat/messages`, {
-      params: { senderEmail, recipientEmail },
+      params: {senderEmail, recipientEmail},
       withCredentials: true,
     }).subscribe(
       (messages) => {
@@ -83,7 +86,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.newMessage.trim() && this.recipientEmail) {
       const message: ChatMessage = {
         content: this.newMessage,
-        sender: { email: this.currentUserEmail },
+        sender: {email: this.currentUserEmail},
         recipientEmail: this.recipientEmail,
       };
 
@@ -95,5 +98,19 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.webSocketService.closeConnection();
+  }
+
+  fetchPreviousChatPartners(): void {
+    this.http.get<string[]>(`http://localhost:8080/api/chat/previous-chat-partners`, {
+      params: {userEmail: this.currentUserEmail},
+      withCredentials: true,
+    }).subscribe(
+      (partners) => {
+        this.previousChatPartners = partners;
+      },
+      (error) => {
+        console.error('Error fetching previous chat partners:', error);
+      }
+    );
   }
 }

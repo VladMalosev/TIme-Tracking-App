@@ -3,7 +3,9 @@ package com.timestr.backend.controller;
 import com.timestr.backend.configuration.OnlineUserTracker;
 import com.timestr.backend.dto.LoginRequest;
 import com.timestr.backend.dto.RegisterRequest;
-import com.timestr.backend.model.User;
+import com.timestr.backend.model.*;
+import com.timestr.backend.repository.WorkspaceRepository;
+import com.timestr.backend.repository.WorkspaceUserRepository;
 import com.timestr.backend.security.JwtTokenProvider;
 import com.timestr.backend.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,24 +28,32 @@ public class AuthController {
     private final UserService userService;
 
     @Autowired
+    private final WorkspaceRepository workspaceRepository;
+
+    @Autowired
+    private final WorkspaceUserRepository workspaceUserRepository;
+
+    @Autowired
     private final JwtTokenProvider jwtTokenProvider;
 
-
+    @Autowired
     private OnlineUserTracker onlineUserTracker;
 
-    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker) {
+    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker, WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.onlineUserTracker = onlineUserTracker;
+        this.workspaceRepository = workspaceRepository;
+        this.workspaceUserRepository = workspaceUserRepository;
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody RegisterRequest request) {
+        request.setRole(Role.USER);
         User user = userService.registerUser(request);
+
         return ResponseEntity.ok(user);
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -68,7 +79,6 @@ public class AuthController {
 
         return ResponseEntity.ok(responseBody);
     }
-
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, String>> getDashboardData(@CookieValue(value = "JWT", defaultValue = "") String token) {
@@ -103,7 +113,6 @@ public class AuthController {
         return ResponseEntity.ok(Collections.singletonMap("message", "Logout successful"));
     }
 
-
     @GetMapping("/online-users")
     public ResponseEntity<List<String>> getOnlineUsers() {
         List<String> onlineUsers = onlineUserTracker.getOnlineUsers();
@@ -124,4 +133,3 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 }
-

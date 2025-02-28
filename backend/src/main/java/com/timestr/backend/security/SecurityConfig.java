@@ -38,7 +38,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/oauth2/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/api/auth/dashboard").authenticated()
+                        .requestMatchers("/api/workspaces/**").hasAnyRole("ADMIN", "MANAGER", "USER")
+                        .requestMatchers("/api/projects/**").hasAnyRole("ADMIN", "MANAGER", "USER")
+                        .requestMatchers("/api/tasks/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

@@ -2,11 +2,18 @@
   <div class="user-selection">
     <h3>Select a Chat Partner</h3>
     <select [(ngModel)]="recipientEmail" (change)="onRecipientChange()">
-      <option *ngFor="let user of onlineUsers" [value]="user">
-        {{ user }}
-      </option>
+      <optgroup label="Online Users">
+        <option *ngFor="let user of onlineUsers" [value]="user">
+          {{ user }} (Online)
+        </option>
+      </optgroup>
+      <optgroup label="Previous Chats">
+        <option *ngFor="let user of previousChatPartners" [value]="user">
+          {{ user }}
+        </option>
+      </optgroup>
     </select>
-    <p *ngIf="onlineUsers.length === 0">No users online</p>
+    <p *ngIf="onlineUsers.length === 0 && previousChatPartners.length === 0">No users available</p>
   </div>
 
   <div class="chat-messages">

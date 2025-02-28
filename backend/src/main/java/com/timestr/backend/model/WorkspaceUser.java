@@ -25,7 +25,7 @@ public class WorkspaceUser {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private WorkspaceRole role;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -63,11 +63,11 @@ public class WorkspaceUser {
         this.workspace = workspace;
     }
 
-    public Role getRole() {
+    public WorkspaceRole getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    public void setRole(WorkspaceRole role) {
         this.role = role;
     }
 

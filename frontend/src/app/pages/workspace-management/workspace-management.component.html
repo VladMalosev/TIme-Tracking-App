@@ -1,0 +1,58 @@
+<div *ngIf="errorMessage" class="error-message">
+  {{ errorMessage }}
+</div>
+
+<!-- Workspace Creation Form -->
+<h2>Create a New Workspace</h2>
+<form (ngSubmit)="createWorkspace()">
+  <label for="workspaceName">Name:</label>
+  <input id="workspaceName" [(ngModel)]="newWorkspace.name" name="name" required>
+
+  <label for="workspaceDescription">Description:</label>
+  <input id="workspaceDescription" [(ngModel)]="newWorkspace.description" name="description">
+
+  <button type="submit">Create Workspace</button>
+</form>
+
+<!-- List of Workspaces -->
+<h2>Your Workspaces</h2>
+<ul>
+  <li *ngFor="let workspace of workspaces">
+    <a (click)="getWorkspaceDetails(workspace.id)">{{ workspace.name }}</a>
+    <button (click)="deleteWorkspace(workspace.id)">Delete</button>
+  </li>
+</ul>
+
+<!-- Workspace Details -->
+<div *ngIf="workspaceDetails">
+  <h2>Workspace Details: {{ workspaceDetails.workspace.name }}</h2>
+  <p>{{ workspaceDetails.workspace.description }}</p>
+
+  <!-- List of Users in the Workspace -->
+  <h3>Users</h3>
+  <ul>
+    <li *ngFor="let user of workspaceDetails.users">
+      {{ user.user.name }} ({{ user.role }})
+    </li>
+  </ul>
+
+  <!-- Add User to Workspace Form -->
+  <h3>Add User to Workspace</h3>
+  <form (ngSubmit)="addUserToWorkspace()">
+    <label for="userEmail">User Email:</label>
+    <input id="userEmail" [(ngModel)]="newUser.email" name="email" required>
+
+
+    <label for="role">Role:</label>
+    <select id="role" [(ngModel)]="newUser.role" name="role">
+      <option value="ADMIN">Admin</option>
+      <option value="MANAGER">Manager</option>
+      <option value="USER">User</option>
+    </select>
+
+    <button type="submit">Add User</button>
+  </form>
+
+
+
+</div>
