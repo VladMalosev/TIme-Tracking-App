@@ -2,57 +2,103 @@
   {{ errorMessage }}
 </div>
 
-<!-- Workspace Creation Form -->
-<h2>Create a New Workspace</h2>
-<form (ngSubmit)="createWorkspace()">
-  <label for="workspaceName">Name:</label>
-  <input id="workspaceName" [(ngModel)]="newWorkspace.name" name="name" required>
+<!-- Project Creation Form -->
+<h2>Create a New Project</h2>
+<form (ngSubmit)="createProject()">
+  <label for="projectName">Name:</label>
+  <input id="projectName" [(ngModel)]="newProject.name" name="name" required>
 
-  <label for="workspaceDescription">Description:</label>
-  <input id="workspaceDescription" [(ngModel)]="newWorkspace.description" name="description">
+  <label for="projectDescription">Description:</label>
+  <input id="projectDescription" [(ngModel)]="newProject.description" name="description">
 
-  <button type="submit">Create Workspace</button>
+  <button type="submit">Create Project</button>
 </form>
 
-<!-- List of Workspaces -->
-<h2>Your Workspaces</h2>
+
+
+<!-- Your Projects -->
+<h2>Your Projects</h2>
 <ul>
-  <li *ngFor="let workspace of workspaces">
-    <a (click)="getWorkspaceDetails(workspace.id)">{{ workspace.name }}</a>
-    <button (click)="deleteWorkspace(workspace.id)">Delete</button>
+  <li *ngFor="let project of ownedProjects">
+    <div (click)="selectProject(project)">
+      {{ project.name }} ({{ project.description }})
+    </div>
+
+    <!-- Edit Project Button -->
+    <button (click)="startEdit(project)">Edit</button>
+
+    <!-- Project Details -->
+    <div *ngIf="selectedProject && selectedProject.id === project.id">
+      <h3>Project Details</h3>
+      <p>Name: {{ project.name }}</p>
+      <p>Description: {{ project.description }}</p>
+
+      <!-- Edit Project Form -->
+      <div *ngIf="isEditing(project)">
+        <h3>Edit Project</h3>
+        <form (ngSubmit)="saveEdit(project)">
+          <label for="editProjectName">Name:</label>
+          <input id="editProjectName" [(ngModel)]="project.name" name="name" required>
+
+          <label for="editProjectDescription">Description:</label>
+          <input id="editProjectDescription" [(ngModel)]="project.description" name="description">
+
+          <button type="submit">Save</button>
+          <button type="button" (click)="cancelEdit(project)">Cancel</button>
+        </form>
+      </div>
+
+      <!-- Add Collaborator Form -->
+      <div *ngIf="currentUserRole === 'OWNER' || currentUserRole === 'ADMIN'">
+        <h3>Add Collaborator</h3>
+        <form (ngSubmit)="addCollaborator(project.id, collaboratorEmail.value, collaboratorRole.value)">
+          <label for="collaboratorEmail">Email:</label>
+          <input #collaboratorEmail id="collaboratorEmail" type="email" required>
+
+          <label for="collaboratorRole">Role:</label>
+          <select #collaboratorRole id="collaboratorRole" required>
+            <option *ngIf="currentUserRole === 'OWNER'" value="ADMIN">Admin</option>
+            <option *ngIf="currentUserRole === 'OWNER' || currentUserRole === 'ADMIN'" value="MANAGER">Manager</option>
+            <option value="USER">User</option>
+          </select>
+
+          <button type="submit">Add Collaborator</button>
+        </form>
+      </div>
+
+      <!-- List of Collaborators -->
+      <h3>Collaborators</h3>
+      <ul>
+        <li *ngFor="let collaborator of collaborators">
+          {{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}
+          <button *ngIf="canRemoveCollaborator(collaborator.role)" (click)="removeCollaborator(selectedProject.id, collaborator.user.email)">Remove</button>
+        </li>
+      </ul>
+    </div>
   </li>
 </ul>
 
-<!-- Workspace Details -->
-<div *ngIf="workspaceDetails">
-  <h2>Workspace Details: {{ workspaceDetails.workspace.name }}</h2>
-  <p>{{ workspaceDetails.workspace.description }}</p>
+<!-- Projects You're Part Of -->
+<h2>Projects You're Part Of</h2>
+<ul>
+  <li *ngFor="let project of collaboratedProjects">
+    <div (click)="selectProject(project)">
+      {{ project.name }} ({{ project.description }})
+    </div>
 
-  <!-- List of Users in the Workspace -->
-  <h3>Users</h3>
-  <ul>
-    <li *ngFor="let user of workspaceDetails.users">
-      {{ user.user.name }} ({{ user.role }})
-    </li>
-  </ul>
+    <!-- Project Details -->
+    <div *ngIf="selectedProject && selectedProject.id === project.id">
+      <h3>Project Details</h3>
+      <p>Name: {{ project.name }}</p>
+      <p>Description: {{ project.description }}</p>
 
-  <!-- Add User to Workspace Form -->
-  <h3>Add User to Workspace</h3>
-  <form (ngSubmit)="addUserToWorkspace()">
-    <label for="userEmail">User Email:</label>
-    <input id="userEmail" [(ngModel)]="newUser.email" name="email" required>
-
-
-    <label for="role">Role:</label>
-    <select id="role" [(ngModel)]="newUser.role" name="role">
-      <option value="ADMIN">Admin</option>
-      <option value="MANAGER">Manager</option>
-      <option value="USER">User</option>
-    </select>
-
-    <button type="submit">Add User</button>
-  </form>
-
-
-
-</div>
+      <!-- List of Collaborators -->
+      <h3>Collaborators</h3>
+      <ul>
+        <li *ngFor="let collaborator of collaborators">
+          {{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}
+        </li>
+      </ul>
+    </div>
+  </li>
+</ul>

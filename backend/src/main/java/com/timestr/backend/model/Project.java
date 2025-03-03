@@ -22,7 +22,7 @@ public class Project {
     private Workspace workspace;
 
     @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
+    @JoinColumn(name = "client_id")
     private Client client;
 
     @NotBlank(message = "Name cannot be blank")

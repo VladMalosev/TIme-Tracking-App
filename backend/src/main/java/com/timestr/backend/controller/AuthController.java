@@ -4,6 +4,7 @@ import com.timestr.backend.configuration.OnlineUserTracker;
 import com.timestr.backend.dto.LoginRequest;
 import com.timestr.backend.dto.RegisterRequest;
 import com.timestr.backend.model.*;
+import com.timestr.backend.repository.ProjectRepository;
 import com.timestr.backend.repository.WorkspaceRepository;
 import com.timestr.backend.repository.WorkspaceUserRepository;
 import com.timestr.backend.security.JwtTokenProvider;
@@ -15,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,18 +37,39 @@ public class AuthController {
     @Autowired
     private OnlineUserTracker onlineUserTracker;
 
-    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker, WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository) {
+    @Autowired
+    private final ProjectRepository projectRepository;
+
+    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker, WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository, ProjectRepository projectRepository) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.onlineUserTracker = onlineUserTracker;
         this.workspaceRepository = workspaceRepository;
         this.workspaceUserRepository = workspaceUserRepository;
+        this.projectRepository = projectRepository;
     }
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody RegisterRequest request) {
         request.setRole(Role.USER);
         User user = userService.registerUser(request);
+
+        // create def workspace for the user
+        Workspace defaultWorkspace = new Workspace();
+        defaultWorkspace.setName(user.getName() + "'s Workspace");
+        defaultWorkspace.setDescription("Workspace for " + user.getName());
+        defaultWorkspace.setCreatedAt(LocalDateTime.now());
+        defaultWorkspace.setUpdatedAt(LocalDateTime.now());
+        workspaceRepository.save(defaultWorkspace);
+
+
+        WorkspaceUser workspaceUser = new WorkspaceUser();
+        workspaceUser.setUser(user);
+        workspaceUser.setWorkspace(defaultWorkspace);
+        workspaceUser.setRole(WorkspaceRole.OWNER);
+        workspaceUser.setCreatedAt(LocalDateTime.now());
+        workspaceUser.setUpdatedAt(LocalDateTime.now());
+        workspaceUserRepository.save(workspaceUser);
 
         return ResponseEntity.ok(user);
     }
@@ -129,6 +148,29 @@ public class AuthController {
         String email = jwtTokenProvider.getUsernameFromToken(token);
         Map<String, String> response = new HashMap<>();
         response.put("email", email);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/current-user-role/{projectId}")
+    public ResponseEntity<Map<String, String>> getCurrentUserRole(
+            @PathVariable UUID projectId,
+            @CookieValue(value = "JWT", defaultValue = "") String token) {
+
+        if (token.isEmpty() || !jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body(Collections.singletonMap("message", "Unauthorized"));
+        }
+
+        String email = jwtTokenProvider.getUsernameFromToken(token);
+        User user = userService.getUserByEmail(email);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        WorkspaceUser workspaceUser = workspaceUserRepository.findByUserIdAndWorkspaceId(user.getId(), project.getWorkspace().getId())
+                .orElseThrow(() -> new RuntimeException("User is not part of this workspace"));
+
+        Map<String, String> response = new HashMap<>();
+        response.put("role", workspaceUser.getRole().name());
 
         return ResponseEntity.ok(response);
     }
