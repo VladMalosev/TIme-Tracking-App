@@ -1,5 +1,6 @@
 package com.timestr.backend.controller;
 
+import com.timestr.backend.dto.TaskCompletionDetails;
 import com.timestr.backend.model.Task;
 import com.timestr.backend.service.TaskService;
 import jakarta.transaction.Transactional;
@@ -71,7 +72,11 @@ public class TaskController {
         return ResponseEntity.ok(task);
     }
 
-
+    @GetMapping("/{taskId}/completion-details")
+    public ResponseEntity<TaskCompletionDetails> getTaskCompletionDetails(@PathVariable UUID taskId) {
+        TaskCompletionDetails details = taskService.getTaskCompletionDetails(taskId);
+        return ResponseEntity.ok(details);
+    }
 
 
 }

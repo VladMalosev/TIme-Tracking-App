@@ -1,9 +1,11 @@
 package com.timestr.backend.service;
 
+import com.timestr.backend.dto.TaskCompletionDetails;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.Duration;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +31,8 @@ public class TaskService {
     @Autowired
     private TimeLogRepository timeLogRepository;
 
+
+
     public Task updateTask(UUID taskId, Task updatedTask) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
@@ -42,6 +46,30 @@ public class TaskService {
         timeLogRepository.deleteByTaskId(taskId);
         taskAssignmentRepository.deleteByTaskId(taskId);
         taskRepository.deleteById(taskId);
+    }
+
+    public TaskCompletionDetails getTaskCompletionDetails(UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        User completedBy = userRepository.findById(task.getAssignedUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<TimeLog> timeLogs = timeLogRepository.findByTaskId(taskId);
+
+        long totalTimeSpent = timeLogs.stream()
+                .filter(log -> log.getStartTime() != null && log.getEndTime() != null)
+                .mapToLong(log -> Duration.between(log.getStartTime(), log.getEndTime()).toMinutes())
+                .sum();
+
+        return new TaskCompletionDetails(
+                task.getName(),
+                completedBy.getName(),
+                task.getCreatedAt(),
+                task.getUpdatedAt(),
+                totalTimeSpent,
+                timeLogs
+        );
     }
 
     public Task getTaskById(UUID taskId) {
@@ -60,6 +88,11 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         User assigner = userRepository.findById(assignedBy)
                 .orElseThrow(() -> new RuntimeException("Assigner not found"));
+
+
+        if (task.getStatus() == TaskStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot assign a completed task.");
+        }
 
         task.setAssignedUserId(userId);
 

@@ -29,7 +29,11 @@ export class WorkspaceManagementComponent implements OnInit {
   startTime: Date | null = null;
   elapsedTime: number = 0;
   timerInterval: any;
-
+  manualStartTime: string = '';
+  manualEndTime: string = '';
+  manualDescription: string = '';
+  taskCompletionDetails: any = null;
+  timerStates: { [taskId: string]: boolean } = {};
 
 
   ngOnInit(): void {
@@ -52,6 +56,13 @@ export class WorkspaceManagementComponent implements OnInit {
     'MANAGER': ['USER'],
     'USER': []
   };
+  getActiveTasks(): any[] {
+    return this.tasks.filter(task => task.status !== 'COMPLETED');
+  }
+  getCompletedTasks(): any[] {
+    return this.tasks.filter(task => task.status === 'COMPLETED');
+  }
+
 
   canManageRole(targetRole: string): boolean {
     return this.roleHierarchy[this.currentUserRole]?.includes(targetRole);
@@ -60,59 +71,34 @@ export class WorkspaceManagementComponent implements OnInit {
     return this.roleHierarchy[this.currentUserRole] || [];
   }
 
-  selectTask(task: any): void {
-    this.selectedTask = task;
-    this.fetchTimeLogs(task.id);
-  }
 
-  fetchTimeLogs(taskId: string): void {
-    this.http.get<any[]>(`http://localhost:8080/api/timelogs/task/${taskId}`, { withCredentials: true })
-      .subscribe(
-        (response) => {
-          this.timeLogs = response;
-        },
-        (error) => {
-          console.error('Error fetching time logs', error);
-        }
-      );
-  }
-
-  logTime(taskId: string, hours: number, description: string): void {
-    this.http.post<any>(
-      `http://localhost:8080/api/timelogs`,
-      {
-        taskId: taskId,
-        userId: this.userId,
-        hours: hours,
-        description: description,
-      },
-      { withCredentials: true }
-    ).subscribe(
-      (response) => {
-        alert('Time logged successfully!');
-        this.fetchTimeLogs(taskId);
-      },
-      (error) => {
-        console.error('Error logging time', error);
-      }
-    );
+  calculateTotalTime(): number {
+    return this.timeLogs.reduce((total, log) => {
+      const start = new Date(log.startTime);
+      const end = new Date(log.endTime);
+      return total + (end.getTime() - start.getTime()) / (1000 * 60);
+    }, 0);
   }
 
   updateTaskStatus(taskId: string, status: string): void {
+    if (status === 'IN_PROGRESS') {
+      if (!this.timerStates[taskId]) {
+        this.timerStates[taskId] = true;
+      }
+    } else if (status === 'COMPLETED') {
+      if (this.timerStates[taskId]) {
+        this.timerStates[taskId] = false;
+        this.stopTimer(taskId, this.userId);
+      }
+    }
     this.http.put<any>(
       `http://localhost:8080/api/tasks/${taskId}/status?status=${status}`,
-      {}, // No request body needed
+      {},
       { withCredentials: true }
     ).subscribe(
       (response) => {
         alert('Task status updated successfully!');
         this.fetchTasks(this.selectedProject.id);
-
-        if (status === 'IN_PROGRESS') {
-          this.startTimer();
-        } else if (status === 'COMPLETED') {
-          this.stopTimer();
-        }
       },
       (error) => {
         console.error('Error updating task status', error);
@@ -120,22 +106,40 @@ export class WorkspaceManagementComponent implements OnInit {
     );
   }
 
-  startTimer(): void {
-    if (!this.isRunning) {
-      this.isRunning = true;
-      this.startTime = new Date();
-      this.timerInterval = setInterval(() => {
-        this.elapsedTime = Math.floor((new Date().getTime() - this.startTime!.getTime()) / 1000);
-      }, 1000);
-    }
+
+  startTimer(taskId: string, userId: string, description: string): void {
+    const requestBody = {
+      userId: userId,
+      taskId: taskId,
+      description: description
+    };
+
+    this.http.post<any>(`http://localhost:8080/api/timelogs/start`, requestBody, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          console.log('Timer started:', response);
+        },
+        (error) => {
+          console.error('Error starting timer', error);
+        }
+      );
   }
 
-  stopTimer(): void {
-    if (this.isRunning) {
-      this.isRunning = false;
-      clearInterval(this.timerInterval);
-      this.elapsedTime = 0;
-    }
+  stopTimer(taskId: string, userId: string): void {
+    const requestBody = {
+      userId: userId,
+      taskId: taskId
+    };
+
+    this.http.post<any>(`http://localhost:8080/api/timelogs/stop`, requestBody, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          console.log('Timer stopped:', response);
+        },
+        (error) => {
+          console.error('Error stopping timer', error);
+        }
+      );
   }
 
   canRemoveCollaborator(targetRole: string): boolean {
@@ -175,6 +179,8 @@ export class WorkspaceManagementComponent implements OnInit {
       );
   }
 
+
+
   fetchTasks(projectId: string): void {
     this.http.get<any[]>(`http://localhost:8080/api/tasks/project/${projectId}?assignedUserId=${this.userId}`, { withCredentials: true })
       .subscribe(
@@ -189,13 +195,18 @@ export class WorkspaceManagementComponent implements OnInit {
   }
 
   assignTask(taskId: string, userId: string, assignedBy: string): void {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task && task.status === 'COMPLETED') {
+      alert('Cannot assign a completed task.');
+      return;
+    }
+
     this.http.post<any>(
       `http://localhost:8080/api/tasks/${taskId}/assign?userId=${userId}&assignedBy=${assignedBy}`,
       {}, { withCredentials: true }
     ).subscribe(
       (response) => {
         alert('Task assigned successfully!');
-        console.log('Assigned Task Response:', response);
         this.fetchTasks(this.selectedProject.id);
       },
       (error) => {
@@ -203,7 +214,6 @@ export class WorkspaceManagementComponent implements OnInit {
       }
     );
   }
-
   createProject(): void {
     this.http.post<any>('http://localhost:8080/api/projects', this.newProject, { withCredentials: true })
       .subscribe(
@@ -219,43 +229,6 @@ export class WorkspaceManagementComponent implements OnInit {
       );
   }
 
-  deleteProject(projectId: string): void {
-    if (confirm('Are you sure you want to delete this project?')) {
-      this.http.delete(`http://localhost:8080/api/projects/${projectId}`, { withCredentials: true })
-        .subscribe(
-          () => {
-            this.ownedProjects = this.ownedProjects.filter(p => p.id !== projectId);
-            this.errorMessage = null;
-          },
-          (error) => {
-            console.error('Error deleting project', error);
-            this.errorMessage = 'Failed to delete project. Please try again.';
-          }
-        );
-    }
-  }
-
-  editProject(project: any): void {
-    this.http.put<any>(`http://localhost:8080/api/projects/${project.id}`, project, { withCredentials: true })
-      .subscribe(
-        (response) => {
-          const index = this.ownedProjects.findIndex(p => p.id === project.id);
-          if (index !== -1) {
-            this.ownedProjects[index] = response;
-          } else {
-            const index = this.collaboratedProjects.findIndex(p => p.id === project.id);
-            if (index !== -1) {
-              this.collaboratedProjects[index] = response;
-            }
-          }
-          this.errorMessage = null;
-        },
-        (error) => {
-          console.error('Error updating project', error);
-          this.errorMessage = 'Failed to update project. Please try again.';
-        }
-      );
-  }
 
   addCollaborator(projectId: string, email: string, role: string): void {
     if (!this.getAssignableRoles().includes(role)) {
@@ -401,6 +374,23 @@ export class WorkspaceManagementComponent implements OnInit {
           }
         );
     }
+  }
+
+  closeTaskCompletionDetails(): void {
+    this.taskCompletionDetails = null;
+  }
+
+  fetchTaskCompletionDetails(taskId: string): void {
+    this.http.get<any>(`http://localhost:8080/api/tasks/${taskId}/completion-details`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          console.log('Task completion details:', response);
+          this.taskCompletionDetails = response;
+        },
+        (error) => {
+          console.error('Error fetching task completion details', error);
+        }
+      );
   }
 
 

@@ -52,12 +52,6 @@ public class UserService {
         return user;
     }
 
-    public User promoteToManager(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setRoles(Role.MANAGER);
-        return userRepository.save(user);
-    }
-
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));

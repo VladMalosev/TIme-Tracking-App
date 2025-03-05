@@ -33,6 +33,7 @@ public class TimeLogController {
         return ResponseEntity.ok(timeLog);
     }
 
+
     @PostMapping("/stop")
     public ResponseEntity<TimeLog> stopTimer(@RequestBody Map<String, String> request) {
         UUID userId = UUID.fromString(request.get("userId"));

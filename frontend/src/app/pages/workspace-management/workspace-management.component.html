@@ -102,7 +102,11 @@
             <form (ngSubmit)="assignTask(selectedTaskId.value, selectedUserId.value, userId)">
               <label for="selectedTaskId">Task:</label>
               <select #selectedTaskId id="selectedTaskId" required>
-                <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
+
+
+                <option *ngFor="let task of tasks" [value]="task.id" [disabled]="task.status === 'COMPLETED'">
+                  {{ task.name }} ({{ task.status }})
+                </option>
               </select>
 
               <label for="selectedUserId">Assign to User:</label>
@@ -112,6 +116,46 @@
 
               <button type="submit">Assign Task</button>
             </form>
+          </div>
+
+          <!-- Active Tasks -->
+          <div class="task-list">
+            <h3>Active Tasks</h3>
+            <ul>
+              <li *ngFor="let task of tasks">
+                <div *ngIf="task.status !== 'COMPLETED'">
+                  <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
+                </div>
+                <div class="task-actions" *ngIf="task.status !== 'COMPLETED'">
+                  <button *ngIf="!timerStates[task.id]" (click)="updateTaskStatus(task.id, 'IN_PROGRESS')">Start Task</button>
+                  <button *ngIf="timerStates[task.id]" (click)="updateTaskStatus(task.id, 'COMPLETED')" class="btn-complete">Complete Task</button>
+                  <button (click)="deleteTask(task.id)" class="btn-danger">Delete Task</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Completed Tasks -->
+          <div class="task-list">
+            <h3>Completed Tasks</h3>
+            <ul>
+              <li *ngFor="let task of getCompletedTasks()">
+                <div>
+                  <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
+                  <button (click)="fetchTaskCompletionDetails(task.id)">View Details</button>
+                </div>
+                <div *ngIf="taskCompletionDetails && taskCompletionDetails.taskName === task.name">
+                  <p><strong>Started At:</strong> {{ taskCompletionDetails.startedAt | date:'medium' }}</p>
+                  <p><strong>Completed At:</strong> {{ taskCompletionDetails.completedAt | date:'medium' }}</p>
+                  <p><strong>Completed By:</strong> {{ taskCompletionDetails.completedBy }}</p>
+
+                  <button (click)="closeTaskCompletionDetails()">Close Details</button>
+                </div>
+                <div class="task-actions">
+                  <button (click)="deleteTask(task.id)" class="btn-danger">Delete Task</button>
+                </div>
+              </li>
+            </ul>
           </div>
 
           <!-- List of Tasks -->
@@ -131,22 +175,6 @@
             </ul>
           </div>
 
-          <!-- Assigned Tasks -->
-          <div class="assigned-tasks">
-            <h3>Your Assigned Tasks</h3>
-            <ul>
-              <li *ngFor="let task of tasks">
-                <div>
-                  <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
-                </div>
-                <div class="task-actions">
-                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'IN_PROGRESS')">Start Task</button>
-                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'COMPLETED')" class="btn-complete">Complete Task</button>
-                  <button (click)="deleteTask(task.id)" class="btn-danger">Delete Task</button>
-                </div>
-              </li>
-            </ul>
-          </div>
 
         </div>
       </li>
