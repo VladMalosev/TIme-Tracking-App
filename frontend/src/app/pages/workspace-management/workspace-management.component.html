@@ -1,104 +1,221 @@
-<div *ngIf="errorMessage" class="error-message">
-  {{ errorMessage }}
+<div class="container">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Create a New Project -->
+  <section class="project-section">
+    <h2>Create a New Project</h2>
+    <form (ngSubmit)="createProject()">
+      <label for="projectName">Project Name:</label>
+      <input id="projectName" [(ngModel)]="newProject.name" name="name" required>
+
+      <label for="projectDescription">Description:</label>
+      <textarea id="projectDescription" [(ngModel)]="newProject.description" name="description"></textarea>
+
+      <button type="submit">Create Project</button>
+    </form>
+  </section>
+
+  <!-- Your Projects -->
+  <section class="project-section">
+    <h2>Your Projects</h2>
+    <ul class="project-list">
+      <li *ngFor="let project of ownedProjects" class="project-item">
+        <div (click)="selectProject(project)">
+          <h3>{{ project.name }}</h3>
+          <p>{{ project.description }}</p>
+        </div>
+
+        <button (click)="startEdit(project)">Edit</button>
+
+        <!-- Project Details & Management -->
+        <div *ngIf="selectedProject && selectedProject.id === project.id">
+          <h3>Project Details</h3>
+          <p><strong>Name:</strong> {{ project.name }}</p>
+          <p><strong>Description:</strong> {{ project.description }}</p>
+
+          <!-- Edit Project Form -->
+          <div *ngIf="isEditing(project)">
+            <h3>Edit Project</h3>
+            <form (ngSubmit)="saveEdit(project)">
+              <label for="editProjectName">Name:</label>
+              <input id="editProjectName" [(ngModel)]="project.name" name="name" required>
+
+              <label for="editProjectDescription">Description:</label>
+              <textarea id="editProjectDescription" [(ngModel)]="project.description" name="description"></textarea>
+
+              <button type="submit">Save</button>
+              <button type="button" (click)="cancelEdit(project)" class="btn-cancel">Cancel</button>
+            </form>
+          </div>
+
+          <!-- Add Collaborator -->
+          <div *ngIf="canManageRole('USER')" class="collaborator-section">
+            <h3>Add Collaborator</h3>
+            <form (ngSubmit)="addCollaborator(project.id, collaboratorEmail.value, collaboratorRole.value)">
+              <label for="collaboratorEmail">Email:</label>
+              <input #collaboratorEmail id="collaboratorEmail" type="email" required>
+
+              <label for="collaboratorRole">Role:</label>
+              <select #collaboratorRole id="collaboratorRole" required>
+                <option *ngFor="let role of roleHierarchy[currentUserRole]" [value]="role">
+                  {{ role }}
+                </option>
+              </select>
+
+              <button type="submit">Add Collaborator</button>
+            </form>
+          </div>
+
+          <!-- List of Collaborators -->
+          <div class="collaborators-list">
+            <h3>Collaborators</h3>
+            <ul>
+              <li *ngFor="let collaborator of collaborators">
+                <span>{{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}</span>
+                <button *ngIf="canRemoveCollaborator(collaborator.role)" (click)="removeCollaborator(selectedProject.id, collaborator.user.email)" class="btn-danger">
+                  Remove
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Task Creation Form -->
+          <div *ngIf="canManageRole('USER')">
+            <h3>Create Task</h3>
+            <form (ngSubmit)="createTask(selectedProject.id, taskName.value, taskDescription.value)">
+              <label for="taskName">Task Name:</label>
+              <input #taskName id="taskName" type="text" required>
+
+              <label for="taskDescription">Description:</label>
+              <textarea #taskDescription id="taskDescription" required></textarea>
+
+              <button type="submit">Create Task</button>
+            </form>
+          </div>
+
+          <!-- Task Assignment Form -->
+          <div *ngIf="canAssignTasks()">
+            <h3>Assign Task</h3>
+            <form (ngSubmit)="assignTask(selectedTaskId.value, selectedUserId.value, userId)">
+              <label for="selectedTaskId">Task:</label>
+              <select #selectedTaskId id="selectedTaskId" required>
+                <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
+              </select>
+
+              <label for="selectedUserId">Assign to User:</label>
+              <select #selectedUserId id="selectedUserId" required>
+                <option *ngFor="let collaborator of collaborators" [value]="collaborator.user.id">{{ collaborator.user.name }}</option>
+              </select>
+
+              <button type="submit">Assign Task</button>
+            </form>
+          </div>
+
+          <!-- List of Tasks -->
+          <div class="task-list">
+            <h3>Tasks</h3>
+            <ul>
+              <li *ngFor="let task of tasks">
+                <div>
+                  <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
+                </div>
+                <div class="task-actions">
+                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'IN_PROGRESS')">Start Task</button>
+                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'COMPLETED')" class="btn-complete">Complete Task</button>
+                  <button (click)="deleteTask(task.id)" class="btn-danger">Delete Task</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Assigned Tasks -->
+          <div class="assigned-tasks">
+            <h3>Your Assigned Tasks</h3>
+            <ul>
+              <li *ngFor="let task of tasks">
+                <div>
+                  <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
+                </div>
+                <div class="task-actions">
+                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'IN_PROGRESS')">Start Task</button>
+                  <button *ngIf="canManageTask(task)" (click)="updateTaskStatus(task.id, 'COMPLETED')" class="btn-complete">Complete Task</button>
+                  <button (click)="deleteTask(task.id)" class="btn-danger">Delete Task</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </li>
+
+      <!-- Projects You're Part Of -->
+      <h2>Projects You're Part Of</h2>
+      <ul>
+        <li *ngFor="let project of collaboratedProjects">
+          <div (click)="selectProject(project)">
+            {{ project.name }} ({{ project.description }})
+          </div>
+
+          <div *ngIf="selectedProject && selectedProject.id === project.id">
+            <h3>Project Details</h3>
+            <p>Name: {{ project.name }}</p>
+            <p>Description: {{ project.description }}</p>
+
+            <!-- Task Assignment for Collaborators -->
+            <div *ngIf="canAssignTasks()" class="task-section">
+              <h3>Assign Task</h3>
+              <form (ngSubmit)="assignTask(selectedTaskId.value, selectedUserId.value, userId)">
+                <label for="selectedTaskId2">Task:</label>
+                <select #selectedTaskId id="selectedTaskId2" required>
+                  <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
+                </select>
+
+                <label for="selectedUserId2">Assign to User:</label>
+                <select #selectedUserId id="selectedUserId2" required>
+                  <option *ngFor="let collaborator of collaborators" [value]="collaborator.user.id">{{ collaborator.user.name }}</option>
+                </select>
+
+                <button type="submit">Assign Task</button>
+              </form>
+            </div>
+
+            <!-- List of Collaborators -->
+            <h3>Collaborators</h3>
+            <ul>
+              <li *ngFor="let collaborator of collaborators">
+                {{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}
+                <button *ngIf="canRemoveCollaborator(collaborator.role)" (click)="removeCollaborator(selectedProject.id, collaborator.user.email)">
+                  Remove
+                </button>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </ul>
+
+    <!-- Assigned Tasks -->
+    <div *ngIf="selectedProject" class="assigned-tasks">
+      <h3>Your Assigned Tasks</h3>
+      <ul>
+        <li *ngFor="let task of tasks">
+
+          <!-- Only show tasks assigned to the current user -->
+          <div *ngIf="task.assignedUserId === userId">
+            <div>
+              <strong>{{ task.name }}</strong> - {{ task.description }} ({{ task.status }})
+            </div>
+            <div class="task-actions">
+              <button (click)="updateTaskStatus(task.id, 'IN_PROGRESS')">Start Task</button>
+              <button (click)="updateTaskStatus(task.id, 'COMPLETED')">Complete Task</button>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
 </div>
-
-<!-- Project Creation Form -->
-<h2>Create a New Project</h2>
-<form (ngSubmit)="createProject()">
-  <label for="projectName">Name:</label>
-  <input id="projectName" [(ngModel)]="newProject.name" name="name" required>
-
-  <label for="projectDescription">Description:</label>
-  <input id="projectDescription" [(ngModel)]="newProject.description" name="description">
-
-  <button type="submit">Create Project</button>
-</form>
-
-
-
-<!-- Your Projects -->
-<h2>Your Projects</h2>
-<ul>
-  <li *ngFor="let project of ownedProjects">
-    <div (click)="selectProject(project)">
-      {{ project.name }} ({{ project.description }})
-    </div>
-
-    <!-- Edit Project Button -->
-    <button (click)="startEdit(project)">Edit</button>
-
-    <!-- Project Details -->
-    <div *ngIf="selectedProject && selectedProject.id === project.id">
-      <h3>Project Details</h3>
-      <p>Name: {{ project.name }}</p>
-      <p>Description: {{ project.description }}</p>
-
-      <!-- Edit Project Form -->
-      <div *ngIf="isEditing(project)">
-        <h3>Edit Project</h3>
-        <form (ngSubmit)="saveEdit(project)">
-          <label for="editProjectName">Name:</label>
-          <input id="editProjectName" [(ngModel)]="project.name" name="name" required>
-
-          <label for="editProjectDescription">Description:</label>
-          <input id="editProjectDescription" [(ngModel)]="project.description" name="description">
-
-          <button type="submit">Save</button>
-          <button type="button" (click)="cancelEdit(project)">Cancel</button>
-        </form>
-      </div>
-
-      <!-- Add Collaborator Form -->
-      <div *ngIf="currentUserRole === 'OWNER' || currentUserRole === 'ADMIN'">
-        <h3>Add Collaborator</h3>
-        <form (ngSubmit)="addCollaborator(project.id, collaboratorEmail.value, collaboratorRole.value)">
-          <label for="collaboratorEmail">Email:</label>
-          <input #collaboratorEmail id="collaboratorEmail" type="email" required>
-
-          <label for="collaboratorRole">Role:</label>
-          <select #collaboratorRole id="collaboratorRole" required>
-            <option *ngIf="currentUserRole === 'OWNER'" value="ADMIN">Admin</option>
-            <option *ngIf="currentUserRole === 'OWNER' || currentUserRole === 'ADMIN'" value="MANAGER">Manager</option>
-            <option value="USER">User</option>
-          </select>
-
-          <button type="submit">Add Collaborator</button>
-        </form>
-      </div>
-
-      <!-- List of Collaborators -->
-      <h3>Collaborators</h3>
-      <ul>
-        <li *ngFor="let collaborator of collaborators">
-          {{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}
-          <button *ngIf="canRemoveCollaborator(collaborator.role)" (click)="removeCollaborator(selectedProject.id, collaborator.user.email)">Remove</button>
-        </li>
-      </ul>
-    </div>
-  </li>
-</ul>
-
-<!-- Projects You're Part Of -->
-<h2>Projects You're Part Of</h2>
-<ul>
-  <li *ngFor="let project of collaboratedProjects">
-    <div (click)="selectProject(project)">
-      {{ project.name }} ({{ project.description }})
-    </div>
-
-    <!-- Project Details -->
-    <div *ngIf="selectedProject && selectedProject.id === project.id">
-      <h3>Project Details</h3>
-      <p>Name: {{ project.name }}</p>
-      <p>Description: {{ project.description }}</p>
-
-      <!-- List of Collaborators -->
-      <h3>Collaborators</h3>
-      <ul>
-        <li *ngFor="let collaborator of collaborators">
-          {{ collaborator.user.name }} ({{ collaborator.user.email }}) - {{ collaborator.role }}
-        </li>
-      </ul>
-    </div>
-  </li>
-</ul>

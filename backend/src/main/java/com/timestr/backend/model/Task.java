@@ -26,6 +26,9 @@ public class Task {
     @Column(nullable = false, length = 150)
     private String name;
 
+    @Column(name = "assigned_user_id")
+    private UUID assignedUserId;
+
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(length = 500)
     private String description;
@@ -46,6 +49,14 @@ public class Task {
     }
 
     // Getters and Setters
+    public UUID getAssignedUserId() {
+        return assignedUserId;
+    }
+
+    public void setAssignedUserId(UUID assignedUserId) {
+        this.assignedUserId = assignedUserId;
+    }
+
     public UUID getId() {
         return id;
     }

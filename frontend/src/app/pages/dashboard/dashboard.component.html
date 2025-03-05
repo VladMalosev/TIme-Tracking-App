@@ -3,6 +3,84 @@
   <p>Email: {{ userEmail }}</p>
   <a href="/chat">Chat</a>
   <a href="/workspaces">Workspaces</a>
+
+  <!-- Stopwatch Section -->
+  <div class="stopwatch-section">
+    <h2>Stopwatch</h2>
+    <div class="timer">{{ formatTime(elapsedTime) }}</div>
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    <div class="controls">
+      <button (click)="startTimer()" [disabled]="isRunning">Start</button>
+      <button (click)="stopTimer()" [disabled]="!isRunning">Stop</button>
+    </div>
+    <div class="description">
+      <label for="description">Description:</label>
+      <input id="description" [(ngModel)]="description" placeholder="Enter a description" />
+    </div>
+  </div>
+
+  <!-- Manual Time Entry Section -->
+  <div class="manual-time-section">
+    <h2>Manual Time Entry</h2>
+    <form (ngSubmit)="createManualTimeLog()">
+      <div>
+        <label for="manualStartTime">Start Time:</label>
+        <input
+          id="manualStartTime"
+          type="datetime-local"
+          [(ngModel)]="manualStartTime"
+          name="manualStartTime"
+          required
+        />
+      </div>
+      <div>
+        <label for="manualEndTime">End Time:</label>
+        <input
+          id="manualEndTime"
+          type="datetime-local"
+          [(ngModel)]="manualEndTime"
+          name="manualEndTime"
+          required
+        />
+      </div>
+      <div>
+        <label for="manualDescription">Description:</label>
+        <input
+          id="manualDescription"
+          [(ngModel)]="manualDescription"
+          name="manualDescription"
+          placeholder="Enter a description"
+        />
+      </div>
+      <button type="submit">Create Time Entry</button>
+    </form>
+  </div>
+
+  <!-- Time Logs Section -->
+  <div class="time-logs-section">
+    <h2>Your Time Logs</h2>
+    <table *ngIf="timeLogs.length > 0">
+      <thead>
+      <tr>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Duration (Minutes)</th>
+        <th>Description</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let log of timeLogs">
+        <td>{{ log.startTime | date: 'medium' }}</td>
+        <td>{{ log.endTime | date: 'medium' }}</td>
+        <td>{{ log.minutes }}</td>
+        <td>{{ log.description }}</td>
+      </tr>
+      </tbody>
+    </table>
+    <p *ngIf="timeLogs.length === 0">No time logs found.</p>
+  </div>
 </div>
 
 <div *ngIf="!userName || !userEmail">

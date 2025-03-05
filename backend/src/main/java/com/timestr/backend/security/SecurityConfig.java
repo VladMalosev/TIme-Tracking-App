@@ -41,6 +41,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/workspaces/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/api/projects/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/api/tasks/**").hasAnyRole("ADMIN", "MANAGER", "USER")
+                        .requestMatchers("/api/timelogs/**").hasAnyRole("ADMIN", "MANAGER", "USER")
+                        .requestMatchers("/api/tasks/assign").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/tasks/assigned/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

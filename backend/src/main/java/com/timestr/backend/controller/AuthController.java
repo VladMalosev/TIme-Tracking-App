@@ -111,6 +111,7 @@ public class AuthController {
         Map<String, String> response = new HashMap<>();
         response.put("name", user.getName());
         response.put("email", user.getEmail());
+        response.put("userId", user.getId().toString());
 
         return ResponseEntity.ok(response);
     }

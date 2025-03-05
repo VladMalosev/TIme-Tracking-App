@@ -1,7 +1,6 @@
 package com.timestr.backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -22,12 +21,17 @@ public class TimeLog {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "task_id", nullable = false)
+    @JoinColumn(name = "task_id")
     private Task task;
 
-    @NotNull(message = "Hours cannot be null")
-    @Column(nullable = false)
-    private Integer hours;
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
+    @Column
+    private Integer minutes;
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(length = 500)
@@ -47,7 +51,6 @@ public class TimeLog {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -72,12 +75,28 @@ public class TimeLog {
         this.task = task;
     }
 
-    public Integer getHours() {
-        return hours;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setHours(Integer hours) {
-        this.hours = hours;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Integer getMinutes() {
+        return minutes;
+    }
+
+    public void setMinutes(Integer minutes) {
+        this.minutes = minutes;
     }
 
     public String getDescription() {

@@ -1,0 +1,21 @@
+.time-logs-section {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.time-logs-section table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.time-logs-section th,
+.time-logs-section td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.time-logs-section th {
+  background-color: #f2f2f2;
+}
