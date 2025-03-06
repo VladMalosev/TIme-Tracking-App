@@ -6,6 +6,8 @@
     import com.timestr.backend.repository.TaskRepository;
     import com.timestr.backend.repository.TimeLogRepository;
     import com.timestr.backend.repository.UserRepository;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.stereotype.Service;
 
@@ -26,41 +28,77 @@
         @Autowired
         private TaskRepository taskRepository;
 
-        public TimeLog startTimer(UUID userId, String description) {
+        private static final Logger logger = LoggerFactory.getLogger(TimeLogService.class);
+
+        public TimeLog startTimer(UUID userId, UUID taskId, String description) {
+            logger.info("Starting timer for userId: {}, taskId: {}, description: {}", userId, taskId, description);
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             TimeLog timeLog = new TimeLog();
             timeLog.setUser(user);
+
+            if (taskId != null) {
+                Task task = taskRepository.findById(taskId)
+                        .orElseThrow(() -> new RuntimeException("Task not found"));
+                timeLog.setTask(task);
+            } else {
+                logger.info("No task selected. Setting task to null.");
+                timeLog.setTask(null);
+            }
+
             timeLog.setStartTime(LocalDateTime.now());
             timeLog.setDescription(description != null ? description : "");
             timeLog.setMinutes(null);
             return timeLogRepository.save(timeLog);
         }
 
-        public TimeLog stopTimer(UUID userId) {
+
+        public TimeLog stopTimer(UUID userId, UUID taskId) {
+            logger.info("Stopping timer for userId: {}, taskId: {}", userId, taskId);
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            TimeLog timeLog = timeLogRepository.findFirstByUserAndEndTimeIsNullOrderByStartTimeDesc(user)
-                    .orElseThrow(() -> new RuntimeException("No active timer found"));
+            TimeLog timeLog;
+            if (taskId != null) {
+                Task task = taskRepository.findById(taskId)
+                        .orElseThrow(() -> new RuntimeException("Task not found"));
+                timeLog = timeLogRepository.findFirstByUserAndTaskAndEndTimeIsNullOrderByStartTimeDesc(user, task)
+                        .orElseThrow(() -> new RuntimeException("No active timer found"));
+            } else {
+                timeLog = timeLogRepository.findFirstByUserAndTaskIsNullAndEndTimeIsNullOrderByStartTimeDesc(user)
+                        .orElseThrow(() -> new RuntimeException("No active timer found"));
+            }
 
             timeLog.setEndTime(LocalDateTime.now());
-            long durationInMinutes = java.time.Duration.between(timeLog.getStartTime(), timeLog.getEndTime()).toMinutes();
+            long durationInMinutes = Duration.between(timeLog.getStartTime(), timeLog.getEndTime()).toMinutes();
             timeLog.setMinutes((int) durationInMinutes);
             return timeLogRepository.save(timeLog);
         }
 
+        public TimeLog createManualTimeLog(UUID userId, UUID taskId, LocalDateTime startTime, LocalDateTime endTime, String description) {
+            logger.info("Creating manual time log for userId: {}, taskId: {}, startTime: {}, endTime: {}, description: {}", userId, taskId, startTime, endTime, description);
 
-        public TimeLog createManualTimeLog(UUID userId, LocalDateTime startTime, LocalDateTime endTime, String description) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             TimeLog timeLog = new TimeLog();
             timeLog.setUser(user);
+
+            if (taskId != null) {
+                Task task = taskRepository.findById(taskId)
+                        .orElseThrow(() -> new RuntimeException("Task not found"));
+                timeLog.setTask(task);
+            } else {
+                logger.info("No task selected. Setting task to null.");
+                timeLog.setTask(null);
+            }
+
             timeLog.setStartTime(startTime);
             timeLog.setEndTime(endTime);
-            long durationInMinutes = java.time.Duration.between(startTime, endTime).toMinutes();
+            long durationInMinutes = Duration.between(startTime, endTime).toMinutes();
             timeLog.setMinutes((int) durationInMinutes);
             timeLog.setDescription(description != null ? description : "");
             return timeLogRepository.save(timeLog);
@@ -69,6 +107,20 @@
         public List<TimeLog> getTimeLogsByUser(UUID userId) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+
             return timeLogRepository.findByUser(user);
+        }
+
+        public boolean hasActiveTimer(UUID userId, UUID taskId) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (taskId != null) {
+                Task task = taskRepository.findById(taskId)
+                        .orElseThrow(() -> new RuntimeException("Task not found"));
+                return timeLogRepository.existsByUserAndTaskAndEndTimeIsNull(user, task);
+            } else {
+                return timeLogRepository.existsByUserAndTaskIsNullAndEndTimeIsNull(user);
+            }
         }
     }

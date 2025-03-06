@@ -25,16 +25,12 @@ export class WorkspaceManagementComponent implements OnInit {
   userId!: string;
   selectedTask: any = null;
   timeLogs: any[] = [];
-  isRunning: boolean = false;
   startTime: Date | null = null;
-  elapsedTime: number = 0;
-  timerInterval: any;
   manualStartTime: string = '';
   manualEndTime: string = '';
   manualDescription: string = '';
   taskCompletionDetails: any = null;
   timerStates: { [taskId: string]: boolean } = {};
-
 
   ngOnInit(): void {
     this.fetchProjects();
@@ -50,6 +46,23 @@ export class WorkspaceManagementComponent implements OnInit {
       );
   }
 
+
+  startTask(taskId: string): void {
+    this.timerStates[taskId] = true;
+    this.startTimer(taskId, this.userId, 'Task started');
+  }
+
+  stopTask(taskId: string): void {
+    this.timerStates[taskId] = false;
+    this.stopTimer(taskId, this.userId);
+  }
+
+
+  completeTask(taskId: string): void {
+    this.updateTaskStatus(taskId, 'COMPLETED');
+  }
+
+
   roleHierarchy: { [key: string]: string[] } = {
     'OWNER': ['ADMIN', 'MANAGER', 'USER'],
     'ADMIN': ['MANAGER', 'USER'],
@@ -61,6 +74,48 @@ export class WorkspaceManagementComponent implements OnInit {
   }
   getCompletedTasks(): any[] {
     return this.tasks.filter(task => task.status === 'COMPLETED');
+  }
+
+  fetchTimeLogs(taskId: string, userId: string): void {
+    this.http.get<any[]>(`http://localhost:8080/api/timelogs/user/${userId}/task/${taskId}`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.timeLogs = response;
+        },
+        (error) => {
+          console.error('Error fetching time logs', error);
+        }
+      );
+  }
+
+  selectTask(task: any): void {
+    if (this.selectedTask && this.selectedTask.id === task.id) {
+      this.selectedTask = null;
+    } else {
+      this.selectedTask = task;
+      this.fetchTimeLogs(task.id, this.userId);
+    }
+  }
+
+  createManualTimeLog(taskId: string, userId: string, startTime: string, endTime: string, description: string): void {
+    const requestBody = {
+      userId: userId,
+      taskId: taskId,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString(),
+      description: description
+    };
+
+    this.http.post<any>(`http://localhost:8080/api/timelogs/manual`, requestBody, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          console.log('Manual time log created:', response);
+          this.fetchTimeLogs(taskId, userId); // Refresh time logs after adding a new one
+        },
+        (error) => {
+          console.error('Error creating manual time log', error);
+        }
+      );
   }
 
 
@@ -84,6 +139,7 @@ export class WorkspaceManagementComponent implements OnInit {
     if (status === 'IN_PROGRESS') {
       if (!this.timerStates[taskId]) {
         this.timerStates[taskId] = true;
+        this.startTimer(taskId, this.userId, 'Task started');
       }
     } else if (status === 'COMPLETED') {
       if (this.timerStates[taskId]) {
@@ -145,7 +201,6 @@ export class WorkspaceManagementComponent implements OnInit {
   canRemoveCollaborator(targetRole: string): boolean {
     return this.canManageRole(targetRole);
   }
-
 
 
   fetchCurrentUserRole(projectId: string): void {
@@ -317,8 +372,8 @@ export class WorkspaceManagementComponent implements OnInit {
     } else {
       this.selectedProject = project;
       this.fetchCollaborators(project.id);
-      this.fetchCurrentUserRole(project.id);
       this.fetchTasks(project.id);
+      this.fetchCurrentUserRole(project.id);
     }
   }
 

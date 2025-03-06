@@ -15,11 +15,12 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
     Optional<TimeLog> findFirstByUserAndEndTimeIsNullOrderByStartTimeDesc(User user);
     List<TimeLog> findByUser(User user);
     void deleteByTaskId(UUID taskId);
-
     List<TimeLog> findByTaskId(UUID taskId);
+    Optional<TimeLog> findFirstByUserAndTaskAndEndTimeIsNullOrderByStartTimeDesc(User user, Task task);
+    Optional<TimeLog> findFirstByUserAndTaskIsNullAndEndTimeIsNullOrderByStartTimeDesc(User user);
+    List<TimeLog> findByUserAndTaskIsNull(User user);
+    List<TimeLog> findByUserAndTask(User user, Task task);
+    boolean existsByUserAndTaskAndEndTimeIsNull(User user, Task task);
 
-    TimeLog findFirstByTaskAndEndTimeIsNull(Task task);
-
-    TimeLog findFirstByUserAndEndTimeIsNull(User user);
-
+    boolean existsByUserAndTaskIsNullAndEndTimeIsNull(User user);
 }

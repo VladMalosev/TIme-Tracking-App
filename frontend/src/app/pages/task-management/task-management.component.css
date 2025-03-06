@@ -1,0 +1,28 @@
+.task-management {
+  margin-top: 20px;
+}
+
+.task-section {
+  margin-bottom: 20px;
+}
+
+.task-section h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.task-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.task-section li {
+  background: #f9f9f9;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+.task-section button {
+  margin-left: 10px;
+}

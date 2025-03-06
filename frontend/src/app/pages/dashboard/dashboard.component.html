@@ -4,59 +4,12 @@
   <a href="/chat">Chat</a>
   <a href="/workspaces">Workspaces</a>
 
-  <!-- Stopwatch Section -->
-  <div class="stopwatch-section">
-    <h2>Stopwatch</h2>
-    <div class="timer">{{ formatTime(elapsedTime) }}</div>
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-    <div class="controls">
-      <button (click)="startTimer()" [disabled]="isRunning">Start</button>
-      <button (click)="stopTimer()" [disabled]="!isRunning">Stop</button>
-    </div>
-    <div class="description">
-      <label for="description">Description:</label>
-      <input id="description" [(ngModel)]="description" placeholder="Enter a description" />
-    </div>
-  </div>
 
-  <!-- Manual Time Entry Section -->
-  <div class="manual-time-section">
-    <h2>Manual Time Entry</h2>
-    <form (ngSubmit)="createManualTimeLog()">
-      <div>
-        <label for="manualStartTime">Start Time:</label>
-        <input
-          id="manualStartTime"
-          type="datetime-local"
-          [(ngModel)]="manualStartTime"
-          name="manualStartTime"
-          required
-        />
-      </div>
-      <div>
-        <label for="manualEndTime">End Time:</label>
-        <input
-          id="manualEndTime"
-          type="datetime-local"
-          [(ngModel)]="manualEndTime"
-          name="manualEndTime"
-          required
-        />
-      </div>
-      <div>
-        <label for="manualDescription">Description:</label>
-        <input
-          id="manualDescription"
-          [(ngModel)]="manualDescription"
-          name="manualDescription"
-          placeholder="Enter a description"
-        />
-      </div>
-      <button type="submit">Create Time Entry</button>
-    </form>
-  </div>
+  <app-log-time [userId]="userId"></app-log-time>
+
+  <app-invitations-component></app-invitations-component>
+
+  <app-task-management></app-task-management>
 
   <!-- Time Logs Section -->
   <div class="time-logs-section">
@@ -68,6 +21,7 @@
         <th>End Time</th>
         <th>Duration (Minutes)</th>
         <th>Description</th>
+        <th>Task/Project</th>
       </tr>
       </thead>
       <tbody>
@@ -76,6 +30,12 @@
         <td>{{ log.endTime | date: 'medium' }}</td>
         <td>{{ log.minutes }}</td>
         <td>{{ log.description }}</td>
+        <td>
+          <span *ngIf="log.task">
+            {{ log.task.name }} ({{ log.task.project?.name || 'No Project' }})
+          </span>
+          <span *ngIf="!log.task">No Task</span>
+        </td>
       </tr>
       </tbody>
     </table>

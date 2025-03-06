@@ -1,16 +1,15 @@
 package com.timestr.backend.controller;
 
 import com.timestr.backend.model.*;
-import com.timestr.backend.repository.ProjectRepository;
-import com.timestr.backend.repository.UserRepository;
-import com.timestr.backend.repository.WorkspaceRepository;
-import com.timestr.backend.repository.WorkspaceUserRepository;
+import com.timestr.backend.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import com.timestr.backend.model.ProjectInvitation;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -34,6 +33,9 @@ public class ProjectController {
 
     @Autowired
     private WorkspaceUserRepository workspaceUserRepository;
+
+    @Autowired
+    private ProjectInvitationRepository projectInvitationRepository;
 
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody Project projectRequest) {
@@ -112,7 +114,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{projectId}/collaborators")
-    public ResponseEntity<WorkspaceUser> addCollaborator(
+    public ResponseEntity<ProjectInvitation> inviteCollaborator(
             @PathVariable UUID projectId,
             @RequestParam String email,
             @RequestParam WorkspaceRole role) {
@@ -128,41 +130,46 @@ public class ProjectController {
         WorkspaceUser currentWorkspaceUser = workspaceUserRepository.findByUserIdAndWorkspaceId(currentUser.getId(), project.getWorkspace().getId())
                 .orElseThrow(() -> new RuntimeException("User is not part of this workspace"));
 
-
         if (!canAssignRole(currentWorkspaceUser.getRole(), role)) {
             throw new RuntimeException("You do not have permission to assign this role");
         }
 
-        User user = userRepository.findByEmail(email)
+        User invitedUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (workspaceUserRepository.existsByUserIdAndWorkspaceId(user.getId(), project.getWorkspace().getId())) {
+        // Check if the invited user is already a collaborator
+        if (workspaceUserRepository.existsByUserIdAndWorkspaceId(invitedUser.getId(), project.getWorkspace().getId())) {
             throw new RuntimeException("User is already a collaborator");
         }
 
-        WorkspaceUser newWorkspaceUser = new WorkspaceUser();
-        newWorkspaceUser.setUser(user);
-        newWorkspaceUser.setWorkspace(project.getWorkspace());
-        newWorkspaceUser.setRole(role);
-        newWorkspaceUser.setCreatedAt(LocalDateTime.now());
-        newWorkspaceUser.setUpdatedAt(LocalDateTime.now());
-        workspaceUserRepository.save(newWorkspaceUser);
+        // Create a new invitation
+        ProjectInvitation invitation = new ProjectInvitation();
+        invitation.setProject(project);
+        invitation.setInvitedUser(invitedUser);
+        invitation.setRole(role); // Set the role
+        invitation.setStatus(InvitationStatus.PENDING);
+        invitation.setCreatedAt(LocalDateTime.now());
+        invitation.setUpdatedAt(LocalDateTime.now());
 
-        return ResponseEntity.ok(newWorkspaceUser);
+        projectInvitationRepository.save(invitation);
+
+        return ResponseEntity.ok(invitation);
     }
 
-    private boolean canAssignRole(WorkspaceRole currentRole, WorkspaceRole assignedRole) {
+    private boolean canAssignRole(WorkspaceRole currentRole, WorkspaceRole newRole) {
         switch (currentRole) {
             case OWNER:
-                return assignedRole == WorkspaceRole.ADMIN || assignedRole == WorkspaceRole.MANAGER || assignedRole == WorkspaceRole.USER;
+                return true;
             case ADMIN:
-                return assignedRole == WorkspaceRole.MANAGER || assignedRole == WorkspaceRole.USER;
+                return newRole == WorkspaceRole.MANAGER || newRole == WorkspaceRole.USER;
             case MANAGER:
-                return assignedRole == WorkspaceRole.USER;
+                return newRole == WorkspaceRole.USER;
             default:
                 return false;
         }
     }
+
+
 
     @PutMapping("/{projectId}")
     public ResponseEntity<Project> updateProject(

@@ -21,7 +21,7 @@ public class TimeLog {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "task_id")
+    @JoinColumn(name = "task_id", nullable = true)
     private Task task;
 
     @Column(name = "start_time")
@@ -34,8 +34,8 @@ public class TimeLog {
     private Integer minutes;
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
-    @Column(length = 500)
-    private String description;
+    @Column(length = 500, nullable = false)
+    private String description = "";
 
     @Column(name = "logged_at", updatable = false)
     private LocalDateTime loggedAt = LocalDateTime.now();

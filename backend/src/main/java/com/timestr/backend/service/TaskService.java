@@ -3,6 +3,8 @@ package com.timestr.backend.service;
 import com.timestr.backend.dto.TaskCompletionDetails;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
@@ -31,7 +33,7 @@ public class TaskService {
     @Autowired
     private TimeLogRepository timeLogRepository;
 
-
+    private static final Logger logger = LoggerFactory.getLogger(TimeLogService.class);
 
     public Task updateTask(UUID taskId, Task updatedTask) {
         Task task = taskRepository.findById(taskId)
@@ -131,9 +133,13 @@ public class TaskService {
         task.setStatus(taskStatus);
 
         if (taskStatus == TaskStatus.IN_PROGRESS) {
-            timeLogService.startTimer(task.getAssignedUserId(), "Task started: " + task.getName());
+            timeLogService.startTimer(task.getAssignedUserId(), taskId, "Task started: " + task.getName());
         } else if (taskStatus == TaskStatus.COMPLETED) {
-            timeLogService.stopTimer(task.getAssignedUserId());
+            if (timeLogService.hasActiveTimer(task.getAssignedUserId(), taskId)) {
+                timeLogService.stopTimer(task.getAssignedUserId(), taskId);
+            } else {
+                logger.warn("No active timer found for taskId: {}", taskId);
+            }
         }
 
         return taskRepository.save(task);

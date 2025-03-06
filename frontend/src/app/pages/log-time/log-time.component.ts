@@ -1,22 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {InvitationsComponent} from '../invitations-component/invitations.component';
-import {LogTimeComponent} from '../log-time/log-time.component';
-import {TaskManagementComponent} from '../task-management/task-management.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, InvitationsComponent, LogTimeComponent, TaskManagementComponent],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
+  selector: 'app-log-time',
+  imports: [FormsModule, CommonModule],
+  templateUrl: './log-time.component.html',
+  styleUrls: ['./log-time.component.css']
 })
-export class DashboardComponent implements OnInit {
-  userName!: string;
-  userEmail!: string;
-  userId!: string;
-
+export class LogTimeComponent implements OnInit {
+  @Input() userId!: string;
+  tasks: any[] = [];
+  selectedTaskId: string | null = null;
   isRunning: boolean = false;
   startTime: Date | null = null;
   elapsedTime: number = 0;
@@ -25,35 +21,26 @@ export class DashboardComponent implements OnInit {
   manualStartTime: string = '';
   manualEndTime: string = '';
   manualDescription: string = '';
-  timeLogs: any[] = [];
   errorMessage: string | null = null;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).subscribe(
-      (response) => {
-        this.userName = response.name;
-        this.userEmail = response.email;
-        this.userId = response.userId;
-        this.fetchTimeLogs();
-      },
-      (error) => {
-        console.error('Error fetching dashboard data', error);
-      }
-    );
+    if (this.userId) {
+      this.fetchTasks();
+    } else {
+      console.error('User ID is not available.');
+    }
   }
 
-
-  fetchTimeLogs(): void {
-    this.http
-      .get<any[]>(`http://localhost:8080/api/timelogs/user/${this.userId}`, { withCredentials: true })
+  fetchTasks(): void {
+    this.http.get<any[]>(`http://localhost:8080/api/tasks/assigned/${this.userId}`, { withCredentials: true })
       .subscribe(
         (response) => {
-          this.timeLogs = response;
+          this.tasks = response;
         },
         (error) => {
-          console.error('Error fetching time logs:', error);
+          console.error('Error fetching tasks', error);
         }
       );
   }
@@ -66,11 +53,13 @@ export class DashboardComponent implements OnInit {
         this.elapsedTime = Math.floor((new Date().getTime() - this.startTime!.getTime()) / 1000);
       }, 1000);
 
-      this.http
-        .post<any>(`http://localhost:8080/api/timelogs/start`, {
-          userId: this.userId,
-          description: this.description || '',
-        }, { withCredentials: true })
+      const requestBody = {
+        userId: this.userId,
+        taskId: this.selectedTaskId || null,
+        description: this.description || '',
+      };
+
+      this.http.post<any>(`http://localhost:8080/api/timelogs/start`, requestBody, { withCredentials: true })
         .subscribe(
           (response) => {
             console.log('Timer started:', response);
@@ -88,10 +77,12 @@ export class DashboardComponent implements OnInit {
       this.isRunning = false;
       clearInterval(this.timerInterval);
 
-      this.http
-        .post<any>(`http://localhost:8080/api/timelogs/stop`, {
-          userId: this.userId,
-        }, { withCredentials: true })
+      const requestBody = {
+        userId: this.userId,
+        taskId: this.selectedTaskId || null,
+      };
+
+      this.http.post<any>(`http://localhost:8080/api/timelogs/stop`, requestBody, { withCredentials: true })
         .subscribe(
           (response) => {
             console.log('Timer stopped:', response);
@@ -115,17 +106,15 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.http
-      .post<any>(
-        `http://localhost:8080/api/timelogs/manual`,
-        {
-          userId: this.userId,
-          startTime: startTime,
-          endTime: endTime,
-          description: this.manualDescription,
-        },
-        { withCredentials: true }
-      )
+    const requestBody = {
+      userId: this.userId,
+      taskId: this.selectedTaskId || null,
+      startTime: startTime,
+      endTime: endTime,
+      description: this.manualDescription || '',
+    };
+
+    this.http.post<any>(`http://localhost:8080/api/timelogs/manual`, requestBody, { withCredentials: true })
       .subscribe(
         (response) => {
           console.log('Manual time log created:', response);
@@ -139,6 +128,31 @@ export class DashboardComponent implements OnInit {
           this.errorMessage = 'Failed to create manual time log.';
         }
       );
+  }
+
+  completeTask(): void {
+    if (this.selectedTaskId) {
+      this.http.put<any>(
+        `http://localhost:8080/api/tasks/${this.selectedTaskId}/status?status=COMPLETED`,
+        {},
+        { withCredentials: true }
+      ).subscribe(
+        (response) => {
+          alert('Task marked as completed!');
+          this.stopTimer();
+        },
+        (error) => {
+          console.error('Error completing task:', error);
+          if (error.error === 'No active timer found') {
+            alert('No active timer found. Task marked as completed without stopping a timer.');
+          } else {
+            this.errorMessage = 'Failed to complete task.';
+          }
+        }
+      );
+    } else {
+      this.errorMessage = 'No task selected.';
+    }
   }
 
   formatTime(seconds: number): string {

@@ -1,0 +1,67 @@
+<div class="time-logs-container">
+  <h2>Time Logs</h2>
+
+  <!-- Task Selection -->
+  <div class="task-selection">
+    <label for="task">Select Task:</label>
+    <select id="task" [(ngModel)]="selectedTaskId">
+      <option [value]="null">No Task</option>
+      <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
+    </select>
+  </div>
+
+  <!-- Stopwatch Section -->
+  <div class="stopwatch-section">
+    <h3>Stopwatch</h3>
+    <div class="timer">{{ formatTime(elapsedTime) }}</div>
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    <div class="controls">
+      <button (click)="startTimer()" [disabled]="isRunning || !selectedTaskId">Start</button>
+      <button (click)="stopTimer()" [disabled]="!isRunning">Stop</button>
+      <button (click)="completeTask()" [disabled]="!selectedTaskId">Complete Task</button>
+    </div>
+    <div class="description">
+      <label for="description">Description:</label>
+      <input id="description" [(ngModel)]="description" placeholder="Enter a description" />
+    </div>
+  </div>
+
+  <!-- Manual Time Entry Section -->
+  <div class="manual-time-section">
+    <h3>Manual Time Entry</h3>
+    <form (ngSubmit)="createManualTimeLog()">
+      <div>
+        <label for="manualStartTime">Start Time:</label>
+        <input
+          id="manualStartTime"
+          type="datetime-local"
+          [(ngModel)]="manualStartTime"
+          name="manualStartTime"
+          required
+        />
+      </div>
+      <div>
+        <label for="manualEndTime">End Time:</label>
+        <input
+          id="manualEndTime"
+          type="datetime-local"
+          [(ngModel)]="manualEndTime"
+          name="manualEndTime"
+          required
+        />
+      </div>
+      <div>
+        <label for="manualDescription">Description:</label>
+        <input
+          id="manualDescription"
+          [(ngModel)]="manualDescription"
+          name="manualDescription"
+          placeholder="Enter a description"
+        />
+      </div>
+      <button type="submit">Create Time Entry</button>
+    </form>
+  </div>
+</div>
