@@ -1,0 +1,38 @@
+<div>
+  <!-- Project Dropdown -->
+  <label for="project">Project:</label>
+  <select id="project" [(ngModel)]="selectedProject" (change)="onProjectChange()">
+    <option value="">Select a project</option>
+    <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+  </select>
+
+  <!-- Task Dropdown -->
+  <label for="task">Task:</label>
+  <select id="task" [(ngModel)]="selectedTask">
+    <option value="">Select a task</option>
+    <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
+  </select>
+
+  <!-- User Dropdown -->
+  <label for="user">User:</label>
+  <select id="user" [(ngModel)]="selectedUser">
+    <option value="">Select a user</option>
+    <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
+  </select>
+
+  <!-- Time Range Inputs -->
+  <label for="startTime">Start Time:</label>
+  <input type="datetime-local" id="startTime" [(ngModel)]="startTime">
+
+  <label for="endTime">End Time:</label>
+  <input type="datetime-local" id="endTime" [(ngModel)]="endTime">
+
+  <!-- Generate Report Button -->
+  <button (click)="generateReport()">Generate Report</button>
+</div>
+
+<!-- Report Data Display -->
+<div *ngIf="reportData">
+  <h3>Report Data</h3>
+  <pre>{{ reportData | json }}</pre>
+</div>
