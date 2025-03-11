@@ -1,40 +1,120 @@
 package com.timestr.backend.service;
 
-import com.timestr.backend.model.*;
-import com.timestr.backend.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.timestr.backend.model.TimeLog;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @Service
-public class ReportService {
+public class PdfReportService {
 
-    @Autowired
-    private TimeLogRepository timeLogRepository;
+    public byte[] generateTaskReport(List<TimeLog> timeLogs, String taskName) {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PdfWriter writer = new PdfWriter(outputStream);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
 
-    @Autowired
-    private TaskRepository taskRepository;
+            document.add(new Paragraph("Task Report: " + taskName)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(18));
 
-    @Autowired
-    private ProjectRepository projectRepository;
+            Table table = new Table(5);
+            table.addHeaderCell("Start Time");
+            table.addHeaderCell("End Time");
+            table.addHeaderCell("Duration (Minutes)");
+            table.addHeaderCell("Description");
+            table.addHeaderCell("User");
 
-    @Autowired
-    private UserRepository userRepository;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            for (TimeLog log : timeLogs) {
+                table.addCell(log.getStartTime() != null ? log.getStartTime().format(formatter) : "N/A");
+                table.addCell(log.getEndTime() != null ? log.getEndTime().format(formatter) : "N/A");
+                table.addCell(String.valueOf(log.getMinutes()));
+                table.addCell(log.getDescription());
+                table.addCell(log.getUser().getName());
+            }
 
-    public List<TimeLog> generateTaskReport(UUID taskId, LocalDateTime startTime, LocalDateTime endTime) {
-        return timeLogRepository.findByTaskIdAndLoggedAtBetween(taskId, startTime, endTime);
+            document.add(table);
+            document.close();
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to generate PDF", e);
+        }
     }
 
-    public List<TimeLog> generateProjectReport(UUID projectId, LocalDateTime startTime, LocalDateTime endTime) {
-        List<Task> tasks = taskRepository.findByProjectId(projectId);
-        return timeLogRepository.findByTaskIdInAndLoggedAtBetween(
-                tasks.stream().map(Task::getId).toList(), startTime, endTime);
+    public byte[] generateProjectReport(List<TimeLog> timeLogs, String projectName) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph("Project Report: " + projectName)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(18));
+
+        Table table = new Table(5);
+        table.addHeaderCell("Start Time");
+        table.addHeaderCell("End Time");
+        table.addHeaderCell("Duration (Minutes)");
+        table.addHeaderCell("Description");
+        table.addHeaderCell("User");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (TimeLog log : timeLogs) {
+            table.addCell(log.getStartTime() != null ? log.getStartTime().format(formatter) : "N/A");
+            table.addCell(log.getEndTime() != null ? log.getEndTime().format(formatter) : "N/A");
+            table.addCell(String.valueOf(log.getMinutes()));
+            table.addCell(log.getDescription());
+            table.addCell(log.getUser().getName());
+        }
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
     }
 
-    public List<TimeLog> generateUserReport(UUID userId, LocalDateTime startTime, LocalDateTime endTime) {
-        return timeLogRepository.findByUserIdAndLoggedAtBetween(userId, startTime, endTime);
+    public byte[] generateUserReport(List<TimeLog> timeLogs, String userName) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph("User Report: " + userName)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(18));
+
+        Table table = new Table(5);
+        table.addHeaderCell("Start Time");
+        table.addHeaderCell("End Time");
+        table.addHeaderCell("Duration (Minutes)");
+        table.addHeaderCell("Description");
+        table.addHeaderCell("Task");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (TimeLog log : timeLogs) {
+            table.addCell(log.getStartTime().format(formatter));
+            table.addCell(log.getEndTime() != null ? log.getEndTime().format(formatter) : "N/A");
+            table.addCell(String.valueOf(log.getMinutes()));
+            table.addCell(log.getDescription());
+            table.addCell(log.getTask() != null ? log.getTask().getName() : "N/A");
+        }
+
+        document.add(table);
+        document.close();
+
+        return outputStream.toByteArray();
     }
 }

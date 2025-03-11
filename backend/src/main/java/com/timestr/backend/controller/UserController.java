@@ -18,11 +18,9 @@ public class UserController {
 
     @Autowired
     private final UserService userService;
-    private final UserRepository userRepository;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -64,12 +62,5 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
-
-
-
-
-
 
 }

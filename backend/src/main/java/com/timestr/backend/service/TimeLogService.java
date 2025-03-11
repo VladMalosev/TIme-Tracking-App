@@ -107,9 +107,9 @@
         public List<TimeLog> getTimeLogsByUser(UUID userId) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-
             return timeLogRepository.findByUser(user);
         }
+
 
         public boolean hasActiveTimer(UUID userId, UUID taskId) {
             User user = userRepository.findById(userId)

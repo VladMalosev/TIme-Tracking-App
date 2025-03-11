@@ -20,7 +20,9 @@ public enum WorkspaceRole {
             "TASK_DELETE",
             "TIME_LOG_CREATE",
             "TIME_LOG_UPDATE",
-            "TIME_LOG_DELETE"
+            "TIME_LOG_DELETE",
+            "TIME_LOG_VIEW_ALL",
+            "REPORT_GENERATE"
     )),
     ADMIN(Set.of(
             "WORKSPACE_UPDATE",
@@ -35,7 +37,9 @@ public enum WorkspaceRole {
             "TASK_DELETE",
             "TIME_LOG_CREATE",
             "TIME_LOG_UPDATE",
-            "TIME_LOG_DELETE"
+            "TIME_LOG_DELETE",
+            "TIME_LOG_VIEW_ALL",
+            "REPORT_GENERATE"
     )),
     MANAGER(Set.of(
             "PROJECT_CREATE",
@@ -46,7 +50,9 @@ public enum WorkspaceRole {
             "TASK_DELETE",
             "TIME_LOG_CREATE",
             "TIME_LOG_UPDATE",
-            "TIME_LOG_DELETE"
+            "TIME_LOG_DELETE",
+            "TIME_LOG_VIEW_ALL",
+            "REPORT_GENERATE"
     )),
     USER(Set.of(
             "PROJECT_VIEW",
@@ -64,11 +70,9 @@ public enum WorkspaceRole {
         return permissions;
     }
 
-    public Set<SimpleGrantedAuthority> getAuthorities() {
-        Set<SimpleGrantedAuthority> authorities = permissions.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toSet());
-        authorities.add(new SimpleGrantedAuthority("WORKSPACE_ROLE_" + this.name()));
-        return authorities;
+    public boolean hasPermission(String permission) {
+        return permissions.contains(permission);
     }
+
+
 }

@@ -13,7 +13,7 @@ public class TaskCompletionDetails {
     private long totalTimeSpent; // in minutes
     private List<TimeLog> timeLogs;
 
-    // Constructor
+
     public TaskCompletionDetails(String taskName, String completedBy, LocalDateTime startedAt, LocalDateTime completedAt, long totalTimeSpent, List<TimeLog> timeLogs) {
         this.taskName = taskName;
         this.completedBy = completedBy;

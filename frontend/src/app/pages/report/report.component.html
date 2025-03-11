@@ -1,38 +1,64 @@
 <div>
-  <!-- Project Dropdown -->
   <label for="project">Project:</label>
   <select id="project" [(ngModel)]="selectedProject" (change)="onProjectChange()">
     <option value="">Select a project</option>
     <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
   </select>
 
-  <!-- Task Dropdown -->
   <label for="task">Task:</label>
   <select id="task" [(ngModel)]="selectedTask">
     <option value="">Select a task</option>
     <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
   </select>
 
-  <!-- User Dropdown -->
   <label for="user">User:</label>
   <select id="user" [(ngModel)]="selectedUser">
     <option value="">Select a user</option>
     <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
   </select>
 
-  <!-- Time Range Inputs -->
   <label for="startTime">Start Time:</label>
   <input type="datetime-local" id="startTime" [(ngModel)]="startTime">
 
   <label for="endTime">End Time:</label>
   <input type="datetime-local" id="endTime" [(ngModel)]="endTime">
 
-  <!-- Generate Report Button -->
   <button (click)="generateReport()">Generate Report</button>
 </div>
 
-<!-- Report Data Display -->
-<div *ngIf="reportData">
+<div *ngIf="reportData.length > 0">
   <h3>Report Data</h3>
-  <pre>{{ reportData | json }}</pre>
+  <table>
+    <thead>
+    <tr>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Duration (Minutes)</th>
+      <th>Description</th>
+      <th>User</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let log of reportData">
+      <td>{{ log.startTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+      <td>{{ log.endTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+      <td>{{ log.minutes }}</td>
+      <td>{{ log.description }}</td>
+      <td>{{ log.user.name }}</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- PDF Download Buttons -->
+  <div>
+    <button *ngIf="selectedTask" (click)="downloadTaskPdf(selectedTask, getSelectedTaskName())">
+      Download Task PDF
+    </button>
+    <button *ngIf="selectedProject" (click)="downloadProjectPdf(selectedProject, getSelectedProjectName())">
+      Download Project PDF
+    </button>
+    <button *ngIf="selectedUser" (click)="downloadUserPdf(selectedUser, selectedProject, getSelectedUserName())">
+      Download User PDF
+    </button>
+  </div>
 </div>

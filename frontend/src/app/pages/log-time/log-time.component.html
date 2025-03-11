@@ -18,9 +18,9 @@
       {{ errorMessage }}
     </div>
     <div class="controls">
-      <button (click)="startTimer()" [disabled]="isRunning || !selectedTaskId">Start</button>
+      <button (click)="startTimer()" [disabled]="isRunning">Start</button>
       <button (click)="stopTimer()" [disabled]="!isRunning">Stop</button>
-      <button (click)="completeTask()" [disabled]="!selectedTaskId">Complete Task</button>
+      <button (click)="completeTask()" >Complete Task</button>
     </div>
     <div class="description">
       <label for="description">Description:</label>

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/invitations")
@@ -20,8 +19,6 @@ public class ProjectInvitationController {
     private ProjectInvitationRepository projectInvitationRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private ProjectRepository projectRepository;
     @Autowired
     private WorkspaceUserRepository workspaceUserRepository;
 

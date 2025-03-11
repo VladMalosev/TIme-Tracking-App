@@ -2,6 +2,7 @@ package com.timestr.backend.controller;
 
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.*;
+import com.timestr.backend.utils.RoleUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,6 @@ public class ProjectController {
 
     @Autowired
     private ProjectRepository projectRepository;
-
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -130,7 +128,7 @@ public class ProjectController {
         WorkspaceUser currentWorkspaceUser = workspaceUserRepository.findByUserIdAndWorkspaceId(currentUser.getId(), project.getWorkspace().getId())
                 .orElseThrow(() -> new RuntimeException("User is not part of this workspace"));
 
-        if (!canAssignRole(currentWorkspaceUser.getRole(), role)) {
+        if (!RoleUtils.canAssignRole(currentWorkspaceUser.getRole(), role)) {
             throw new RuntimeException("You do not have permission to assign this role");
         }
 
@@ -142,11 +140,10 @@ public class ProjectController {
             throw new RuntimeException("User is already a collaborator");
         }
 
-        // Create a new invitation
         ProjectInvitation invitation = new ProjectInvitation();
         invitation.setProject(project);
         invitation.setInvitedUser(invitedUser);
-        invitation.setRole(role); // Set the role
+        invitation.setRole(role);
         invitation.setStatus(InvitationStatus.PENDING);
         invitation.setCreatedAt(LocalDateTime.now());
         invitation.setUpdatedAt(LocalDateTime.now());
@@ -155,20 +152,6 @@ public class ProjectController {
 
         return ResponseEntity.ok(invitation);
     }
-
-    private boolean canAssignRole(WorkspaceRole currentRole, WorkspaceRole newRole) {
-        switch (currentRole) {
-            case OWNER:
-                return true;
-            case ADMIN:
-                return newRole == WorkspaceRole.MANAGER || newRole == WorkspaceRole.USER;
-            case MANAGER:
-                return newRole == WorkspaceRole.USER;
-            default:
-                return false;
-        }
-    }
-
 
 
     @PutMapping("/{projectId}")
@@ -225,7 +208,7 @@ public class ProjectController {
         WorkspaceUser userToRemoveWorkspaceUser = workspaceUserRepository.findByUserIdAndWorkspaceId(userToRemove.getId(), project.getWorkspace().getId())
                 .orElseThrow(() -> new RuntimeException("User is not a collaborator"));
 
-        if (!canRemoveCollaborator(currentWorkspaceUser.getRole(), userToRemoveWorkspaceUser.getRole())) {
+        if (!RoleUtils.canRemoveCollaborator(currentWorkspaceUser.getRole(), userToRemoveWorkspaceUser.getRole())) {
             throw new RuntimeException("You do not have permission to remove this collaborator");
         }
         workspaceUserRepository.deleteByUserIdAndWorkspaceId(userToRemove.getId(), project.getWorkspace().getId());
@@ -233,18 +216,6 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    private boolean canRemoveCollaborator(WorkspaceRole currentRole, WorkspaceRole removedUserRole) {
-        switch (currentRole) {
-            case OWNER:
-                return true;
-            case ADMIN:
-                return removedUserRole == WorkspaceRole.MANAGER || removedUserRole == WorkspaceRole.USER;
-            case MANAGER:
-                return removedUserRole == WorkspaceRole.USER;
-            default:
-                return false;
-        }
-    }
 
     @GetMapping("/{projectId}/collaborators")
     public ResponseEntity<List<WorkspaceUser>> getCollaborators(@PathVariable UUID projectId) {
@@ -255,7 +226,24 @@ public class ProjectController {
 
         return ResponseEntity.ok(workspaceUsers);
     }
+    public ResponseEntity<List<Project>> getAllProjects() {
+        List<Project> projects = projectRepository.findAll();
+        return ResponseEntity.ok(projects);
+    }
 
+    @GetMapping("/{projectId}/users")
+    public ResponseEntity<List<User>> getUsersByProject(@PathVariable UUID projectId) {
 
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        List<WorkspaceUser> workspaceUsers = workspaceUserRepository.findByWorkspaceId(project.getWorkspace().getId());
+
+        List<User> users = workspaceUsers.stream()
+                .map(WorkspaceUser::getUser)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(users);
+    }
 
 }

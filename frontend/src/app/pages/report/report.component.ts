@@ -16,7 +16,8 @@ export class ReportComponent implements OnInit {
   selectedUser: string = '';
   startTime: string = '';
   endTime: string = '';
-  reportData: any = null;
+  reportData: any[] = [];
+
 
   projects: any[] = [];
   tasks: any[] = [];
@@ -27,12 +28,13 @@ export class ReportComponent implements OnInit {
   ngOnInit(): void {
     this.fetchProjects();
   }
+
   fetchProjects(): void {
     this.http.get<any>('http://localhost:8080/api/projects', { withCredentials: true }).subscribe(
       (response) => {
         console.log('Projects response:', response);
         this.projects = [...response.ownedProjects, ...response.collaboratedProjects];
-        },
+      },
       (error) => {
         console.error('Error fetching projects:', error);
       }
@@ -74,38 +76,105 @@ export class ReportComponent implements OnInit {
   }
 
   generateReport(): void {
+    const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : null;
+    const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : null;
+
     if (this.selectedTask) {
-      this.reportService.generateTaskReport(this.selectedTask, this.startTime, this.endTime)
-        .subscribe((response: Blob) => {
-          this.downloadFile(response, 'task_report.pdf');
-        }, (error) => {
+      this.reportService.generateTaskReport(this.selectedTask, startTimeWithSeconds, endTimeWithSeconds)
+        .subscribe((response: any[]) => {
+          console.log('Task report response:', response);
+          this.reportData = response;
+        }, (error: any) => {
           console.error('Error generating task report:', error);
         });
-    } else if (this.selectedProject) {
-      this.reportService.generateProjectReport(this.selectedProject, this.startTime, this.endTime)
-        .subscribe((response: Blob) => {
-          this.downloadFile(response, 'project_report.pdf');
-        }, (error) => {
-          console.error('Error generating project report:', error);
-        });
-    } else if (this.selectedUser) {
-      this.reportService.generateUserReport(this.selectedUser, this.startTime, this.endTime)
-        .subscribe((response: Blob) => {
-          this.downloadFile(response, 'user_report.pdf');
-        }, (error) => {
+    } else if (this.selectedUser && this.selectedProject) {
+      this.reportService.generateUserReport(this.selectedUser, this.selectedProject, startTimeWithSeconds, endTimeWithSeconds)
+        .subscribe((response: any[]) => {
+          console.log('User report response:', response);
+          this.reportData = response;
+        }, (error: any) => {
           console.error('Error generating user report:', error);
+        });
+    } else if (this.selectedProject) {
+      this.reportService.generateProjectReport(this.selectedProject, startTimeWithSeconds, endTimeWithSeconds)
+        .subscribe((response: any[]) => {
+          console.log('Project report response:', response);
+          this.reportData = response;
+        }, (error: any) => {
+          console.error('Error generating project report:', error);
         });
     }
   }
 
-  downloadFile(blob: Blob, filename: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  downloadTaskPdf(taskId: string, taskName: string): void {
+    const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
+    const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : '';
+
+    this.http.get(`http://localhost:8080/api/reports/task/pdf?taskId=${taskId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&taskName=${taskName}`, {
+      responseType: 'blob',
+      withCredentials: true
+    }).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'task_report.pdf';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }, (error) => {
+      console.error('Error downloading task PDF:', error);
+    });
+  }
+
+  downloadProjectPdf(projectId: string, projectName: string): void {
+    const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
+    const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : '';
+
+    this.http.get(`http://localhost:8080/api/reports/project/pdf?projectId=${projectId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&projectName=${projectName}`, {
+      responseType: 'blob',
+      withCredentials: true
+    }).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'project_report.pdf';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }, (error) => {
+      console.error('Error downloading project PDF:', error);
+    });
+  }
+
+  downloadUserPdf(userId: string, projectId: string, userName: string): void {
+    const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
+    const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : '';
+
+    this.http.get(`http://localhost:8080/api/reports/user/pdf?userId=${userId}&projectId=${projectId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&userName=${userName}`, {
+      responseType: 'blob',
+      withCredentials: true
+    }).subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'user_report.pdf';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }, (error) => {
+      console.error('Error downloading user PDF:', error);
+    });
+  }
+
+  getSelectedTaskName(): string {
+    const task = this.tasks.find(t => t.id === this.selectedTask);
+    return task ? task.name : '';
+  }
+
+  getSelectedProjectName(): string {
+    const project = this.projects.find(p => p.id === this.selectedProject);
+    return project ? project.name : '';
+  }
+
+  getSelectedUserName(): string {
+    const user = this.users.find(u => u.id === this.selectedUser);
+    return user ? user.name : '';
   }
 }
