@@ -3,6 +3,11 @@ package com.timestr.backend.controller;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.*;
 import com.timestr.backend.utils.RoleUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/projects")
+@Tag(name = "Projects", description = "Endpoints for managing projects and project collaborators")
 public class ProjectController {
 
     @Autowired
@@ -35,6 +41,13 @@ public class ProjectController {
     @Autowired
     private ProjectInvitationRepository projectInvitationRepository;
 
+
+    @Operation(summary = "Create a new project", description = "Creates a new project in the user's workspace.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody Project projectRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -58,6 +71,11 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    @Operation(summary = "Get user projects", description = "Retrieves a list of projects owned and collaborated on by the user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Projects retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public ResponseEntity<Map<String, List<Project>>> getUserProjects() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -88,6 +106,13 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Delete a project", description = "Deletes a project. Only the owner can delete the project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Project deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: Only the owner can delete the project"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{projectId}")
     public ResponseEntity<Void> deleteProject(@PathVariable UUID projectId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -111,10 +136,21 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Invite a collaborator", description = "Invites a user to collaborate on a project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Invitation sent successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User does not have permission to assign this role"),
+            @ApiResponse(responseCode = "404", description = "User or project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping("/{projectId}/collaborators")
     public ResponseEntity<ProjectInvitation> inviteCollaborator(
+            @Parameter(description = "ID of the project", required = true)
             @PathVariable UUID projectId,
+            @Parameter(description = "Email of the user to invite", required = true, example = "user@example.com")
             @RequestParam String email,
+            @Parameter(description = "Role to assign to the collaborator", required = true)
             @RequestParam WorkspaceRole role) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -154,8 +190,17 @@ public class ProjectController {
     }
 
 
+    @Operation(summary = "Update a project", description = "Updates the details of a project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User does not have permission to update the project"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{projectId}")
     public ResponseEntity<Project> updateProject(
+            @Parameter(description = "ID of the project to update", required = true)
             @PathVariable UUID projectId,
             @RequestBody Project updatedProjectRequest) {
 
@@ -185,10 +230,20 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    @Operation(summary = "Remove a collaborator", description = "Removes a collaborator from a project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Collaborator removed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User does not have permission to remove the collaborator"),
+            @ApiResponse(responseCode = "404", description = "User or project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{projectId}/collaborators")
     @Transactional
     public ResponseEntity<Void> removeCollaborator(
+            @Parameter(description = "ID of the project", required = true)
             @PathVariable UUID projectId,
+            @Parameter(description = "Email of the collaborator to remove", required = true, example = "user@example.com")
             @RequestParam String email) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -217,8 +272,16 @@ public class ProjectController {
     }
 
 
+    @Operation(summary = "Get collaborators", description = "Retrieves a list of collaborators for a project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Collaborators retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{projectId}/collaborators")
-    public ResponseEntity<List<WorkspaceUser>> getCollaborators(@PathVariable UUID projectId) {
+    public ResponseEntity<List<WorkspaceUser>> getCollaborators(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -231,8 +294,16 @@ public class ProjectController {
         return ResponseEntity.ok(projects);
     }
 
+    @Operation(summary = "Get users by project", description = "Retrieves a list of users associated with a project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{projectId}/users")
-    public ResponseEntity<List<User>> getUsersByProject(@PathVariable UUID projectId) {
+    public ResponseEntity<List<User>> getUsersByProject(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId) {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));

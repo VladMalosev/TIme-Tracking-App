@@ -18,7 +18,6 @@ export class ReportComponent implements OnInit {
   endTime: string = '';
   reportData: any[] = [];
 
-
   projects: any[] = [];
   tasks: any[] = [];
   users: any[] = [];
@@ -30,39 +29,42 @@ export class ReportComponent implements OnInit {
   }
 
   fetchProjects(): void {
-    this.http.get<any>('http://localhost:8080/api/projects', { withCredentials: true }).subscribe(
-      (response) => {
-        console.log('Projects response:', response);
-        this.projects = [...response.ownedProjects, ...response.collaboratedProjects];
-      },
-      (error) => {
-        console.error('Error fetching projects:', error);
-      }
-    );
+    this.http.get<any>('http://localhost:8080/api/projects', { withCredentials: true }).subscribe({
+    next: (response) =>
+    {
+      console.log('Projects response:', response);
+      this.projects = [...response.ownedProjects, ...response.collaboratedProjects];
+    }
+  ,
+    error: (error) => {
+      console.error('Error fetching projects:', error);
+    }
+  });
   }
 
   fetchTasks(projectId: string): void {
-    this.http.get<any>(`http://localhost:8080/api/tasks/project/${projectId}`, { withCredentials: true }).subscribe(
-      (response) => {
-        console.log('Tasks response:', response);
-        this.tasks = Array.isArray(response) ? response : response.tasks || [];
-      },
-      (error) => {
-        console.error('Error fetching tasks:', error);
-      }
-    );
+    this.http.get<any>(`http://localhost:8080/api/tasks/project/${projectId}`, { withCredentials: true }).subscribe({
+    next: (response) =>
+    {
+      console.log('Tasks response:', response);
+      this.tasks = Array.isArray(response) ? response : response.tasks || [];
+    },
+    error: (error) => {
+      console.error('Error fetching tasks:', error);
+    }
+  });
   }
 
   fetchUsers(projectId: string): void {
-    this.http.get<any>(`http://localhost:8080/api/projects/${projectId}/users`, { withCredentials: true }).subscribe(
-      (response) => {
+    this.http.get<any>(`http://localhost:8080/api/projects/${projectId}/users`, { withCredentials: true }).subscribe({
+      next: (response) => {
         console.log('Users response:', response);
         this.users = response;
       },
-      (error) => {
+      error: (error) => {
         console.error('Error fetching users:', error);
       }
-    );
+  });
   }
 
   onProjectChange(): void {
@@ -80,31 +82,49 @@ export class ReportComponent implements OnInit {
     const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : null;
 
     if (this.selectedTask) {
-      this.reportService.generateTaskReport(this.selectedTask, startTimeWithSeconds, endTimeWithSeconds)
-        .subscribe((response: any[]) => {
+      this.reportService.generateTaskReport(this.selectedTask, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+        next: (response: any[]) => {
           console.log('Task report response:', response);
           this.reportData = response;
-        }, (error: any) => {
+        },
+        error: (error: any) => {
           console.error('Error generating task report:', error);
-        });
+        },
+        complete: () => {
+          console.log('Task report generation completed.');
+        }
+      });
+
     } else if (this.selectedUser && this.selectedProject) {
-      this.reportService.generateUserReport(this.selectedUser, this.selectedProject, startTimeWithSeconds, endTimeWithSeconds)
-        .subscribe((response: any[]) => {
+      this.reportService.generateUserReport(this.selectedUser, this.selectedProject, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+        next: (response: any[]) => {
           console.log('User report response:', response);
           this.reportData = response;
-        }, (error: any) => {
+        },
+        error: (error: any) => {
           console.error('Error generating user report:', error);
-        });
+        },
+        complete: () => {
+          console.log('User report generation completed.');
+        }
+      });
+
     } else if (this.selectedProject) {
-      this.reportService.generateProjectReport(this.selectedProject, startTimeWithSeconds, endTimeWithSeconds)
-        .subscribe((response: any[]) => {
+      this.reportService.generateProjectReport(this.selectedProject, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+        next: (response: any[]) => {
           console.log('Project report response:', response);
           this.reportData = response;
-        }, (error: any) => {
+        },
+        error: (error: any) => {
           console.error('Error generating project report:', error);
-        });
+        },
+        complete: () => {
+          console.log('Project report generation completed.');
+        }
+      });
     }
   }
+
 
   downloadTaskPdf(taskId: string, taskName: string): void {
     const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
@@ -113,17 +133,24 @@ export class ReportComponent implements OnInit {
     this.http.get(`http://localhost:8080/api/reports/task/pdf?taskId=${taskId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&taskName=${taskName}`, {
       responseType: 'blob',
       withCredentials: true
-    }).subscribe((blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'task_report.pdf';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }, (error) => {
-      console.error('Error downloading task PDF:', error);
+    }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'task_report.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error downloading task PDF:', error);
+      },
+      complete: () => {
+        console.log('PDF download completed.');
+      }
     });
   }
+
 
   downloadProjectPdf(projectId: string, projectName: string): void {
     const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
@@ -132,17 +159,24 @@ export class ReportComponent implements OnInit {
     this.http.get(`http://localhost:8080/api/reports/project/pdf?projectId=${projectId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&projectName=${projectName}`, {
       responseType: 'blob',
       withCredentials: true
-    }).subscribe((blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'project_report.pdf';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }, (error) => {
-      console.error('Error downloading project PDF:', error);
+    }).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'project_report.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error downloading project PDF:', error);
+      },
+      complete: () => {
+        console.log('Project PDF download completed.');
+      }
     });
   }
+
 
   downloadUserPdf(userId: string, projectId: string, userName: string): void {
     const startTimeWithSeconds = this.startTime ? this.startTime + ':00' : '';
@@ -151,7 +185,8 @@ export class ReportComponent implements OnInit {
     this.http.get(`http://localhost:8080/api/reports/user/pdf?userId=${userId}&projectId=${projectId}&startTime=${startTimeWithSeconds}&endTime=${endTimeWithSeconds}&userName=${userName}`, {
       responseType: 'blob',
       withCredentials: true
-    }).subscribe((blob: Blob) => {
+    }).subscribe(
+      (blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

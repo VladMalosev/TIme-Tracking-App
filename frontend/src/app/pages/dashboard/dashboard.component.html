@@ -2,6 +2,15 @@
   <h1>Welcome, {{ userName }}!</h1>
   <p>Email: {{ userEmail }}</p>
   <a href="/chat">Chat</a>
+
+  <p></p>
+
+  <div *ngIf="userEmail === allowedEmail">
+    <a href="http://localhost:8080/swagger-ui/index.html" target="_blank">Swagger API Documentation</a>
+  </div>
+
+  <p></p>
+
   <a href="/workspaces">Workspaces</a>
 
   <app-report></app-report>

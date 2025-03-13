@@ -4,6 +4,10 @@ import com.timestr.backend.model.ChatMessage;
 import com.timestr.backend.model.User;
 import com.timestr.backend.repository.ChatMessageRepository;
 import com.timestr.backend.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +25,7 @@ import java.util.List;
 @Controller
 @RestController
 @RequestMapping("/api/chat")
+@Tag(name = "Chat", description = "Endpoints for managing chat messages and retrieving chat history")
 public class ChatController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
@@ -65,6 +70,12 @@ public class ChatController {
         }
     }
 
+    @Operation(summary = "Get chat messages", description = "Retrieves chat messages between two users.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Messages retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/messages")
     public ResponseEntity<List<ChatMessage>> getMessages(
             @RequestParam String senderEmail,
@@ -79,6 +90,12 @@ public class ChatController {
         }
     }
 
+    @Operation(summary = "Get previous chat partners", description = "Retrieves a list of users with whom the current user has previously chatted.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Chat partners retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/previous-chat-partners")
     public ResponseEntity<List<String>> getPreviousChatMessages(@RequestParam String userEmail) {
         try {

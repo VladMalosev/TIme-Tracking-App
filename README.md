@@ -1,6 +1,4 @@
-TODO:
-1. fetch user chats in clusters
-2. read more about user chat history storage (maybe some data needs to be encrypted)
+https://springdoc.org/
 
 ## Database Structure (sql) v1.2
 ![img_1.png](img_1.png)

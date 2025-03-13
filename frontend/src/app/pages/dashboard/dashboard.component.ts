@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   userName!: string;
   userEmail!: string;
   userId!: string;
+  allowedEmail!: string;
 
   startTime: Date | null = null;
   timeLogs: any[] = [];
@@ -31,6 +32,7 @@ export class DashboardComponent implements OnInit {
         this.userEmail = response.email;
         this.userId = response.userId;
         this.fetchTimeLogs();
+        this.fetchAllowedEmail();
       },
       (error) => {
         console.error('Error fetching dashboard data', error);
@@ -63,5 +65,19 @@ export class DashboardComponent implements OnInit {
           console.error('Error fetching filtered time logs:', error);
         }
       );
+  }
+  fetchAllowedEmail(): void {
+    this.http.get<{ allowedEmail: string }>('http://localhost:8080/api/config/allowed-email', {
+      withCredentials: true
+    }).subscribe(
+      (response) => {
+        console.log('Allowed email response:', response);
+        this.allowedEmail = response.allowedEmail;
+        console.log('Allowed email set to:', this.allowedEmail);
+      },
+      (error) => {
+        console.error('Error fetching allowed email:', error);
+      }
+    );
   }
 }
