@@ -1,5 +1,6 @@
 package com.timestr.backend.controller;
 
+import com.timestr.backend.dto.TimeLogWithStatus;
 import com.timestr.backend.model.TimeLog;
 import com.timestr.backend.service.PdfReportService;
 import com.timestr.backend.service.ReportService;
@@ -40,7 +41,7 @@ public class ReportController {
     })
     @GetMapping(value = "/task", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('REPORT_GENERATE')")
-    public ResponseEntity<List<TimeLog>> generateTaskReport(
+    public ResponseEntity<List<TimeLogWithStatus>> generateTaskReport(
             @Parameter(description = "ID of the task", required = true)
             @RequestParam UUID taskId,
             @Parameter(description = "Start time for the report (optional)", example = "2025-03-10T11:11:00")
@@ -50,7 +51,8 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateTaskReport(taskId, start, end);
+
+        List<TimeLogWithStatus> report = reportService.generateTaskReport(taskId, start, end);
         return ResponseEntity.ok(report);
     }
 
@@ -62,7 +64,7 @@ public class ReportController {
     })
     @GetMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('REPORT_GENERATE')")
-    public ResponseEntity<List<TimeLog>> generateProjectReport(
+    public ResponseEntity<List<TimeLogWithStatus>> generateProjectReport(
             @Parameter(description = "ID of the project", required = true)
             @RequestParam UUID projectId,
             @Parameter(description = "Start time for the report (optional)", example = "2025-03-10T11:11:00")
@@ -72,7 +74,7 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateProjectReport(projectId, start, end);
+        List<TimeLogWithStatus> report = reportService.generateProjectReport(projectId, start, end);
         return ResponseEntity.ok(report);
     }
 
@@ -84,7 +86,7 @@ public class ReportController {
     })
     @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('REPORT_GENERATE')")
-    public ResponseEntity<List<TimeLog>> generateUserReport(
+    public ResponseEntity<List<TimeLogWithStatus>> generateUserReport(
             @Parameter(description = "ID of the user", required = true)
             @RequestParam UUID userId,
             @Parameter(description = "ID of the project", required = true)
@@ -96,7 +98,7 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateUserReport(userId, projectId, start, end);
+        List<TimeLogWithStatus> report = reportService.generateUserReport(userId, projectId, start, end);
         return ResponseEntity.ok(report);
     }
 
@@ -128,7 +130,7 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateTaskReport(taskId, start, end);
+        List<TimeLogWithStatus> report = reportService.generateTaskReport(taskId, start, end);
         byte[] pdfBytes = pdfReportService.generateTaskReport(report, taskName);
 
         return ResponseEntity.ok()
@@ -156,7 +158,7 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateProjectReport(projectId, start, end);
+        List<TimeLogWithStatus> report = reportService.generateProjectReport(projectId, start, end);
         byte[] pdfBytes = pdfReportService.generateProjectReport(report, projectName);
 
         return ResponseEntity.ok()
@@ -185,12 +187,32 @@ public class ReportController {
         LocalDateTime start = parseDateTime(startTime);
         LocalDateTime end = parseDateTime(endTime);
 
-        List<TimeLog> report = reportService.generateUserReport(userId, projectId, start, end);
+        List<TimeLogWithStatus> report = reportService.generateUserReport(userId, projectId, start, end);
         byte[] pdfBytes = pdfReportService.generateUserReport(report, userName);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=user_report.pdf")
                 .body(pdfBytes);
+    }
+
+    @Operation(summary = "Generate user time logs report", description = "Generates a report for all time logs of the authenticated user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Report generated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping(value = "/user/timelogs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('REPORT_GENERATE')")
+    public ResponseEntity<List<TimeLogWithStatus>> generateUserTimeLogsReport(
+            @Parameter(description = "Start time for the report (optional)", example = "2025-03-10T11:11:00")
+            @RequestParam(required = false) String startTime,
+            @Parameter(description = "End time for the report (optional)", example = "2025-03-12T11:11:00")
+            @RequestParam(required = false) String endTime) {
+        LocalDateTime start = parseDateTime(startTime);
+        LocalDateTime end = parseDateTime(endTime);
+
+        List<TimeLogWithStatus> report = reportService.generateUserTimeLogsReport(start, end);
+        return ResponseEntity.ok(report);
     }
 
 }

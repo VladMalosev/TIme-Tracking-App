@@ -30,4 +30,11 @@ export class ReportService {
     if (endTime) url += `&endTime=${endTime}`;
     return this.http.get<any[]>(url, { withCredentials: true });
   }
+  generateUserTimeLogsReport(startTime: string | null, endTime: string | null): Observable<any[]> {
+    let url = `http://localhost:8080/api/reports/user/timelogs`;
+    if (startTime) url += `?startTime=${startTime}`;
+    if (endTime) url += `${startTime ? '&' : '?'}endTime=${endTime}`;
+    return this.http.get<any[]>(url, { withCredentials: true });
+  }
+
 }

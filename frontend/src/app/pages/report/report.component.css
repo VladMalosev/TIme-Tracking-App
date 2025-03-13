@@ -1,0 +1,20 @@
+.group-header {
+  cursor: pointer;
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.group-header:hover {
+  background-color: #e0e0e0;
+}
+
+.expand-icon {
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.total-time {
+  margin-left: 10px;
+  font-weight: normal;
+  color: #666;
+}

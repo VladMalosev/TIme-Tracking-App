@@ -15,23 +15,28 @@ import java.util.UUID;
 @Service
 public class TaskService {
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+    private final TaskAssignmentRepository taskAssignmentRepository;
+    private final TimeLogService timeLogService;
+    private final ProjectRepository projectRepository;
+    private final TimeLogRepository timeLogRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskAssignmentRepository taskAssignmentRepository;
-
-    @Autowired
-    private TimeLogService timeLogService;
-
-    @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private TimeLogRepository timeLogRepository;
+    public TaskService(
+            TaskRepository taskRepository,
+            UserRepository userRepository,
+            TaskAssignmentRepository taskAssignmentRepository,
+            TimeLogService timeLogService,
+            ProjectRepository projectRepository,
+            TimeLogRepository timeLogRepository) {
+        this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
+        this.taskAssignmentRepository = taskAssignmentRepository;
+        this.timeLogService = timeLogService;
+        this.projectRepository = projectRepository;
+        this.timeLogRepository = timeLogRepository;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(TimeLogService.class);
 
@@ -91,7 +96,6 @@ public class TaskService {
         User assigner = userRepository.findById(assignedBy)
                 .orElseThrow(() -> new RuntimeException("Assigner not found"));
 
-
         if (task.getStatus() == TaskStatus.COMPLETED) {
             throw new IllegalStateException("Cannot assign a completed task.");
         }
@@ -143,5 +147,15 @@ public class TaskService {
         }
 
         return taskRepository.save(task);
+    }
+
+    public void updateTaskStatusIfTimeLogExists(UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (timeLogRepository.existsByTaskId(taskId) && task.getStatus() != TaskStatus.IN_PROGRESS) {
+            task.setStatus(TaskStatus.IN_PROGRESS);
+            taskRepository.save(task);
+        }
     }
 }

@@ -28,24 +28,78 @@
 
 <div *ngIf="reportData.length > 0">
   <h3>Report Data</h3>
+  <button (click)="toggleGroupByTask()">
+    {{ groupByTask ? 'Ungroup' : 'Group by Task' }}
+  </button>
   <table>
     <thead>
     <tr>
-      <th>Start Time</th>
-      <th>End Time</th>
-      <th>Duration (Minutes)</th>
-      <th>Description</th>
-      <th>User</th>
+      <th (click)="sortBy('timeLog.startTime')">
+        Start Time
+        <span *ngIf="sortColumn === 'timeLog.startTime'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th (click)="sortBy('timeLog.endTime')">
+        End Time
+        <span *ngIf="sortColumn === 'timeLog.endTime'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th (click)="sortBy('timeLog.minutes')">
+        Duration (Minutes)
+        <span *ngIf="sortColumn === 'timeLog.minutes'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th (click)="sortBy('timeLog.description')">
+        Description
+        <span *ngIf="sortColumn === 'timeLog.description'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th (click)="sortBy('timeLog.user.name')">
+        User
+        <span *ngIf="sortColumn === 'timeLog.user.name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
+      <th (click)="sortBy('status')">
+        Status
+        <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+      </th>
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let log of reportData">
-      <td>{{ log.startTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
-      <td>{{ log.endTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
-      <td>{{ log.minutes }}</td>
-      <td>{{ log.description }}</td>
-      <td>{{ log.user.name }}</td>
-    </tr>
+    <ng-container *ngIf="groupByTask; else ungrouped">
+      <ng-container *ngFor="let group of groupedReportData">
+        <tr class="group-header" (click)="toggleGroupExpansion(group)">
+          <td colspan="6">
+            <strong>Task: {{ group.task }}</strong>
+            <span class="total-time">(Total: {{ group.totalMinutes }} minutes)</span>
+            <span class="expand-icon">{{ group.expanded ? '▼' : '►' }}</span>
+          </td>
+        </tr>
+        <ng-container *ngIf="group.expanded">
+          <tr *ngFor="let log of group.logs">
+            <td>{{ log.timeLog.startTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td>{{ log.timeLog.endTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td>{{ log.timeLog.minutes }}</td>
+            <td>{{ log.timeLog.description }}</td>
+            <td>{{ log.timeLog.user?.name || 'N/A' }}</td>
+            <td>
+              <span [class.completed]="log.status === 'COMPLETED'" [class.in-progress]="log.status === 'IN_PROGRESS'" [class.pending]="log.status === 'PENDING'">
+                {{ log.status || 'N/A' }}
+              </span>
+            </td>
+          </tr>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+    <ng-template #ungrouped>
+      <tr *ngFor="let log of sortedReportData">
+        <td>{{ log.timeLog.startTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+        <td>{{ log.timeLog.endTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+        <td>{{ log.timeLog.minutes }}</td>
+        <td>{{ log.timeLog.description }}</td>
+        <td>{{ log.timeLog.user?.name || 'N/A' }}</td>
+        <td>
+          <span [class.completed]="log.status === 'COMPLETED'" [class.in-progress]="log.status === 'IN_PROGRESS'" [class.pending]="log.status === 'PENDING'">
+            {{ log.status || 'N/A' }}
+          </span>
+        </td>
+      </tr>
+    </ng-template>
     </tbody>
   </table>
 
