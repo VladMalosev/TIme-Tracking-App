@@ -1,0 +1,20 @@
+<nav class="white">
+  <div class="nav-wrapper">
+    <a href="/dashboard">
+      <img class="brand-logo black-text" src="assets/images/logo.png" alt="Logo">
+    </a>
+    <ul class="right">
+      <li><a href="/products" class="black-text">Products</a></li>
+      <li><a href="/solutions" class="black-text">Tasks</a></li>
+      <li><a href="/community" class="black-text">Projects</a></li>
+      <li><a href="/resources" class="black-text">Dashboard</a></li>
+      <li><a href="/pricing" class="black-text">Pricing</a></li>
+
+      <li *ngIf="!isLogged"><a href="/login" class="black-text">Sign In</a></li>
+      <li *ngIf="!isLogged"><a href="/register" class="black-text">Register</a></li>
+
+      <app-user-dropdown *ngIf="isLogged" (logoutEvent)="logout()"></app-user-dropdown>
+
+    </ul>
+  </div>
+</nav>

@@ -1,157 +1,67 @@
-/* General Styles */
-body {
-  font-family: Arial, sans-serif;
-  background: #f9fafb;
-  color: #333;
-  margin: 0;
-  padding: 0;
+.buttons {
+  width: 17px;
+  height: auto;
+  cursor: pointer;
 }
 
-/* Container and Sections */
+.a1 {
+  margin-right: 10px;
+}
+
 .container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
+  margin-top: 40px;
 }
 
-.section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+.alert {
+  padding: 10px;
   margin-bottom: 20px;
+  border-radius: 4px;
 }
 
-/* Headings */
-h2, h3 {
-  color: #2a3d66;
-  margin-bottom: 15px;
-}
-
-/* Error Message */
 .error-message {
-  color: #d9534f;
-  background: #f8d7da;
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.project-section {
+  margin-top: 30px;
+}
+
+
+
+.projects-heading {
+  margin-top: 100px;
+  font-size: 1.8rem;
+}
+
+.button-margin {
+  margin-left: 10px;
+  border-radius: 10px;
+}
+
+.thin-lines-table th, .thin-lines-table td {
   padding: 10px;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  margin-bottom: 20px;
 }
 
-/* Forms */
-form {
-  display: flex;
-  flex-direction: column;
-}
 
-form label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
 
-form input, form textarea, form select {
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.thin-lines-table td {
   font-size: 14px;
 }
 
-form textarea {
-  resize: vertical;
+.thin-lines-table th {
+  font-size: 16px;
 }
 
-form button {
-  padding: 10px;
-  background-color: #5cb85c;
-  color: white;
+.btn-floating img {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+.btn-floating {
+  background-color: transparent;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-form button:hover {
-  background-color: #4cae4c;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.cancel-btn {
-  background-color: #d9534f;
-}
-
-.cancel-btn:hover {
-  background-color: #c9302c;
-}
-
-/* Project List */
-.project-list {
-  list-style: none;
   padding: 0;
-}
-
-.project-item {
-  background: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.project-item:hover {
-  transform: translateY(-3px);
-}
-
-.project-info h3 {
-  margin: 0;
-  font-size: 1.2em;
-  color: #2a3d66;
-}
-
-.project-info p {
-  margin: 5px 0;
-  color: #666;
-}
-
-/* Collaborators List */
-.collaborators-list {
-  padding: 0;
-  margin-top: 20px;
-}
-
-.collaborators-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: #fff;
-  border-radius: 5px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.collaborators-list li button {
-  background-color: #d9534f;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.collaborators-list li button:hover {
-  background-color: #c9302c;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    width: 100%;
-    padding: 10px;
-  }
 }

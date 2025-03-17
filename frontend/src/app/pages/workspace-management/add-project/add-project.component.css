@@ -1,0 +1,105 @@
+/* Custom styles for the form */
+.container {
+  margin-top: 20px;
+  width: 40%;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fbfbfb;
+}
+
+.undertext {
+  padding-bottom: 20px;
+}
+
+.alert {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  border: 4px black;
+ }
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-group .helper-text {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+h6 {
+  font-weight: lighter;
+}
+
+.bordered-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  background-color: #fff;
+  box-shadow: none;
+  appearance: none;
+}
+
+.bordered-input:focus {
+  border-color: #66afe9;
+  outline: none;
+}
+
+.materialize-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.btn {
+  margin-right: 10px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 10px;
+}
+
+.btn.light-blue {
+  background-color: #81d4fa;
+  color: #000;
+}
+
+.btn.light-blue:hover {
+  background-color: #4fc3f7;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.input-field {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.input-field select {
+  display: block;
+  width: 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 1em;
+}
+
+

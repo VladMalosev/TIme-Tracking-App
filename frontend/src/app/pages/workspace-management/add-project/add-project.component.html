@@ -1,0 +1,60 @@
+<app-header></app-header>
+
+<div class="container">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert error-message red-text">
+    {{ errorMessage }}
+  </div>
+
+  <h4 class="left-align pt-5">Create a New Project</h4>
+  <p class="undertext left-align">Start managing your work with a new project.</p>
+
+  <form (ngSubmit)="submitForm()">
+    <div class="col s12 form-group">
+      <h6 for="projectName">Project Name:</h6>
+      <input id="projectName" type="text" [(ngModel)]="project.name" name="name" placeholder="Project name" required class="bordered-input">
+    </div>
+
+    <div class="row">
+      <div class="col s6 form-group">
+        <h6 for="projectClient">Client:</h6>
+        <p class="helper-text">Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <input id="projectClient" type="text" [(ngModel)]="project.client" name="client" placeholder="Choose your client" class="bordered-input">
+      </div>
+
+      <div class="col s6 form-group">
+        <h6 for="projectDeadline">Deadline:</h6>
+        <p class="helper-text">Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <input id="projectDeadline" type="date" [(ngModel)]="project.deadline" name="deadline" placeholder="Set Deadline" class="bordered-input">
+      </div>
+    </div>
+
+    <div class="col s12 form-group">
+      <h6 for="projectDescription">Add Description:</h6>
+      <textarea id="projectDescription" [(ngModel)]="project.description" name="description" placeholder="Description" class="bordered-input materialize-textarea"></textarea>
+    </div>
+
+    <div class="row">
+      <div class="below">
+      <div class="col s12">
+        <button type="button" class="btn waves-effect waves-light white black-text">
+          <img src="assets/images/document.png" alt="Media Icon" class="icon"> Add Media
+        </button>
+
+        <div class="input-field">
+          <select [(ngModel)]="project.category" name="category">
+            <option value="" disabled selected>Add category</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s12 right-align">
+        <button type="submit" class="btn waves-effect waves-light blue white-text">Create</button>
+      </div>
+    </div>
+  </form>
+</div>

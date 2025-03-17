@@ -64,6 +64,7 @@ public class ProjectController {
         project.setName(projectRequest.getName());
         project.setDescription(projectRequest.getDescription());
         project.setWorkspace(workspace);
+        project.setDeadline(projectRequest.getDeadline());
         project.setCreatedAt(LocalDateTime.now());
         project.setUpdatedAt(LocalDateTime.now());
         projectRepository.save(project);
@@ -271,6 +272,18 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get project by ID", description = "Retrieves a project by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Project retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{projectId}")
+    public ResponseEntity<Project> getProjectById(@PathVariable UUID projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        return ResponseEntity.ok(project);
+    }
 
     @Operation(summary = "Get collaborators", description = "Retrieves a list of collaborators for a project.")
     @ApiResponses(value = {

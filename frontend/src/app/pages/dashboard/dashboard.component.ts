@@ -6,10 +6,11 @@ import {InvitationsComponent} from '../invitations-component/invitations.compone
 import {LogTimeComponent} from '../log-time/log-time.component';
 import {TaskManagementComponent} from '../task-management/task-management.component';
 import {ReportComponent} from '../report/report.component';
+import {HeaderComponent} from '../header/header.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, InvitationsComponent, LogTimeComponent, TaskManagementComponent, ReportComponent],
+  imports: [CommonModule, FormsModule, InvitationsComponent, LogTimeComponent, TaskManagementComponent, ReportComponent, HeaderComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })

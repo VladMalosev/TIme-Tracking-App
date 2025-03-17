@@ -1,0 +1,13 @@
+<li class="dropdown">
+  <a href="#" class="dropdown-trigger black-text" data-target="user-dropdown" (click)="preventNavigation($event)">
+    <i class="material-icons">account_circle</i>
+  </a>
+
+  <!-- Dropdown Structure -->
+  <ul id="user-dropdown" class="dropdown-content white">
+    <li><a href="/profile" class="black-text">Profile</a></li>
+    <li><a href="/settings" class="black-text">Settings</a></li>
+    <li class="divider"></li>
+    <li><a href="#" (click)="logout()" class="black-text">Logout</a></li>
+  </ul>
+</li>

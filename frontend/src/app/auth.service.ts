@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, tap } from 'rxjs';
+import {Observable, map, tap, catchError} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -10,10 +10,11 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  //tbd
-  isAuthenticated(): boolean {
-
-    return true;
+  isAuthenticated(): Observable<boolean> {
+    return this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).pipe(
+      map(response => !!response.email),
+      catchError(() => [false])
+    );
   }
 
   register(userData: any): Observable<any> {
@@ -39,6 +40,6 @@ export class AuthService {
       tap(users => console.log('Fetched online users:', users))
     );
   }
-  
+
 
 }

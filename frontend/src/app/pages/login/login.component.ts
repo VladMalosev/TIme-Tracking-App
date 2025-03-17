@@ -4,10 +4,11 @@ import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, provideHttpClient} from '@angular/common/http';
+import {HeaderComponent} from "../header/header.component";
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, ],
+    imports: [CommonModule, FormsModule, HeaderComponent,],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
