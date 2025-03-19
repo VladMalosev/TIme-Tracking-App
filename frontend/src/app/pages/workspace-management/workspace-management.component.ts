@@ -13,10 +13,8 @@ import { Router } from '@angular/router';
 })
 export class WorkspaceManagementComponent implements OnInit {
   ownedProjects: any[] = [];
-  collaboratedProjects: any[] = [];
   errorMessage: string | null = null;
   selectedOwnedProjects: any[] = [];
-  selectedCollaboratedProjects: any[] = [];
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -29,22 +27,23 @@ export class WorkspaceManagementComponent implements OnInit {
   }
 
   fetchProjects(): void {
-    this.http.get<{ ownedProjects: any[], collaboratedProjects: any[] }>('http://localhost:8080/api/projects', { withCredentials: true })
+    this.http.get<{ ownedProjects: any[] }>('http://localhost:8080/api/projects', { withCredentials: true })
       .subscribe(
         (response) => {
+          console.log("API Response:", response); // Log response to verify
+
+          if (!response || !response.ownedProjects) {
+            this.errorMessage = 'Invalid API response: Missing ownedProjects data.';
+            return;
+          }
+
           this.ownedProjects = response.ownedProjects.map(project => ({
             ...project,
             selected: false,
             deadline: project.deadline ? new Date(project.deadline) : null
           }));
-          this.collaboratedProjects = response.collaboratedProjects.map(project => ({
-            ...project,
-            selected: false,
-            deadline: project.deadline ? new Date(project.deadline) : null
-          }));
-          console.log("Collaborated projects:", this.collaboratedProjects);
-          console.log("Owned projects:", this.ownedProjects);
 
+          console.log("Owned Projects:", this.ownedProjects);
           this.errorMessage = null;
         },
         (error) => {
@@ -54,16 +53,11 @@ export class WorkspaceManagementComponent implements OnInit {
       );
   }
 
+
   toggleSelectAllOwned(event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.ownedProjects.forEach(project => project.selected = isChecked);
     this.updateSelectedOwnedProjects();
-  }
-
-  toggleSelectAllCollaborated(event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    this.collaboratedProjects.forEach(project => project.selected = isChecked);
-    this.updateSelectedCollaboratedProjects();
   }
 
   updateSelectedOwnedProjects(): void {
@@ -71,20 +65,19 @@ export class WorkspaceManagementComponent implements OnInit {
     console.log('Selected Owned Projects:', this.selectedOwnedProjects);
   }
 
-  updateSelectedCollaboratedProjects(): void {
-    this.selectedCollaboratedProjects = this.collaboratedProjects.filter(project => project.selected);
-    console.log('Selected Collaborated Projects:', this.selectedCollaboratedProjects);
-  }
-
   deleteSelectedProjects(type: 'owned' | 'collaborated'): void {
     const selectedIds = type === 'owned'
       ? this.selectedOwnedProjects.map(project => project.id)
-      : this.selectedCollaboratedProjects.map(project => project.id);
+      : [];
 
     console.log('Selected IDs:', selectedIds);
 
-    if (selectedIds.length === 0) {
-      this.errorMessage = 'No projects selected.';
+    if (selectedIds.length === 0 && type === 'owned') {
+      this.errorMessage = 'No owned projects selected.';
+      return;
+    }
+    if (selectedIds.length === 0 && type === 'collaborated') {
+      this.errorMessage = 'No collaborated projects selected.';
       return;
     }
 
@@ -95,8 +88,6 @@ export class WorkspaceManagementComponent implements OnInit {
             () => {
               if (type === 'owned') {
                 this.ownedProjects = this.ownedProjects.filter(project => project.id !== projectId);
-              } else {
-                this.collaboratedProjects = this.collaboratedProjects.filter(project => project.id !== projectId);
               }
             },
             (error) => {
@@ -108,8 +99,6 @@ export class WorkspaceManagementComponent implements OnInit {
 
       if (type === 'owned') {
         this.selectedOwnedProjects = [];
-      } else {
-        this.selectedCollaboratedProjects = [];
       }
     }
   }
@@ -120,7 +109,6 @@ export class WorkspaceManagementComponent implements OnInit {
         .subscribe(
           () => {
             this.ownedProjects = this.ownedProjects.filter(project => project.id !== projectId);
-            this.collaboratedProjects = this.collaboratedProjects.filter(project => project.id !== projectId);
             this.errorMessage = null;
           },
           (error) => {
@@ -132,7 +120,21 @@ export class WorkspaceManagementComponent implements OnInit {
   }
 
   startEdit(project: any): void {
-    this.router.navigate(['/edit-project', project.id]);
+    this.http.get(`http://localhost:8080/api/projects/${project.id}/current-user-role`, { withCredentials: true })
+      .subscribe(
+        (response: any) => {
+          const role = response.role;
+          if (role === 'OWNER' || role === 'ADMIN') {
+            // Allow editing
+            this.router.navigate(['/edit-project', project.id]);
+          } else {
+            this.errorMessage = 'You do not have permission to edit this project.';
+          }
+        },
+        (error) => {
+          console.error('Error fetching user role', error);
+          this.errorMessage = 'Failed to fetch user role. Please try again.';
+        }
+      );
   }
-
 }

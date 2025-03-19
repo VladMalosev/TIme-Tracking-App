@@ -13,7 +13,6 @@
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.</p>
 
   <!-- No Projects Message -->
-  <div *ngIf="ownedProjects.length === 0 && collaboratedProjects.length === 0" class="no-projects-message">
     <p>You are not part of any projects. <a href="/add-project">Create a new project</a> to get started.</p>
   </div>
 
@@ -74,62 +73,3 @@
       </tbody>
     </table>
   </div>
-
-  <!-- Collaborated Projects Table -->
-  <div *ngIf="collaboratedProjects.length > 0">
-    <h5 class="center-align green-text mt-5">Collaborated Projects</h5>
-    <table class="highlight responsive-table thin-lines-table mb-5">
-      <thead>
-      <tr>
-        <th>
-          <label>
-            <input
-              type="checkbox"
-              (change)="toggleSelectAllCollaborated($event)"
-            />
-            <span></span>
-          </label>
-        </th>
-        <th>PROJECTS</th>
-        <th>STATUS</th>
-        <th>COMMENTS</th>
-        <th>TIME STARTED</th>
-        <th>DEADLINE</th>
-        <th>ACTIONS</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let project of collaboratedProjects" (click)="goToProjectMembers(project.id)">
-        <td (click)="$event.stopPropagation()">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="project.selected"
-              (change)="updateSelectedCollaboratedProjects()"
-            />
-            <span></span>
-          </label>
-        </td>
-        <td>{{ project.name }}</td>
-        <td>{{ project.status || 'N/A' }}</td>
-        <td>{{ project.description || 'No comments' }}</td>
-        <td>{{ project.createdAt | date:'medium' }}</td>
-        <td>
-          <ng-container *ngIf="project.deadline; else noDeadline">
-            {{ project.deadline | date:'medium' }}
-          </ng-container>
-          <ng-template #noDeadline>No deadline set</ng-template>
-        </td>
-        <td>
-          <a class="edit-delete-icon" (click)="deleteProject(project.id); $event.stopPropagation()">
-            <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
-          </a>
-          <a class="edit-delete-icon" (click)="startEdit(project); $event.stopPropagation()">
-            <img class="buttons" src="assets/images/edit.png" alt="Edit" />
-          </a>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-</div>

@@ -18,14 +18,15 @@ CREATE TABLE project_invitations (
     FOREIGN KEY (invited_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
 CREATE TABLE workspaces (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL, -- The user who created the workspace
     name VARCHAR(100) NOT NULL,
     description VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (name)
+    UNIQUE (name),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE users (
@@ -36,18 +37,6 @@ CREATE TABLE users (
     phone VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE workspace_users (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL,
-    workspace_id UUID NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('OWNER', 'ADMIN', 'USER')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
-    UNIQUE (user_id, workspace_id)
 );
 
 CREATE TABLE clients (
@@ -87,7 +76,6 @@ CREATE TABLE project_users (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     UNIQUE (user_id, project_id)
 );
-
 
 CREATE TABLE tasks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

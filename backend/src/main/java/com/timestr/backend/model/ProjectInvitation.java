@@ -1,14 +1,19 @@
 package com.timestr.backend.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
+@Table(name = "project_invitations")
 public class ProjectInvitation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @UuidGenerator
+    @Column(updatable = false, nullable = false)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
@@ -18,68 +23,92 @@ public class ProjectInvitation {
     @JoinColumn(name = "invited_user_id", nullable = false)
     private User invitedUser;
 
-    @Enumerated(EnumType.STRING)
-    private InvitationStatus status = InvitationStatus.PENDING;
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @Enumerated(EnumType.STRING)
-    private WorkspaceRole role;
+    @Column(nullable = false)
+    private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private InvitationStatus status;
+
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public void setId(Long id) {
-        this.id = id;
+    @PreUpdate
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    // Getters and Setters
+    public User getSender() {
+        return sender;
     }
 
-    public void setInvitedUser(User invitedUser) {
-        this.invitedUser = invitedUser;
+    public void setSender(User sender) {
+        this.sender = sender;
     }
 
-    public void setStatus(InvitationStatus status) {
-        this.status = status;
-    }
-
-    public void setRole(WorkspaceRole role) {
-        this.role = role;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Long getId() {
+    // Getters and Setters
+    public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public Project getProject() {
         return project;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public User getInvitedUser() {
         return invitedUser;
+    }
+
+    public void setInvitedUser(User invitedUser) {
+        this.invitedUser = invitedUser;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public InvitationStatus getStatus() {
         return status;
     }
 
-    public WorkspaceRole getRole() {
-        return role;
+    public void setStatus(InvitationStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

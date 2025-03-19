@@ -8,7 +8,6 @@ import {
   ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-declare const M: any;
 
 @Component({
   selector: 'app-user-dropdown',
@@ -30,10 +29,6 @@ export class UserDropdownComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       const elems = this.dropdownTrigger.nativeElement;
-      this.dropdownInstance = M.Dropdown.init(elems, {
-        coverTrigger: false,
-        closeOnClick: false
-      });
     });
   }
 

@@ -1,7 +1,12 @@
 package com.timestr.backend.controller;
 
 import com.timestr.backend.dto.TaskCompletionDetails;
+import com.timestr.backend.model.Activity;
+import com.timestr.backend.model.ActivityType;
 import com.timestr.backend.model.Task;
+import com.timestr.backend.model.User;
+import com.timestr.backend.repository.ActivityRepository;
+import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,8 +16,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +31,11 @@ public class TaskController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private ActivityRepository activityRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Operation(summary = "Update a task", description = "Updates an existing task with the provided details.")
     @ApiResponses(value = {
@@ -36,6 +49,14 @@ public class TaskController {
             @PathVariable UUID taskId,
             @RequestBody Task updatedTask) {
         Task task = taskService.updateTask(taskId, updatedTask);
+
+        Activity activity = new Activity();
+        activity.setProject(task.getProject());
+        activity.setType(ActivityType.TASK_UPDATED);
+        activity.setDescription("Task '" + task.getName() + "' was updated");
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
+
         return ResponseEntity.ok(task);
     }
 
@@ -128,8 +149,22 @@ public class TaskController {
             @Parameter(description = "ID of the project to associate the task with", required = true)
             @RequestParam UUID projectId) {
         Task createdTask = taskService.createTask(task, projectId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Activity activity = new Activity();
+        activity.setProject(createdTask.getProject());
+        activity.setType(ActivityType.TASK_CREATED);
+        activity.setDescription("A new task was created by" + user.getName());
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
+
+
         return ResponseEntity.ok(createdTask);
     }
+
     @Operation(summary = "Update task status", description = "Updates the status of a task.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task status updated successfully"),
@@ -143,7 +178,16 @@ public class TaskController {
             @Parameter(description = "New status of the task", required = true)
             @RequestParam String status) {
         Task task = taskService.updateTaskStatus(taskId, status);
+        if (status.equalsIgnoreCase("COMPLETED")) {
+            Activity activity = new Activity();
+            activity.setProject(task.getProject());
+            activity.setType(ActivityType.TASK_COMPLETED);
+            activity.setDescription("Task '" + task.getName() + "' was completed");
+            activity.setCreatedAt(LocalDateTime.now());
+            activityRepository.save(activity);
+        }
         return ResponseEntity.ok(task);
+
     }
 
     @Operation(summary = "Get task completion details", description = "Retrieves completion details for a specific task.")

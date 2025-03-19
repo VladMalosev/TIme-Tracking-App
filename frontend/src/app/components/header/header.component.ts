@@ -2,7 +2,6 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth.service';
 import {UserDropdownComponent} from './user-dropdown/user-dropdown.component';
-declare var M: any;
 
 @Component({
   selector: 'app-header',
@@ -28,10 +27,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      const elems = document.querySelectorAll('.dropdown-trigger');
-      M.Dropdown.init(elems, { constrainWidth: false, coverTrigger: false });
-    }, 0);
   }
 
   public logout() {

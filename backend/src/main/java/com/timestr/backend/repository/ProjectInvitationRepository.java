@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ProjectInvitationRepository extends JpaRepository<ProjectInvitation, Long> {
+public interface ProjectInvitationRepository extends JpaRepository<ProjectInvitation, UUID> {
     List<ProjectInvitation> findByInvitedUserId(UUID userId);
     List<ProjectInvitation> findByInvitedUserIdAndStatus(UUID userId, InvitationStatus status);
 
     void deleteByProjectId(UUID projectId);
+
+    List<ProjectInvitation> findByProjectId(UUID projectId);
 }

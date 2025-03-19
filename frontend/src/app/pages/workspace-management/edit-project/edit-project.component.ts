@@ -96,25 +96,38 @@ export class EditProjectComponent implements OnInit {
           this.currentUserRole = response.role;
         },
         (error) => {
-          console.error('Error fetching current user role', error);
+          if (error.error === 'User is not a collaborator on this project') {
+            this.errorMessage = 'You are not a collaborator on this project.';
+          } else {
+            console.error('Error fetching current user role', error);
+          }
         }
       );
   }
 
+
   saveEdit(): void {
-    this.http.put<any>(`http://localhost:8080/api/projects/${this.project.id}`, this.project, { withCredentials: true })
+    if (this.currentUserRole !== 'OWNER' && this.currentUserRole !== 'ADMIN') {
+      this.errorMessage = 'You do not have permission to edit this project.';
+      return;
+    }
+
+    this.http.put<any>(`http://localhost:8080/api/projects/${this.project.id}/edit`, this.project, { withCredentials: true })
       .subscribe(
         (response) => {
           this.project = response;
           this.editingProject = null;
           this.errorMessage = null;
+          alert('Project updated successfully!');
+          this.router.navigate(['/projects', this.project.id]);
         },
         (error) => {
           console.error('Error updating project', error);
-          this.errorMessage = 'Failed to update project. Please try again.';
+          this.errorMessage = error.error?.message || 'Failed to update project. Please try again.';
         }
       );
   }
+
 
   addCollaborator(email: string, role: string): void {
     this.http.post<any>(

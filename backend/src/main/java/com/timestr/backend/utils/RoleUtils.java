@@ -1,30 +1,30 @@
 package com.timestr.backend.utils;
 
-import com.timestr.backend.model.WorkspaceRole;
+import com.timestr.backend.model.Role;
 
 public class RoleUtils {
 
-    public static boolean canAssignRole(WorkspaceRole currentRole, WorkspaceRole newRole) {
+    public static boolean canAssignRole(Role currentRole, Role newRole) {
         switch (currentRole) {
             case OWNER:
                 return true;
             case ADMIN:
-                return newRole == WorkspaceRole.MANAGER || newRole == WorkspaceRole.USER;
+                return newRole == Role.MANAGER || newRole == Role.USER;
             case MANAGER:
-                return newRole == WorkspaceRole.USER;
+                return newRole == Role.USER;
             default:
                 return false;
         }
     }
 
-    public static boolean canRemoveCollaborator(WorkspaceRole currentRole, WorkspaceRole removedUserRole) {
+    public static boolean canRemoveCollaborator(Role currentRole, Role removedUserRole) {
         switch (currentRole) {
             case OWNER:
                 return true;
             case ADMIN:
-                return removedUserRole == WorkspaceRole.MANAGER || removedUserRole == WorkspaceRole.USER;
+                return removedUserRole == Role.MANAGER || removedUserRole == Role.USER;
             case MANAGER:
-                return removedUserRole == WorkspaceRole.USER;
+                return removedUserRole == Role.USER;
             default:
                 return false;
         }

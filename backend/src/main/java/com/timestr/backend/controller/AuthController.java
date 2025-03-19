@@ -5,6 +5,7 @@ import com.timestr.backend.dto.LoginRequest;
 import com.timestr.backend.dto.RegisterRequest;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.ProjectRepository;
+import com.timestr.backend.repository.ProjectUserRepository;
 import com.timestr.backend.repository.WorkspaceRepository;
 import com.timestr.backend.repository.WorkspaceUserRepository;
 import com.timestr.backend.security.JwtTokenProvider;
@@ -37,7 +38,7 @@ public class AuthController {
     private final WorkspaceRepository workspaceRepository;
 
     @Autowired
-    private final WorkspaceUserRepository workspaceUserRepository;
+    private ProjectUserRepository projectUserRepository;
 
     @Autowired
     private final JwtTokenProvider jwtTokenProvider;
@@ -48,30 +49,30 @@ public class AuthController {
     @Autowired
     private final ProjectRepository projectRepository;
 
-    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker, WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository, ProjectRepository projectRepository) {
+    @Autowired
+    private final WorkspaceUserRepository workspaceUserRepository;
+
+    public AuthController(UserService userService, JwtTokenProvider jwtTokenProvider, OnlineUserTracker onlineUserTracker, WorkspaceRepository workspaceRepository, ProjectUserRepository projectUserRepository,  ProjectRepository projectRepository, WorkspaceUserRepository workspaceUserRepository) {
         this.userService = userService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.onlineUserTracker = onlineUserTracker;
         this.workspaceRepository = workspaceRepository;
-        this.workspaceUserRepository = workspaceUserRepository;
+        this.projectUserRepository = projectUserRepository;
         this.projectRepository = projectRepository;
+        this.workspaceUserRepository = workspaceUserRepository;
     }
 
-    @Operation(summary = "Register a new user", description = "Creates a new user account and assigns a default workspace")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
-    })
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody RegisterRequest request) {
         logger.info("Registering new user: " + request.getEmail());
         request.setRole(Role.USER);
         User user = userService.registerUser(request);
 
-        // create def workspace for the user
+        // Create a default workspace for the user
         Workspace defaultWorkspace = new Workspace();
         defaultWorkspace.setName(user.getName() + "'s Workspace");
         defaultWorkspace.setDescription("Workspace for " + user.getName());
+        defaultWorkspace.setUser(user);
         defaultWorkspace.setCreatedAt(LocalDateTime.now());
         defaultWorkspace.setUpdatedAt(LocalDateTime.now());
         workspaceRepository.save(defaultWorkspace);
@@ -79,7 +80,7 @@ public class AuthController {
         WorkspaceUser workspaceUser = new WorkspaceUser();
         workspaceUser.setUser(user);
         workspaceUser.setWorkspace(defaultWorkspace);
-        workspaceUser.setRole(WorkspaceRole.OWNER);
+        workspaceUser.setRole(Role.OWNER);
         workspaceUser.setCreatedAt(LocalDateTime.now());
         workspaceUser.setUpdatedAt(LocalDateTime.now());
         workspaceUserRepository.save(workspaceUser);
@@ -87,7 +88,6 @@ public class AuthController {
         logger.info("User registered successfully: " + user.getEmail());
         return ResponseEntity.ok(user);
     }
-
     @Operation(summary = "Login a user", description = "Authenticates a user and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful"),
@@ -225,16 +225,14 @@ public class AuthController {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        WorkspaceUser workspaceUser = workspaceUserRepository.findByUserIdAndWorkspaceId(user.getId(), project.getWorkspace().getId())
-                .orElseThrow(() -> new RuntimeException("User is not part of this workspace"));
+        ProjectUser projectUser = projectUserRepository.findByUserIdAndProjectId(user.getId(), projectId)
+                .orElseThrow(() -> new RuntimeException("User is not a collaborator on this project"));
 
         Map<String, String> response = new HashMap<>();
-        response.put("role", workspaceUser.getRole().name());
+        response.put("role", projectUser.getRole().name());
 
         logger.info("Current user role retrieved: " + response.get("role"));
         return ResponseEntity.ok(response);
     }
-
-
 
 }

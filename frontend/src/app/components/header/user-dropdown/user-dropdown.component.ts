@@ -1,5 +1,4 @@
 import {AfterViewInit, Component, EventEmitter, Output} from '@angular/core';
-declare var M: any;
 
 @Component({
   selector: 'app-user-dropdown',
@@ -14,7 +13,6 @@ export class UserDropdownComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       const elems = document.querySelectorAll('.dropdown-trigger');
-      M.Dropdown.init(elems, { constrainWidth: false, coverTrigger: false });
     }, 0);
   }
 

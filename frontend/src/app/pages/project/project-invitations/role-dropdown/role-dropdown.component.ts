@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
-declare const M: any;
 
 @Component({
   selector: 'app-role-dropdown',
@@ -21,10 +20,6 @@ export class RoleDropdownComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       const elems = this.dropdownTrigger.nativeElement;
-      this.dropdownInstance = M.Dropdown.init(elems, {
-        coverTrigger: false,
-        closeOnClick: false
-      });
     });
   }
 

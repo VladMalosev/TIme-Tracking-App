@@ -52,7 +52,7 @@ export class ReportComponent implements OnInit {
     this.http.get<any>('http://localhost:8080/api/projects', { withCredentials: true }).subscribe({
       next: (response) => {
         console.log('Projects response:', response);
-        this.projects = [...response.ownedProjects, ...response.collaboratedProjects];
+        this.projects = response.projects || [];
       },
       error: (error) => {
         console.error('Error fetching projects:', error);

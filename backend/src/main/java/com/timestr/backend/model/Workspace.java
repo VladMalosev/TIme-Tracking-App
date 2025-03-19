@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,14 +19,21 @@ public class Workspace {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @NotBlank(message = "Name cannot be blank")
     @Size(max = 100, message = "Name cannot exceed 100 characters")
-    @Column(nullable = false, length = 100, unique = true)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
-    @Column(length = 500)
+    @Column(name = "description", length = 500)
     private String description;
+
+    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkspaceUser> workspaceUsers = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -44,6 +53,14 @@ public class Workspace {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getName() {

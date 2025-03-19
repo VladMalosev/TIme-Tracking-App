@@ -1,31 +1,25 @@
+<!-- Error Message -->
+<div *ngIf="errorMessage" class="alert error-message">
+  {{ errorMessage }}
+</div>
 
-<div class="container">
-  <!-- Error Message -->
-  <div *ngIf="errorMessage" class="alert error-message">
-    {{ errorMessage }}
-  </div>
+<!-- Loading Spinner -->
+<div *ngIf="loading" class="loading-spinner">
+  Loading...
+</div>
 
-  <!-- Loading Spinner -->
-  <div *ngIf="loading" class="loading-spinner">
-    Loading...
-  </div>
+<!-- Project Details -->
+<div *ngIf="!loading && project">
+  <h2>Edit Project: {{ project.name }}</h2>
 
-  <!-- Project Details -->
-  <div *ngIf="!loading && project">
-    <h2>Edit Project: {{ project.name }}</h2>
+  <!-- Edit Project Form -->
+  <form (ngSubmit)="saveEdit()">
+    <label for="projectName">Name:</label>
+    <input id="projectName" [(ngModel)]="project.name" name="name" required>
 
+    <label for="projectDescription">Description:</label>
+    <textarea id="projectDescription" [(ngModel)]="project.description" name="description"></textarea>
 
-    <!-- Edit Project Form -->
-    <form (ngSubmit)="saveEdit()">
-      <label for="projectName">Name:</label>
-      <input id="projectName" [(ngModel)]="project.name" name="name" required>
-
-      <label for="projectDescription">Description:</label>
-      <textarea id="projectDescription" [(ngModel)]="project.description" name="description"></textarea>
-
-      <button type="submit">Save Changes</button>
-    </form>
-
-
-  </div>
+    <button type="submit">Save Changes</button>
+  </form>
 </div>

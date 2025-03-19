@@ -63,7 +63,11 @@ export class AddProjectComponent implements OnInit {
         },
         (error) => {
           console.error('Error creating project', error);
-          this.errorMessage = 'Failed to create project. Please try again.';
+          if (error.error === "User is not part of this workspace") {
+            this.errorMessage = "You do not have permission to create a project in this workspace.";
+          } else {
+            this.errorMessage = 'Failed to create project. Please try again.';
+          }
         }
       );
   }

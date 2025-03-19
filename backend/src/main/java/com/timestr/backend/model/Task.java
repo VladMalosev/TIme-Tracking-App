@@ -37,6 +37,9 @@ public class Task {
     @Column(nullable = false)
     private TaskStatus status = TaskStatus.PENDING;
 
+    @Column(name = "deadline")
+    private LocalDateTime deadline; // New field
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -49,14 +52,6 @@ public class Task {
     }
 
     // Getters and Setters
-    public UUID getAssignedUserId() {
-        return assignedUserId;
-    }
-
-    public void setAssignedUserId(UUID assignedUserId) {
-        this.assignedUserId = assignedUserId;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -81,6 +76,14 @@ public class Task {
         this.name = name;
     }
 
+    public UUID getAssignedUserId() {
+        return assignedUserId;
+    }
+
+    public void setAssignedUserId(UUID assignedUserId) {
+        this.assignedUserId = assignedUserId;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -95,6 +98,14 @@ public class Task {
 
     public void setStatus(TaskStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(LocalDateTime deadline) {
+        this.deadline = deadline;
     }
 
     public LocalDateTime getCreatedAt() {

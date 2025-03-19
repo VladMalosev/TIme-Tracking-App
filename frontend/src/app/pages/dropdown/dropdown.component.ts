@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
-declare const M: any;
 
 @Component({
   selector: 'app-dropdown',
@@ -24,11 +23,6 @@ export class DropdownComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       console.log('Initializing dropdown with items:', this.items); // Log the items
-      const elems = this.dropdownTrigger.nativeElement;
-      this.dropdownInstance = M.Dropdown.init(elems, {
-        coverTrigger: false,
-        closeOnClick: false
-      });
     });
   }
 
