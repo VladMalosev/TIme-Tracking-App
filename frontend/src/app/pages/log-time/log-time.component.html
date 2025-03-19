@@ -3,11 +3,12 @@
 
   <!-- Task Selection -->
   <div class="task-selection">
-    <label for="task">Select Task:</label>
-    <select id="task" [(ngModel)]="selectedTaskId">
-      <option [value]="null">No Task</option>
-      <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
-    </select>
+    <label>Select Task:</label>
+    <app-task-dropdown
+      [tasks]="tasks"
+      [defaultText]="'No Task'"
+      (taskSelected)="onTaskSelected($event)">
+    </app-task-dropdown>
   </div>
 
   <!-- Stopwatch Section -->
@@ -20,7 +21,7 @@
     <div class="controls">
       <button (click)="startTimer()" [disabled]="isRunning">Start</button>
       <button (click)="stopTimer()" [disabled]="!isRunning">Stop</button>
-      <button (click)="completeTask()" >Complete Task</button>
+      <button (click)="completeTask()">Complete Task</button>
     </div>
     <div class="description">
       <label for="description">Description:</label>

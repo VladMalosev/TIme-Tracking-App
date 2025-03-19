@@ -3,6 +3,7 @@ import { ReportService } from '../../services/report.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import {DropdownComponent} from '../dropdown/dropdown.component';
 
 interface Log {
   timeLog: {
@@ -18,14 +19,15 @@ interface Log {
 
 @Component({
   selector: 'app-report',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, DropdownComponent],
   templateUrl: './report.component.html',
   styleUrls: ['./report.component.css']
 })
 export class ReportComponent implements OnInit {
-  selectedProject: string = '';
-  selectedTask: string = '';
-  selectedUser: string = '';
+  selectedProject: any = null;
+  selectedTask: any = null;
+  selectedUser: any = null;
   startTime: string = '';
   endTime: string = '';
   reportData: any[] = [];
@@ -38,6 +40,7 @@ export class ReportComponent implements OnInit {
   projects: any[] = [];
   tasks: any[] = [];
   users: any[] = [];
+
 
   constructor(private reportService: ReportService, private http: HttpClient) {}
 
@@ -81,14 +84,24 @@ export class ReportComponent implements OnInit {
     });
   }
 
-  onProjectChange(): void {
-    if (this.selectedProject) {
-      this.fetchTasks(this.selectedProject);
-      this.fetchUsers(this.selectedProject);
+  onProjectSelected(project: any): void {
+    this.selectedProject = project;
+    if (project) {
+      this.fetchTasks(project.id);
+      this.fetchUsers(project.id);
     } else {
       this.tasks = [];
       this.users = [];
     }
+  }
+
+
+  onTaskSelected(task: any): void {
+    this.selectedTask = task;
+  }
+
+  onUserSelected(user: any): void {
+    this.selectedUser = user;
   }
 
   generateReport(): void {
@@ -96,7 +109,7 @@ export class ReportComponent implements OnInit {
     const endTimeWithSeconds = this.endTime ? this.endTime + ':00' : null;
 
     if (this.selectedTask) {
-      this.reportService.generateTaskReport(this.selectedTask, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+      this.reportService.generateTaskReport(this.selectedTask.id, startTimeWithSeconds, endTimeWithSeconds).subscribe({
         next: (response: any[]) => {
           console.log('Task report response:', response);
           this.reportData = response;
@@ -105,13 +118,10 @@ export class ReportComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error generating task report:', error);
-        },
-        complete: () => {
-          console.log('Task report generation completed.');
         }
       });
     } else if (this.selectedUser && this.selectedProject) {
-      this.reportService.generateUserReport(this.selectedUser, this.selectedProject, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+      this.reportService.generateUserReport(this.selectedUser.id, this.selectedProject.id, startTimeWithSeconds, endTimeWithSeconds).subscribe({
         next: (response: any[]) => {
           console.log('User report response:', response);
           this.reportData = response;
@@ -120,13 +130,10 @@ export class ReportComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error generating user report:', error);
-        },
-        complete: () => {
-          console.log('User report generation completed.');
         }
       });
     } else if (this.selectedProject) {
-      this.reportService.generateProjectReport(this.selectedProject, startTimeWithSeconds, endTimeWithSeconds).subscribe({
+      this.reportService.generateProjectReport(this.selectedProject.id, startTimeWithSeconds, endTimeWithSeconds).subscribe({
         next: (response: any[]) => {
           console.log('Project report response:', response);
           this.reportData = response;
@@ -135,9 +142,6 @@ export class ReportComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error generating project report:', error);
-        },
-        complete: () => {
-          console.log('Project report generation completed.');
         }
       });
     } else {
@@ -150,9 +154,6 @@ export class ReportComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error generating user time logs report:', error);
-        },
-        complete: () => {
-          console.log('User time logs report generation completed.');
         }
       });
     }

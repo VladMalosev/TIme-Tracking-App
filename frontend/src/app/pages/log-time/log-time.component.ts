@@ -2,10 +2,11 @@ import { Component, Input, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import {TaskDropdownComponent} from './task-dropdown/task-dropdown.component';
 
 @Component({
   selector: 'app-log-time',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, TaskDropdownComponent],
   templateUrl: './log-time.component.html',
   styleUrls: ['./log-time.component.css']
 })
@@ -33,17 +34,27 @@ export class LogTimeComponent implements OnInit {
     }
   }
 
+
   fetchTasks(): void {
     this.http.get<any[]>(`http://localhost:8080/api/tasks/assigned/${this.userId}`, { withCredentials: true })
       .subscribe(
         (response) => {
+          console.log('Tasks fetched:', response);
           this.tasks = response;
+          console.log('Tasks array:', this.tasks);
         },
         (error) => {
           console.error('Error fetching tasks', error);
         }
       );
   }
+
+
+  onTaskSelected(task: any): void {
+    console.log('Selected task:', task);
+    this.selectedTaskId = task ? task.id : null;
+  }
+
 
   startTimer(): void {
     if (!this.isRunning) {

@@ -65,3 +65,18 @@
   border: none;
   padding: 0;
 }
+.no-projects-message {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2em;
+  color: #666;
+}
+
+.no-projects-message a {
+  color: #2196F3;
+  text-decoration: none;
+}
+
+.no-projects-message a:hover {
+  text-decoration: underline;
+}

@@ -36,11 +36,22 @@ public class ProjectController {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private WorkspaceUserRepository workspaceUserRepository;
 
     @Autowired
     private ProjectInvitationRepository projectInvitationRepository;
 
+    @Autowired
+    private TaskAssignmentRepository taskAssignmentRepository;
+
+    @Autowired
+    private TimeLogRepository timeLogRepository;
+
+    @Autowired
+    private ProjectUserRepository projectUserRepository;
 
     @Operation(summary = "Create a new project", description = "Creates a new project in the user's workspace.")
     @ApiResponses(value = {
@@ -115,6 +126,7 @@ public class ProjectController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{projectId}")
+    @Transactional
     public ResponseEntity<Void> deleteProject(@PathVariable UUID projectId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -132,6 +144,17 @@ public class ProjectController {
             throw new RuntimeException("Only the owner can delete the project");
         }
 
+        List<Task> tasks = taskRepository.findByProjectId(projectId);
+        for (Task task : tasks) {
+            timeLogRepository.deleteByTaskId(task.getId());
+        }
+
+        for (Task task : tasks) {
+            taskAssignmentRepository.deleteByTaskId(task.getId());
+        }
+
+        projectInvitationRepository.deleteByProjectId(projectId);
+        taskRepository.deleteByProjectId(projectId);
         projectRepository.delete(project);
 
         return ResponseEntity.noContent().build();

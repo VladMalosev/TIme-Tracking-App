@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HeaderComponent } from '../header/header.component';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-workspace-management',
-  imports: [CommonModule, FormsModule, HeaderComponent],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './workspace-management.component.html',
   styleUrls: ['./workspace-management.component.css']
 })
@@ -15,13 +15,17 @@ export class WorkspaceManagementComponent implements OnInit {
   ownedProjects: any[] = [];
   collaboratedProjects: any[] = [];
   errorMessage: string | null = null;
-  selectedProjects: any[] = [];
-
+  selectedOwnedProjects: any[] = [];
+  selectedCollaboratedProjects: any[] = [];
 
   constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
     this.fetchProjects();
+  }
+
+  goToProjectMembers(projectId: number): void {
+    this.router.navigate(['/project-members', projectId]);
   }
 
   fetchProjects(): void {
@@ -31,11 +35,12 @@ export class WorkspaceManagementComponent implements OnInit {
           this.ownedProjects = response.ownedProjects.map(project => ({
             ...project,
             selected: false,
-            deadline: project.deadline ? new Date(project.deadline) : null // Ensure deadline is a Date object or null
+            deadline: project.deadline ? new Date(project.deadline) : null
           }));
           this.collaboratedProjects = response.collaboratedProjects.map(project => ({
             ...project,
-            deadline: project.deadline ? new Date(project.deadline) : null // Ensure deadline is a Date object or null
+            selected: false,
+            deadline: project.deadline ? new Date(project.deadline) : null
           }));
           this.errorMessage = null;
         },
@@ -46,30 +51,63 @@ export class WorkspaceManagementComponent implements OnInit {
       );
   }
 
-  toggleSelectAll(event: Event): void {
+  toggleSelectAllOwned(event: Event): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.ownedProjects.forEach(project => project.selected = isChecked);
-    this.updateSelectedProjects();
+    this.updateSelectedOwnedProjects();
   }
 
-  updateSelectedProjects(): void {
-    this.selectedProjects = this.ownedProjects.filter(project => project.selected);
+  toggleSelectAllCollaborated(event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.collaboratedProjects.forEach(project => project.selected = isChecked);
+    this.updateSelectedCollaboratedProjects();
   }
 
-  deleteSelectedProjects(): void {
-    const selectedIds = this.selectedProjects.map(project => project.id);
-    if (confirm('Are you sure you want to delete the selected projects?')) {
-      this.http.post<any>('http://localhost:8080/api/projects/delete', { ids: selectedIds }, { withCredentials: true })
-        .subscribe(
-          () => {
-            this.ownedProjects = this.ownedProjects.filter(project => !selectedIds.includes(project.id));
-            this.selectedProjects = [];
-          },
-          (error) => {
-            console.error('Error deleting projects', error);
-            this.errorMessage = 'Failed to delete projects. Please try again.';
-          }
-        );
+  updateSelectedOwnedProjects(): void {
+    this.selectedOwnedProjects = this.ownedProjects.filter(project => project.selected);
+    console.log('Selected Owned Projects:', this.selectedOwnedProjects); // Debugging
+  }
+
+  updateSelectedCollaboratedProjects(): void {
+    this.selectedCollaboratedProjects = this.collaboratedProjects.filter(project => project.selected);
+    console.log('Selected Collaborated Projects:', this.selectedCollaboratedProjects); // Debugging
+  }
+
+  deleteSelectedProjects(type: 'owned' | 'collaborated'): void {
+    const selectedIds = type === 'owned'
+      ? this.selectedOwnedProjects.map(project => project.id)
+      : this.selectedCollaboratedProjects.map(project => project.id);
+
+    console.log('Selected IDs:', selectedIds); // Debugging
+
+    if (selectedIds.length === 0) {
+      this.errorMessage = 'No projects selected.';
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete the selected ${type} projects?`)) {
+      selectedIds.forEach(projectId => {
+        this.http.delete(`http://localhost:8080/api/projects/${projectId}`, { withCredentials: true })
+          .subscribe(
+            () => {
+              if (type === 'owned') {
+                this.ownedProjects = this.ownedProjects.filter(project => project.id !== projectId);
+              } else {
+                this.collaboratedProjects = this.collaboratedProjects.filter(project => project.id !== projectId);
+              }
+            },
+            (error) => {
+              console.error('Error deleting project', error);
+              this.errorMessage = 'Failed to delete project. Please try again.';
+            }
+          );
+      });
+
+      if (type === 'owned') {
+        this.selectedOwnedProjects = [];
+      } else {
+        this.selectedCollaboratedProjects = [];
+      }
     }
   }
 
@@ -79,6 +117,8 @@ export class WorkspaceManagementComponent implements OnInit {
         .subscribe(
           () => {
             this.ownedProjects = this.ownedProjects.filter(project => project.id !== projectId);
+            this.collaboratedProjects = this.collaboratedProjects.filter(project => project.id !== projectId);
+            this.errorMessage = null;
           },
           (error) => {
             console.error('Error deleting project', error);
@@ -91,4 +131,5 @@ export class WorkspaceManagementComponent implements OnInit {
   startEdit(project: any): void {
     this.router.navigate(['/edit-project', project.id]);
   }
+
 }

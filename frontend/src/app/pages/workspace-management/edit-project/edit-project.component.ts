@@ -3,10 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {TaskAssignmentComponent} from '../task-assignment/task-assignment.component';
+import {UserInvitationComponent} from '../user-invitation/user-invitation.component';
+import {TaskCreationComponent} from '../task-creation/task-creation-component';
 
 @Component({
   selector: 'app-edit-project',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TaskAssignmentComponent, UserInvitationComponent, TaskCreationComponent],
   templateUrl: './edit-project.component.html',
   styleUrls: ['./edit-project.component.css']
 })

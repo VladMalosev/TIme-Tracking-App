@@ -3,7 +3,7 @@ import {AuthService} from '../../auth.service';
 import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {HeaderComponent} from "../header/header.component";
+import {HeaderComponent} from "../../components/header/header.component";
 
 @Component({
   selector: 'app-register',

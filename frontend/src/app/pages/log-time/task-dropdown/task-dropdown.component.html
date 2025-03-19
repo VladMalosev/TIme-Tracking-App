@@ -1,0 +1,12 @@
+<div class="task-dropdown">
+  <button class="dropdown-trigger btn" (click)="isOpen = !isOpen">
+    {{ selectedTask ? selectedTask.name : defaultText }}
+  </button>
+  <ul class="dropdown-content" *ngIf="isOpen">
+    <li *ngFor="let task of tasks" (click)="onTaskSelect(task)">
+      <a href="#" (click)="$event.preventDefault()">
+        {{ task.name }}
+      </a>
+    </li>
+  </ul>
+</div>

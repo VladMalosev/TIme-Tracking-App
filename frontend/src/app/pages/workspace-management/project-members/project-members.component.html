@@ -1,0 +1,37 @@
+<div class="container">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Project Members Table -->
+  <h2>Project Members</h2>
+  <table class="highlight responsive-table">
+    <thead>
+    <tr>
+      <th>User</th>
+      <th>Status</th>
+      <th>Email Address</th>
+      <th>Last Activity Date</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let member of members">
+      <td>{{ member.user.name }}</td>
+      <td>
+          <span [ngClass]="{'online': member.status === 'Online', 'offline': member.status === 'Offline'}">
+            {{ member.status }}
+          </span>
+      </td>
+      <td>{{ member.user.email }}</td>
+      <td>{{ member.lastActivityDate || 'N/A' }}</td>
+      <td>{{ member.role }}</td>
+      <td>
+        <button (click)="removeMember(member.id)" class="btn-danger">Remove</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

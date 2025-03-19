@@ -22,7 +22,7 @@ public class ProjectInvitation {
     private InvitationStatus status = InvitationStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
-    private WorkspaceRole role; // Add this field to store the role
+    private WorkspaceRole role;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();

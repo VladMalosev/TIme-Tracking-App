@@ -50,6 +50,19 @@ export class WebSocketService {
     this.stompClient.activate();
   }
 
+  listenForUserStatusUpdates(): Observable<{ email: string, status: 'online' | 'offline' }> {
+    const statusSubject = new Subject<{ email: string, status: 'online' | 'offline' }>();
+
+    if (this.stompClient) {
+      this.stompClient.subscribe('/topic/user-status', (message) => {
+        const userStatus = JSON.parse(message.body);
+        statusSubject.next(userStatus);
+      });
+    }
+
+    return statusSubject.asObservable();
+  }
+
   sendMessage(message: ChatMessage): void {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.publish({

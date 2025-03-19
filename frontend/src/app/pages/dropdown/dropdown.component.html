@@ -1,0 +1,11 @@
+<a #dropdownTrigger class="dropdown-trigger btn" href="#" [attr.data-target]="dropdownId" (click)="$event.preventDefault()">
+  {{ selectedItem ? selectedItem[displayKey] : defaultText }}
+</a>
+
+<ul [id]="dropdownId" class="dropdown-content">
+  <li *ngFor="let item of items">
+    <a href="#" (click)="selectItem(item); $event.preventDefault();">
+      {{ item[displayKey] }}
+    </a>
+  </li>
+</ul>

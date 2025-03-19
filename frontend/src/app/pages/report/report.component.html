@@ -1,21 +1,30 @@
 <div>
-  <label for="project">Project:</label>
-  <select id="project" [(ngModel)]="selectedProject" (change)="onProjectChange()">
-    <option value="">Select a project</option>
-    <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
-  </select>
+  <label>Project:</label>
+  <app-dropdown
+    [items]="projects"
+    [displayKey]="'name'"
+    [defaultText]="'Select a project'"
+    [dropdownId]="'projectDropdown'"
+    (itemSelected)="onProjectSelected($event)">
+  </app-dropdown>
 
-  <label for="task">Task:</label>
-  <select id="task" [(ngModel)]="selectedTask">
-    <option value="">Select a task</option>
-    <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
-  </select>
+  <label>Task:</label>
+  <app-dropdown
+    [items]="tasks"
+    [displayKey]="'name'"
+    [defaultText]="'Select a task'"
+    [dropdownId]="'taskDropdown'"
+    (itemSelected)="onTaskSelected($event)">
+  </app-dropdown>
 
-  <label for="user">User:</label>
-  <select id="user" [(ngModel)]="selectedUser">
-    <option value="">Select a user</option>
-    <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
-  </select>
+  <label>User:</label>
+  <app-dropdown
+    [items]="users"
+    [displayKey]="'name'"
+    [defaultText]="'Select a user'"
+    [dropdownId]="'userDropdown'"
+    (itemSelected)="onUserSelected($event)">
+  </app-dropdown>
 
   <label for="startTime">Start Time:</label>
   <input type="datetime-local" id="startTime" [(ngModel)]="startTime">
@@ -25,6 +34,7 @@
 
   <button (click)="generateReport()">Generate Report</button>
 </div>
+
 
 <div *ngIf="reportData.length > 0">
   <h3>Report Data</h3>

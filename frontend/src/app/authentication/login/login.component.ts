@@ -4,11 +4,12 @@ import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, provideHttpClient} from '@angular/common/http';
-import {HeaderComponent} from "../header/header.component";
+import {HeaderComponent} from "../../components/header/header.component";
+import {FooterComponent} from '../../components/footer/footer.component';
 
 @Component({
   selector: 'app-login',
-    imports: [CommonModule, FormsModule, HeaderComponent,],
+  imports: [CommonModule, FormsModule,],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })

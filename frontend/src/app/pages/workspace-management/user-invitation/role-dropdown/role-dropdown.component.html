@@ -1,0 +1,13 @@
+<!-- Dropdown Trigger -->
+<a #dropdownTrigger class="dropdown-trigger btn" href="#" data-target="roleDropdown" (click)="$event.preventDefault()">
+  {{ selectedRole }}
+</a>
+
+<!-- Dropdown Structure -->
+<ul id="roleDropdown" class="dropdown-content">
+  <li *ngFor="let role of roles">
+    <a href="#" (click)="selectRole(role); $event.preventDefault();">
+      {{ role }}
+    </a>
+  </li>
+</ul>

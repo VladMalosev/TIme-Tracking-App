@@ -1,5 +1,3 @@
-<app-header></app-header>
-
 <div class="container">
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="alert error-message">
@@ -9,69 +7,129 @@
   <!-- Projects Section -->
   <h5 class="projects-heading">Projects</h5>
   <a class="waves-effect waves-light btn right blue white-text pd10 button-margin" href="/add-project">+ Add new project</a>
-  <a class="waves-effect waves-light btn right white black-text button-margin">Delete</a>
+  <a class="waves-effect waves-light btn right white black-text button-margin" (click)="deleteSelectedProjects('owned')">
+    Delete
+  </a>
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.</p>
 
-  <!-- Table Header -->
-  <h5 class="center-align blue-text">List of Projects</h5>
+  <!-- No Projects Message -->
+  <div *ngIf="ownedProjects.length === 0 && collaboratedProjects.length === 0" class="no-projects-message">
+    <p>You are not part of any projects. <a href="/add-project">Create a new project</a> to get started.</p>
+  </div>
 
-  <!-- Projects Table -->
-  <table class="highlight responsive-table thin-lines-table">
-    <thead>
-    <tr>
-      <th>
-        <label>
-          <input type="checkbox" (change)="toggleSelectAll($event)" />
-          <span></span>
-        </label>
-      </th>
-      <th>PROJECTS</th>
-      <th>STATUS</th>
-      <th>COMMENTS</th>
-      <th>TIME STARTED</th>
-      <th>DEADLINE</th>
-      <th>ACTIONS</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let project of ownedProjects">
-      <td>
-        <label>
-          <input type="checkbox" [(ngModel)]="project.selected" />
-          <span></span>
-        </label>
-      </td>
-      <td>{{ project.name }}</td>
-      <td>{{ project.status || 'N/A' }}</td>
-      <td>{{ project.description || 'No comments' }}</td>
-      <td>{{ project.createdAt | date:'medium' }}</td>
-      <td>
-        <!-- Handle deadline with a conditional check -->
-        <ng-container *ngIf="project.deadline; else noDeadline">
-          {{ project.deadline | date:'medium' }}
-        </ng-container>
-        <ng-template #noDeadline>
-          No deadline set
-        </ng-template>
-      </td>
-      <td>
-        <a class="edit-delete-icon" (click)="deleteProject(project.id)">
-          <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
-        </a>
-        <a class="edit-delete-icon" (click)="startEdit(project)">
-          <img class="buttons" src="assets/images/edit.png" alt="Edit" />
-        </a>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+  <!-- Owned Projects Table -->
+  <div *ngIf="ownedProjects.length > 0">
+    <h5 class="center-align blue-text">Owned Projects</h5>
+    <table class="highlight responsive-table thin-lines-table">
+      <thead>
+      <tr>
+        <th>
+          <label>
+            <input
+              type="checkbox"
+              (change)="toggleSelectAllOwned($event)"
+            />
+            <span></span>
+          </label>
+        </th>
+        <th>PROJECTS</th>
+        <th>STATUS</th>
+        <th>COMMENTS</th>
+        <th>TIME STARTED</th>
+        <th>DEADLINE</th>
+        <th>ACTIONS</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let project of ownedProjects" (click)="goToProjectMembers(project.id)">
+        <td (click)="$event.stopPropagation()">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="project.selected"
+              (change)="updateSelectedOwnedProjects()"
+            />
+            <span></span>
+          </label>
+        </td>
+        <td>{{ project.name }}</td>
+        <td>{{ project.status || 'N/A' }}</td>
+        <td>{{ project.description || 'No comments' }}</td>
+        <td>{{ project.createdAt | date:'medium' }}</td>
+        <td>
+          <ng-container *ngIf="project.deadline; else noDeadline">
+            {{ project.deadline | date:'medium' }}
+          </ng-container>
+          <ng-template #noDeadline>No deadline set</ng-template>
+        </td>
+        <td>
+          <a class="edit-delete-icon" (click)="deleteProject(project.id); $event.stopPropagation()">
+            <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
+          </a>
+          <a class="edit-delete-icon" (click)="startEdit(project); $event.stopPropagation()">
+            <img class="buttons" src="assets/images/edit.png" alt="Edit" />
+          </a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- Bulk Actions -->
-  <div class="row" *ngIf="selectedProjects.length > 0">
-    <div class="col s12">
-      <button class="btn waves-effect waves-light red button-margin" (click)="deleteSelectedProjects()">
-        <i class="material-icons left">delete</i>Delete Selected
-      </button>
-    </div>
+  <!-- Collaborated Projects Table -->
+  <div *ngIf="collaboratedProjects.length > 0">
+    <h5 class="center-align green-text mt-5">Collaborated Projects</h5>
+    <table class="highlight responsive-table thin-lines-table mb-5">
+      <thead>
+      <tr>
+        <th>
+          <label>
+            <input
+              type="checkbox"
+              (change)="toggleSelectAllCollaborated($event)"
+            />
+            <span></span>
+          </label>
+        </th>
+        <th>PROJECTS</th>
+        <th>STATUS</th>
+        <th>COMMENTS</th>
+        <th>TIME STARTED</th>
+        <th>DEADLINE</th>
+        <th>ACTIONS</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let project of collaboratedProjects" (click)="goToProjectMembers(project.id)">
+        <td (click)="$event.stopPropagation()">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="project.selected"
+              (change)="updateSelectedCollaboratedProjects()"
+            />
+            <span></span>
+          </label>
+        </td>
+        <td>{{ project.name }}</td>
+        <td>{{ project.status || 'N/A' }}</td>
+        <td>{{ project.description || 'No comments' }}</td>
+        <td>{{ project.createdAt | date:'medium' }}</td>
+        <td>
+          <ng-container *ngIf="project.deadline; else noDeadline">
+            {{ project.deadline | date:'medium' }}
+          </ng-container>
+          <ng-template #noDeadline>No deadline set</ng-template>
+        </td>
+        <td>
+          <a class="edit-delete-icon" (click)="deleteProject(project.id); $event.stopPropagation()">
+            <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
+          </a>
+          <a class="edit-delete-icon" (click)="startEdit(project); $event.stopPropagation()">
+            <img class="buttons" src="assets/images/edit.png" alt="Edit" />
+          </a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 </div>

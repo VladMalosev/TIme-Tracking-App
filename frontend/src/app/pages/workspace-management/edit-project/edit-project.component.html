@@ -1,3 +1,4 @@
+
 <div class="container">
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="alert error-message">
@@ -13,6 +14,7 @@
   <div *ngIf="!loading && project">
     <h2>Edit Project: {{ project.name }}</h2>
 
+
     <!-- Edit Project Form -->
     <form (ngSubmit)="saveEdit()">
       <label for="projectName">Name:</label>
@@ -24,52 +26,25 @@
       <button type="submit">Save Changes</button>
     </form>
 
-    <!-- Add Collaborator -->
-    <div *ngIf="canManageRole('USER')">
-      <h3>Add Collaborator</h3>
-      <form (ngSubmit)="addCollaborator(collaboratorEmail.value, collaboratorRole.value)">
-        <label for="collaboratorEmail">Email:</label>
-        <input #collaboratorEmail id="collaboratorEmail" type="email" required>
+    <!-- User Invitation Component -->
+    <app-user-invitation
+      [projectId]="project.id"
+      [currentUserRole]="currentUserRole">
+    </app-user-invitation>
 
-        <label for="collaboratorRole">Role:</label>
-        <select #collaboratorRole id="collaboratorRole" required>
-          <option *ngFor="let role of getAssignableRoles()" [value]="role">{{ role }}</option>
-        </select>
+    <!-- Task Creation Component -->
+    <app-task-creation-component
+      [projectId]="project.id"
+      [currentUserRole]="currentUserRole">
+    </app-task-creation-component>
 
-        <button type="submit">Add Collaborator</button>
-      </form>
-    </div>
-
-    <!-- Task Creation -->
-    <div *ngIf="canManageRole('USER')">
-      <h3>Create Task</h3>
-      <form (ngSubmit)="createTask(taskName.value, taskDescription.value)">
-        <label for="taskName">Task Name:</label>
-        <input #taskName id="taskName" type="text" required>
-
-        <label for="taskDescription">Description:</label>
-        <textarea #taskDescription id="taskDescription" required></textarea>
-
-        <button type="submit">Create Task</button>
-      </form>
-    </div>
-
-    <!-- Task Assignment -->
-    <div *ngIf="canAssignTasks()">
-      <h3>Assign Task</h3>
-      <form (ngSubmit)="assignTask(selectedTaskId.value, selectedUserId.value)">
-        <label for="selectedTaskId">Task:</label>
-        <select #selectedTaskId id="selectedTaskId" required>
-          <option *ngFor="let task of tasks" [value]="task.id">{{ task.name }}</option>
-        </select>
-
-        <label for="selectedUserId">Assign to User:</label>
-        <select #selectedUserId id="selectedUserId" required>
-          <option *ngFor="let collaborator of collaborators" [value]="collaborator.user.id">{{ collaborator.user.name }}</option>
-        </select>
-
-        <button type="submit">Assign Task</button>
-      </form>
-    </div>
+    <!-- Task Assignment Component -->
+    <app-task-assignment
+      [projectId]="project.id"
+      [tasks]="tasks"
+      [collaborators]="collaborators"
+      [currentUserRole]="currentUserRole"
+      [userId]="userId">
+    </app-task-assignment>
   </div>
 </div>

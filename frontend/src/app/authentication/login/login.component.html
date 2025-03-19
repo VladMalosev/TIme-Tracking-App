@@ -1,0 +1,17 @@
+
+<main>
+  <h2>Login</h2>
+  <form (submit)="login()">
+    <label>Email:</label>
+    <input type="email" [(ngModel)]="credentials.email" name="email" required />
+
+    <label>Password:</label>
+    <input type="password" [(ngModel)]="credentials.password" name="password" required />
+
+    <button type="submit">Login</button>
+  </form>
+  <p *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p>Don't have an account? <a routerLink="/register">Register</a></p>
+  <button (click)="loginWithGoogle()">Login with Google</button>
+</main>
+
