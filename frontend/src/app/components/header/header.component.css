@@ -13,3 +13,13 @@ nav ul li a:hover {
   width: 80px;
   height: auto;
 }
+
+
+.header {
+  height: 60px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  z-index: 1000;
+}

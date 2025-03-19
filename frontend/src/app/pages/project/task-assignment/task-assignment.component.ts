@@ -1,16 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { DropdownComponent } from './dropdown/dropdown.component';
-import { UserDropdownComponent } from './user-dropdown/user-dropdown.component';
+import {Component, Input, OnInit} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {FormsModule} from '@angular/forms';
+import {NgIf} from '@angular/common';
+import {DropdownComponent} from '../../dropdown/dropdown.component';
+import {UserDropdownComponent} from './user-dropdown/user-dropdown.component';
 
 @Component({
   selector: 'app-task-assignment',
-  standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent, UserDropdownComponent],
+  imports: [
+    FormsModule,
+    NgIf,
+    DropdownComponent,
+    UserDropdownComponent
+  ],
   templateUrl: './task-assignment.component.html',
-  styleUrls: ['./task-assignment.component.css']
+  styleUrl: './task-assignment.component.css'
 })
 export class TaskAssignmentComponent implements OnInit {
   @Input() projectId!: string;

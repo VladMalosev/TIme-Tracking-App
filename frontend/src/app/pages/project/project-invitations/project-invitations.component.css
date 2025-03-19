@@ -1,0 +1,56 @@
+.card-panel {
+  padding: 20px;
+  margin: 20px auto;
+  width: 80%;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.description {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+
+
+.input-field input:focus,
+.input-field select:focus {
+  border-color: #26a69a;
+  box-shadow: 0 1px 0 0 #26a69a;
+}
+
+.btn {
+  background-color: #26a69a;
+  color: white;
+  width: 100%;
+}
+
+.btn:hover {
+  background-color: #2bbbad;
+}
+
+.btn:disabled {
+  background-color: #b2dfdb;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 10px;
+  margin-top: 20px;
+  border-radius: 4px;
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.buttons {
+  width: 25px;
+  cursor: pointer;
+}
+

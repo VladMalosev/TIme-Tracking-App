@@ -25,7 +25,7 @@ export class WorkspaceManagementComponent implements OnInit {
   }
 
   goToProjectMembers(projectId: number): void {
-    this.router.navigate(['/project-members', projectId]);
+    this.router.navigate(['/project-details', projectId]);
   }
 
   fetchProjects(): void {
@@ -42,6 +42,9 @@ export class WorkspaceManagementComponent implements OnInit {
             selected: false,
             deadline: project.deadline ? new Date(project.deadline) : null
           }));
+          console.log("Collaborated projects:", this.collaboratedProjects);
+          console.log("Owned projects:", this.ownedProjects);
+
           this.errorMessage = null;
         },
         (error) => {
@@ -65,12 +68,12 @@ export class WorkspaceManagementComponent implements OnInit {
 
   updateSelectedOwnedProjects(): void {
     this.selectedOwnedProjects = this.ownedProjects.filter(project => project.selected);
-    console.log('Selected Owned Projects:', this.selectedOwnedProjects); // Debugging
+    console.log('Selected Owned Projects:', this.selectedOwnedProjects);
   }
 
   updateSelectedCollaboratedProjects(): void {
     this.selectedCollaboratedProjects = this.collaboratedProjects.filter(project => project.selected);
-    console.log('Selected Collaborated Projects:', this.selectedCollaboratedProjects); // Debugging
+    console.log('Selected Collaborated Projects:', this.selectedCollaboratedProjects);
   }
 
   deleteSelectedProjects(type: 'owned' | 'collaborated'): void {
@@ -78,7 +81,7 @@ export class WorkspaceManagementComponent implements OnInit {
       ? this.selectedOwnedProjects.map(project => project.id)
       : this.selectedCollaboratedProjects.map(project => project.id);
 
-    console.log('Selected IDs:', selectedIds); // Debugging
+    console.log('Selected IDs:', selectedIds);
 
     if (selectedIds.length === 0) {
       this.errorMessage = 'No projects selected.';

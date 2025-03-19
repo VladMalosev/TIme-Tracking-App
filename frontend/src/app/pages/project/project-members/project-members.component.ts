@@ -1,6 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { interval, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -13,19 +12,15 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./project-members.component.css']
 })
 export class ProjectMembersComponent implements OnInit, OnDestroy {
-  projectId: string | null = null;
+  @Input() projectId: string | null = null;
   members: any[] = [];
   errorMessage: string | null = null;
   onlineUsers: string[] = [];
   private onlineStatusSubscription: Subscription | null = null;
 
-  constructor(
-    private http: HttpClient,
-    private route: ActivatedRoute
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.projectId = this.route.snapshot.paramMap.get('id');
     if (this.projectId) {
       this.fetchProjectMembers(this.projectId);
       this.getOnlineUsers();
@@ -61,7 +56,10 @@ export class ProjectMembersComponent implements OnInit, OnDestroy {
         (response) => {
           console.log('Project members:', response);
           this.members = response.map(member => ({
-            ...member,
+            id: member.id,
+            user: member.user,
+            role: member.role,
+            lastActivityDate: member.lastActivityDate || 'N/A',
             status: this.onlineUsers.includes(member.user.email) ? 'Online' : 'Offline'
           }));
           this.errorMessage = null;

@@ -1,0 +1,35 @@
+<div *ngIf="canAssignTasks()" class="card-panel">
+  <h3 class="header">Assign Task</h3>
+  <p class="description">Assign a task to a collaborator. Select a task and a user from the dropdowns below.</p>
+  <form (ngSubmit)="assignTask()">
+    <!-- Task Dropdown -->
+    <div class="input-field">
+      <app-dropdown
+        [items]="tasks"
+        [displayKey]="'name'"
+        [defaultText]="'Select Task'"
+        (itemSelected)="onTaskSelected($event)">
+      </app-dropdown>
+    </div>
+
+    <!-- User Dropdown -->
+    <div class="input-field">
+      <app-user-dropdown
+        [users]="collaborators"
+        [defaultText]="'Select User'"
+        (userSelected)="onUserSelected($event)">
+      </app-user-dropdown>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn waves-effect waves-light" [disabled]="!selectedTask || !selectedUser">
+      Assign Task
+      <i class="material-icons right">assignment_turned_in</i>
+    </button>
+  </form>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="card-panel red lighten-4 red-text text-darken-4">
+    {{ errorMessage }}
+  </div>
+</div>

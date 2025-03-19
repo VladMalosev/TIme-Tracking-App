@@ -1,0 +1,123 @@
+<div class="page-container">
+    <div class="project-layout">
+        <!-- Sidebar -->
+        <div class="side-menu">
+            <h3 class="menu-title">Project Menu</h3>
+            <ul>
+                <li>
+                    <a (click)="setActiveTab('dashboard')" [class.active]="activeTab === 'dashboard'">Dashboard</a>
+                </li>
+                <li>
+                    <a (click)="setActiveTab('members')" [class.active]="activeTab === 'members'">Members</a>
+                </li>
+                <li>
+                    <a (click)="setActiveTab('tasks')" [class.active]="activeTab === 'tasks'">Tasks</a>
+                </li>
+                <li>
+                    <a (click)="setActiveTab('invitations')" [class.active]="activeTab === 'invitations'">Invitations</a>
+                </li>
+                <li>
+                    <a (click)="setActiveTab('time-logs')" [class.active]="activeTab === 'time-logs'">Time Logs</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-container">
+            <!-- Dashboard Tab -->
+            <div *ngIf="activeTab === 'dashboard'">
+                <!-- Welcome Message -->
+                <div class="welcome-message">
+                    <h1>Welcome to <strong>{{ project?.name }}</strong></h1>
+                    <p>Here's what's happening in your project today.</p>
+                </div>
+
+                <!-- Project Statistics -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>Total Tasks</h3>
+                        <p>{{ projectStats?.totalTasks || 0 }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completed Tasks</h3>
+                        <p>{{ projectStats?.completedTasks || 0 }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Members</h3>
+                        <p>{{ projectStats?.totalMembers || 0 }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Upcoming Deadlines</h3>
+                        <p>{{ projectStats?.upcomingDeadlines || 0 }}</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h2>Recent Activity</h2>
+                    <ul>
+                        <li *ngFor="let activity of recentActivities">
+                            <span class="activity-icon">📢</span>
+                            <span class="activity-text">{{ activity }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Upcoming Deadlines -->
+                <div class="upcoming-deadlines">
+                    <h2>Upcoming Deadlines</h2>
+                    <ul>
+                        <li *ngFor="let deadline of upcomingDeadlines">
+                            <span class="deadline-icon">⏰</span>
+                            <span class="deadline-text">{{ deadline.task }} - Due {{ deadline.date | date:'mediumDate' }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Members Tab -->
+            <div *ngIf="activeTab === 'members'">
+                <app-project-members [projectId]="projectId"></app-project-members>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div *ngIf="activeTab === 'tasks'">
+                <h2 class="tab-header m-lg-5">Tasks</h2>
+                <p class="tab-description m-lg-5">Manage tasks for your project. Create new tasks or assign existing ones to collaborators.</p>
+
+                <div class="tasks-container">
+                    <!-- Task Creation Component -->
+                    <div class="task-section">
+                        <app-project-tasks
+                                *ngIf="projectId"
+                                [projectId]="projectId!"
+                                [currentUserRole]="currentUserRole">
+                        </app-project-tasks>
+                    </div>
+
+                    <!-- Task Assignment Component -->
+                    <div class="task-section">
+                        <app-task-assignment
+                                *ngIf="projectId && canAssignTasks()"
+                                [projectId]="projectId!"
+                                [tasks]="tasks"
+                                [collaborators]="collaborators"
+                                [currentUserRole]="currentUserRole"
+                                [userId]="userId">
+                        </app-task-assignment>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invitations Tab -->
+            <div *ngIf="activeTab === 'invitations'">
+                <app-project-invitations
+                        *ngIf="projectId"
+                        [projectId]="projectId!"
+                        [currentUserRole]="currentUserRole">
+                </app-project-invitations>
+            </div>
+
+        </div>
+    </div>
+</div>

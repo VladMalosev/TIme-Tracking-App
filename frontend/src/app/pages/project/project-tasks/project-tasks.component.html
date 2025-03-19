@@ -1,0 +1,32 @@
+<div *ngIf="canManageRole('USER')" class="card-panel">
+  <h3 class="header">Create Task</h3>
+  <p class="description">Create a new task for your project. Fill out the form below to get started.</p>
+  <form (ngSubmit)="createTask(taskName.value, taskDescription.value, taskDeadline.value)">
+    <!-- Task Name -->
+    <div class="input-field">
+      <input #taskName id="taskName" type="text" class="validate" required>
+      <label for="taskName">Task Name</label>
+    </div>
+
+    <!-- Task Description -->
+    <div class="input-field">
+      <textarea #taskDescription id="taskDescription" class="materialize-textarea validate" required></textarea>
+      <label for="taskDescription">Description</label>
+    </div>
+
+    <!-- Task Deadline -->
+    <label for="taskDeadline">Deadline:</label>
+    <input #taskDeadline id="taskDeadline" type="datetime-local" required>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn waves-effect waves-light">
+      Create Task
+      <i class="material-icons right">send</i>
+    </button>
+  </form>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="card-panel red lighten-4 red-text text-darken-4">
+    {{ errorMessage }}
+  </div>
+</div>

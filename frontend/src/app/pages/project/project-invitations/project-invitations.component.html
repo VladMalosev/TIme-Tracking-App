@@ -1,0 +1,65 @@
+<div *ngIf="getAssignableRoles().length > 0" class="card-panel">
+  <h3 class="header">Add Collaborator</h3>
+  <p class="description">Invite a new collaborator to your project. Enter their email and assign a role.</p>
+  <form (ngSubmit)="addCollaborator(collaboratorEmail.value, selectedRole)">
+    <!-- Email Input -->
+    <div class="input-field">
+      <input #collaboratorEmail id="collaboratorEmail" type="email" class="validate" required>
+      <label for="collaboratorEmail">Email</label>
+    </div>
+
+    <!-- Role Dropdown -->
+    <div class="input-field">
+      <app-role-dropdown
+        [roles]="getAssignableRoles()"
+        (roleSelected)="onRoleSelected($event)">
+      </app-role-dropdown>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn waves-effect waves-light" [disabled]="!selectedRole">
+      Add Collaborator
+      <i class="material-icons right">person_add</i>
+    </button>
+  </form>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="card-panel red lighten-4 red-text text-darken-4">
+    {{ errorMessage }}
+  </div>
+</div>
+
+<div class="card-panel">
+  <h3 class="header">Sent Invitations</h3>
+
+  <table *ngIf="invitations.length > 0" class="striped">
+    <thead>
+    <tr>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Status</th>
+      <th>Sent By</th>
+      <th>Sent At</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let invitation of invitations">
+      <td>{{ invitation.invitedUserEmail }}</td>
+      <td>{{ invitation.invitedUserName }}</td>
+      <td>{{ invitation.role }}</td>
+      <td>{{ invitation.status }}</td>
+      <td>{{ invitation.senderEmail }}</td>
+      <td>{{ invitation.createdAt | date:'short' }}</td>
+      <td>
+        <a class="edit-delete-icon" (click)="removeInvitation(invitation.id)" *ngIf="invitation.status === 'PENDING'">
+          <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
+        </a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="invitations.length === 0">No invitations sent yet.</p>
+</div>

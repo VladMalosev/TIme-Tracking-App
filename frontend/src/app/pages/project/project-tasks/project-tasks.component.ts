@@ -1,15 +1,15 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { Component, Input, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-task-creation-component',
+  selector: 'app-project-tasks',
   imports: [CommonModule, FormsModule],
-  templateUrl: './task-creation-component.html',
-  styleUrl: './task-creation-component.css'
+  templateUrl: './project-tasks.component.html',
+  styleUrl: './project-tasks.component.css'
 })
-export class TaskCreationComponent implements OnInit {
+export class ProjectTasksComponent implements OnInit {
   @Input() projectId!: string;
   @Input() currentUserRole!: string;
   errorMessage: string | null = null;
@@ -18,11 +18,12 @@ export class TaskCreationComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  createTask(name: string, description: string): void {
+  createTask(name: string, description: string, deadline: string): void {
     const task = {
       name: name,
       description: description,
-      status: 'PENDING'
+      status: 'PENDING',
+      deadline: new Date(deadline).toISOString()
     };
 
     this.http.post<any>(

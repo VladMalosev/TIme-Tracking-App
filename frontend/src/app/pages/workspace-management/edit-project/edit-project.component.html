@@ -26,25 +26,6 @@
       <button type="submit">Save Changes</button>
     </form>
 
-    <!-- User Invitation Component -->
-    <app-user-invitation
-      [projectId]="project.id"
-      [currentUserRole]="currentUserRole">
-    </app-user-invitation>
 
-    <!-- Task Creation Component -->
-    <app-task-creation-component
-      [projectId]="project.id"
-      [currentUserRole]="currentUserRole">
-    </app-task-creation-component>
-
-    <!-- Task Assignment Component -->
-    <app-task-assignment
-      [projectId]="project.id"
-      [tasks]="tasks"
-      [collaborators]="collaborators"
-      [currentUserRole]="currentUserRole"
-      [userId]="userId">
-    </app-task-assignment>
   </div>
 </div>

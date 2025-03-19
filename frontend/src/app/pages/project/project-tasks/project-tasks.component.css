@@ -1,0 +1,21 @@
+.card-panel {
+  padding: 20px;
+  margin: 20px auto;
+  width: 80%;
+  max-width: 80%
+}
+
+.header {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  margin-top: 20px;
+}
+
+.alert {
+  padding: 10px;
+  margin-top: 20px;
+  border-radius: 4px;
+}
