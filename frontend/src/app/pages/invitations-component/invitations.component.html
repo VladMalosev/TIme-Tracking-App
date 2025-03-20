@@ -1,28 +1,59 @@
-<div *ngIf="pendingInvitations.length > 0">
-  <h2>Pending Invitations</h2>
-  <table>
-    <thead>
-    <tr>
-      <th>Project</th>
-      <th>Role</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let invitation of pendingInvitations">
-      <td>{{ invitation.project.name }}</td>
-      <td>{{ invitation.role }}</td>
-      <td>
-        <button (click)="acceptInvitation(invitation.id)">Accept</button>
-        <button (click)="rejectInvitation(invitation.id)">Reject</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-</div>
-<div *ngIf="pendingInvitations.length === 0">
-  <p>No pending invitations found.</p>
-</div>
-<div *ngIf="errorMessage" class="error-message">
-  {{ errorMessage }}
+<div class="container">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Project Invitations -->
+  <div *ngIf="pendingProjectInvitations.length > 0">
+    <h3>Project Invitations</h3>
+    <table class="highlight responsive-table">
+      <thead>
+      <tr>
+        <th>Project</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let invitation of pendingProjectInvitations">
+        <td>{{ invitation.project.name }}</td>
+        <td>{{ invitation.role }}</td>
+        <td>
+          <button (click)="acceptProjectInvitation(invitation.id)">Accept</button>
+          <button (click)="rejectProjectInvitation(invitation.id)">Reject</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Workspace Invitations -->
+  <div *ngIf="pendingWorkspaceInvitations.length > 0">
+    <h3>Workspace Invitations</h3>
+    <table class="highlight responsive-table">
+      <thead>
+      <tr>
+        <th>Workspace</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let invitation of pendingWorkspaceInvitations">
+        <td>{{ invitation.workspace.name }}</td>
+        <td>{{ invitation.role }}</td>
+        <td>
+          <button (click)="acceptWorkspaceInvitation(invitation.id)">Accept</button>
+          <button (click)="rejectWorkspaceInvitation(invitation.id)">Reject</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Invitations Message -->
+  <div *ngIf="pendingProjectInvitations.length === 0 && pendingWorkspaceInvitations.length === 0">
+    <p>No pending invitations.</p>
+  </div>
 </div>

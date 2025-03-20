@@ -1,10 +1,9 @@
 <li class="dropdown">
-  <a href="#" class="dropdown-trigger black-text" data-target="user-dropdown" (click)="preventNavigation($event)">
-    <i class="material-icons">account_circle</i>
+  <a href="#" class="dropdown-trigger black-text" (click)="toggleDropdown($event)">
+    <img [src]="avatarUrl" alt="User Avatar" class="avatar-icon">
   </a>
 
-  <!-- Dropdown Structure -->
-  <ul id="user-dropdown" class="dropdown-content white">
+  <ul #dropdownMenu class="dropdown-content white" [class.show]="isDropdownOpen">
     <li><a href="/profile" class="black-text">Profile</a></li>
     <li><a href="/settings" class="black-text">Settings</a></li>
     <li class="divider"></li>

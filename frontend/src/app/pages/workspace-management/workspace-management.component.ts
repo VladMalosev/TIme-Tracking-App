@@ -3,59 +3,139 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+
+interface Workspace {
+  id: string;
+  name: string;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status?: string;
+  createdAt: string;
+  deadline?: Date | null;
+  workspaceId: string;
+  selected?: boolean;
+}
 
 @Component({
   selector: 'app-workspace-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatTableModule,
+  ],
   templateUrl: './workspace-management.component.html',
-  styleUrls: ['./workspace-management.component.css']
+  styleUrls: ['./workspace-management.component.scss'],
 })
 export class WorkspaceManagementComponent implements OnInit {
-  ownedProjects: any[] = [];
+  ownedProjects: Project[] = [];
+  collaboratedProjects: Project[] = [];
   errorMessage: string | null = null;
-  selectedOwnedProjects: any[] = [];
+  selectedOwnedProjects: Project[] = [];
+  workspaces: Workspace[] = [];
+  selectedWorkspaceId: string | null = null;
+  inviteUserEmail: string = '';
+  inviteUserRole: string = 'USER';
+  inviteUserDescription: string = '';
+  showInviteUserForm: boolean = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
-    this.fetchProjects();
+    this.fetchWorkspaces();
+  }
+
+  toggleInviteUserForm(): void {
+    this.showInviteUserForm = !this.showInviteUserForm;
   }
 
   goToProjectMembers(projectId: number): void {
     this.router.navigate(['/project-details', projectId]);
   }
 
-  fetchProjects(): void {
-    this.http.get<{ ownedProjects: any[] }>('http://localhost:8080/api/projects', { withCredentials: true })
+  fetchWorkspaces(): void {
+    this.http
+      .get<{ workspaces: Workspace[] }>('http://localhost:8080/api/workspaces', { withCredentials: true })
       .subscribe(
         (response) => {
-          console.log("API Response:", response); // Log response to verify
-
-          if (!response || !response.ownedProjects) {
-            this.errorMessage = 'Invalid API response: Missing ownedProjects data.';
-            return;
+          this.workspaces = response.workspaces;
+          if (this.workspaces.length > 0) {
+            this.selectedWorkspaceId = this.workspaces[0].id;
+            this.fetchProjects();
+            this.fetchCollaboratedProjects();
           }
+        },
+        (error) => {
+          this.errorMessage = 'Failed to fetch workspaces. Please try again.';
+        }
+      );
+  }
 
-          this.ownedProjects = response.ownedProjects.map(project => ({
-            ...project,
-            selected: false,
-            deadline: project.deadline ? new Date(project.deadline) : null
-          }));
+  fetchCollaboratedProjects(): void {
+    this.http
+      .get<Project[]>('http://localhost:8080/api/workspaces/collaborated-projects', { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.collaboratedProjects = response;
+        },
+        (error) => {
+          console.error('Failed to fetch collaborated projects', error);
+        }
+      );
+  }
 
-          console.log("Owned Projects:", this.ownedProjects);
+  onWorkspaceChange(): void {
+    this.fetchProjects();
+    this.fetchCollaboratedProjects();
+  }
+
+  fetchProjects(): void {
+    if (!this.selectedWorkspaceId) {
+      this.errorMessage = 'No workspace selected.';
+      return;
+    }
+
+    this.http
+      .get<Project[]>(`http://localhost:8080/api/workspaces/${this.selectedWorkspaceId}/projects`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.ownedProjects = response;
           this.errorMessage = null;
         },
         (error) => {
-          console.error('Error fetching projects', error);
           this.errorMessage = 'Failed to fetch projects. Please try again.';
         }
       );
   }
 
+  addNewProject(): void {
+    this.router.navigate(['/add-project']);
+  }
 
-  toggleSelectAllOwned(event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
+  toggleSelectAllOwned(event: MatCheckboxChange): void {
+    const isChecked = event.checked;
     this.ownedProjects.forEach(project => project.selected = isChecked);
     this.updateSelectedOwnedProjects();
   }
@@ -119,7 +199,7 @@ export class WorkspaceManagementComponent implements OnInit {
     }
   }
 
-  startEdit(project: any): void {
+  startEdit(project: Project): void {
     this.http.get(`http://localhost:8080/api/projects/${project.id}/current-user-role`, { withCredentials: true })
       .subscribe(
         (response: any) => {
@@ -134,6 +214,36 @@ export class WorkspaceManagementComponent implements OnInit {
         (error) => {
           console.error('Error fetching user role', error);
           this.errorMessage = 'Failed to fetch user role. Please try again.';
+        }
+      );
+  }
+
+  inviteUserToWorkspace(): void {
+    if (!this.selectedWorkspaceId || !this.inviteUserEmail || !this.inviteUserRole) {
+      this.errorMessage = 'Please fill in all fields.';
+      return;
+    }
+
+    const payload = {
+      workspaceId: this.selectedWorkspaceId,
+      email: this.inviteUserEmail,
+      role: this.inviteUserRole,
+      description: this.inviteUserDescription,
+    };
+
+    this.http.post('http://localhost:8080/api/workspaces/invite', payload, { withCredentials: true })
+      .subscribe(
+        () => {
+          this.errorMessage = null;
+          this.snackBar.open('User invited successfully!', 'Close', { duration: 3000 });
+          this.inviteUserEmail = '';
+          this.inviteUserRole = 'USER';
+          this.inviteUserDescription = '';
+          this.showInviteUserForm = false;
+        },
+        (error) => {
+          console.error('Error inviting user', error);
+          this.errorMessage = error.error?.message || 'Failed to invite user. Please try again.';
         }
       );
   }

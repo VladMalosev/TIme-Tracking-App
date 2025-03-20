@@ -93,13 +93,16 @@ public class ProjectController {
         project.setUpdatedAt(LocalDateTime.now());
         projectRepository.save(project);
 
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setUser(user);
-        projectUser.setProject(project);
-        projectUser.setRole(Role.OWNER);
-        projectUser.setCreatedAt(LocalDateTime.now());
-        projectUser.setUpdatedAt(LocalDateTime.now());
-        projectUserRepository.save(projectUser);
+        List<WorkspaceUser> workspaceUsers = workspaceUserRepository.findByWorkspaceId(workspace.getId());
+        for (WorkspaceUser workspaceUser : workspaceUsers) {
+            ProjectUser projectUser = new ProjectUser();
+            projectUser.setUser(workspaceUser.getUser());
+            projectUser.setProject(project);
+            projectUser.setRole(workspaceUser.getRole());
+            projectUser.setCreatedAt(LocalDateTime.now());
+            projectUser.setUpdatedAt(LocalDateTime.now());
+            projectUserRepository.save(projectUser);
+        }
 
         return ResponseEntity.ok(project);
     }
@@ -525,5 +528,26 @@ public class ProjectController {
         activityRepository.save(activity);
 
         return ResponseEntity.ok(project);
+    }
+
+    @Operation(summary = "Get projects where the user is a collaborator", description = "Retrieves a list of projects where the user is a collaborator.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Projects retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/collaborated")
+    public ResponseEntity<List<Project>> getCollaboratedProjects() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<ProjectUser> projectUsers = projectUserRepository.findByUserId(user.getId());
+        List<Project> projects = projectUsers.stream()
+                .map(ProjectUser::getProject)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(projects);
     }
 }

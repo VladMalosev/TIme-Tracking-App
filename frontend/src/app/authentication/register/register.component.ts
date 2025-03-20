@@ -3,11 +3,10 @@ import {AuthService} from '../../auth.service';
 import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {HeaderComponent} from "../../components/header/header.component";
 
 @Component({
   selector: 'app-register',
-    imports: [CommonModule, FormsModule, HeaderComponent],
+    imports: [CommonModule, FormsModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })

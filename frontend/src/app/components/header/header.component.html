@@ -1,22 +1,23 @@
-<div class="header">
-<nav class="white">
-  <div class="nav-wrapper">
-    <a href="/dashboard">
-      <img class="brand-logo black-text" src="assets/images/logo.png" alt="Logo">
-    </a>
-    <ul class="right">
-      <li><a href="/products" class="black-text">Products</a></li>
-      <li><a href="/solutions" class="black-text">Tasks</a></li>
-      <li><a href="/community" class="black-text">Projects</a></li>
-      <li><a href="/resources" class="black-text">Dashboard</a></li>
-      <li><a href="/pricing" class="black-text">Pricing</a></li>
+<mat-toolbar class="header mat-elevation-z4">
+  <a href="/dashboard" class="logo-link">
+    <img src="assets/images/logo.png" alt="Logo" class="brand-logo">
+  </a>
 
-      <li *ngIf="!isLogged"><a href="/login" class="black-text">Sign In</a></li>
-      <li *ngIf="!isLogged"><a href="/register" class="black-text">Register</a></li>
+  <span class="spacer"></span>
 
-      <app-user-dropdown *ngIf="isLogged" (logoutEvent)="logout()"></app-user-dropdown>
+  <nav>
+    <a mat-button href="/products" class="nav-link">Products</a>
+    <a mat-button href="/solutions" class="nav-link">Tasks</a>
+    <a mat-button href="/community" class="nav-link">Projects</a>
+    <a mat-button href="/resources" class="nav-link">Dashboard</a>
+    <a mat-button href="/pricing" class="nav-link">Pricing</a>
 
-    </ul>
-  </div>
-</nav>
-</div>
+    <ng-container *ngIf="!isLogged">
+      <a mat-button href="/login" class="nav-link-login">Sign In</a>
+      <a mat-button href="/register" class="nav-link-register">Register</a>
+    </ng-container>
+
+    <!-- Logged-in -->
+    <app-user-dropdown *ngIf="isLogged" (logoutEvent)="logout()"></app-user-dropdown>
+  </nav>
+</mat-toolbar>

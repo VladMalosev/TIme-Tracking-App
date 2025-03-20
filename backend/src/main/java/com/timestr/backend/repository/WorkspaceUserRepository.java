@@ -1,5 +1,6 @@
 package com.timestr.backend.repository;
 
+import com.timestr.backend.model.Role;
 import com.timestr.backend.model.WorkspaceUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,8 @@ public interface WorkspaceUserRepository extends JpaRepository<WorkspaceUser, UU
     List<WorkspaceUser> findByWorkspaceId(UUID workspaceId);
 
     void deleteByWorkspaceIdAndUserId(UUID workspaceId, UUID userId);
+
+    Optional<WorkspaceUser> findByWorkspaceIdAndRole(UUID workspaceId, Role role);
+
+    List<WorkspaceUser> findByUserId(UUID id);
 }

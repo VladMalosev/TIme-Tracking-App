@@ -1,0 +1,98 @@
+.container {
+  padding: 80px 200px 20px 200px; /*top, left, bottom, right*/
+  background-color: white;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.projects-heading {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+}
+
+.right {
+  margin-left: 10px;
+}
+
+.center-align {
+  text-align: center;
+}
+
+.blue-text {
+  color: #3f51b5;
+}
+
+.mat-elevation-z8 {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 20px;
+  background-color: white;
+  border-bottom: 2px solid #F0F0F2;
+  border-right: 2px solid #F0F0F2;
+  border-left: 2px solid #F0F0F2;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.button-group {
+  display: flex;
+  gap: 16px;
+
+}
+
+.button-group button {
+  padding: 0 16px;
+  font-size: 14px;
+  box-shadow: none !important;
+}
+
+.add-button, .delete-button {
+  border-radius: 10px;
+  border: 1px solid #767676;
+}
+
+.add-button {
+  background-color: #4A3AFF !important;
+  color: white !important;
+
+}
+
+.delete-button {
+  color: black !important;
+
+}
+mat-card {
+  background-color: white !important;
+  box-shadow: none !important;
+}
+.table-caption {
+  color: #4A3AFF;
+  background-color: #fbfbff;
+  padding: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  font-weight: bold;
+  border-top: 2px solid #F0F0F2;
+  border-right: 2px solid #F0F0F2;
+  border-left: 2px solid #F0F0F2;
+
+}
+
+
+.bottom-text{
+  margin-top: 20px;
+}
+
+.undertext, .header-row{
+  color: #9291A5;
+}
+
+

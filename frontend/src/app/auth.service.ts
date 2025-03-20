@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {Observable, map, tap, catchError} from 'rxjs';
+import {Observable, map, tap, catchError, BehaviorSubject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
-
+  private isLoggedInSubject = new BehaviorSubject<boolean>(false);
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
   constructor(private http: HttpClient) {}
 
   isAuthenticated(): Observable<boolean> {
@@ -17,16 +18,27 @@ export class AuthService {
     );
   }
 
+  checkAuthentication(): void {
+    this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).pipe(
+      map(response => !!response.email),
+      catchError(() => [false])
+    ).subscribe(isLoggedIn => this.isLoggedInSubject.next(isLoggedIn));
+  }
+
   register(userData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true }).pipe(
+      tap(() => this.checkAuthentication())
+    );
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
+      tap(() => this.isLoggedInSubject.next(false))
+    );
   }
 
   getCurrentUserEmail(): Observable<string> {
@@ -40,6 +52,4 @@ export class AuthService {
       tap(users => console.log('Fetched online users:', users))
     );
   }
-
-
 }

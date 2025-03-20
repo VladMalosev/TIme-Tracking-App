@@ -6,123 +6,178 @@ link to the dbdiagram
 https://dbdiagram.io/d/67bf0126263d6cf9a086c6d4
 
 ```
-CREATE TABLE project_invitations (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    project_id UUID NOT NULL,
-    invited_user_id UUID NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED')) DEFAULT 'PENDING',
-    role VARCHAR(20) NOT NULL CHECK (role IN ('OWNER', 'ADMIN', 'USER')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (invited_user_id) REFERENCES users(id) ON DELETE CASCADE
+-- Enum Tables
+CREATE TYPE activity_type AS ENUM (
+    'TASK_COMPLETED',
+    'COLLABORATOR_JOINED',
+    'DEADLINE_UPDATED',
+    'PROJECT_CREATED',
+    'TASK_CREATED',
+    'TASK_UPDATED',
+    'COLLABORATOR_INVITED',
+    'PROJECT_UPDATED'
 );
 
-CREATE TABLE workspaces (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL, -- The user who created the workspace
-    name VARCHAR(100) NOT NULL,
-    description VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (name),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+CREATE TYPE invitation_status AS ENUM (
+    'PENDING',
+    'ACCEPTED',
+    'REJECTED'
 );
 
+CREATE TYPE role AS ENUM (
+    'OWNER',
+    'ADMIN',
+    'MANAGER',
+    'USER'
+);
+
+CREATE TYPE task_status AS ENUM (
+    'PENDING',
+    'IN_PROGRESS',
+    'COMPLETED'
+);
+
+-- Users Table
 CREATE TABLE users (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id UUID PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password TEXT NOT NULL,
+    password VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    role role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Workspaces Table
+CREATE TABLE workspaces (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id),
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workspace Users Table
+CREATE TABLE workspace_users (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id),
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    role role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workspace Invitations Table
+CREATE TABLE workspace_invitations (
+    id UUID PRIMARY KEY,
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    invited_user_id UUID NOT NULL REFERENCES users(id),
+    sender_id UUID NOT NULL REFERENCES users(id),
+    role role NOT NULL,
+    status invitation_status NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Clients Table
 CREATE TABLE clients (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    workspace_id UUID NOT NULL,
+    id UUID PRIMARY KEY,
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
     name VARCHAR(100) NOT NULL,
     contact_email VARCHAR(255),
     contact_phone VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
-    UNIQUE (workspace_id, name) 
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Projects Table
 CREATE TABLE projects (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    workspace_id UUID NOT NULL,
-    client_id UUID NOT NULL,
+    id UUID PRIMARY KEY,
+    workspace_id UUID NOT NULL REFERENCES workspaces(id),
+    client_id UUID REFERENCES clients(id),
     name VARCHAR(100) NOT NULL,
     description VARCHAR(500),
     deadline TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE,
-    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
-    UNIQUE (workspace_id, name)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Project Users Table
 CREATE TABLE project_users (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL,
-    project_id UUID NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('OWNER', 'ADMIN', 'USER')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    UNIQUE (user_id, project_id)
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id),
+    project_id UUID NOT NULL REFERENCES projects(id),
+    role role NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Project Invitations Table
+CREATE TABLE project_invitations (
+    id UUID PRIMARY KEY,
+    project_id UUID NOT NULL REFERENCES projects(id),
+    invited_user_id UUID NOT NULL REFERENCES users(id),
+    sender_id UUID NOT NULL REFERENCES users(id),
+    role role NOT NULL,
+    status invitation_status NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tasks Table
 CREATE TABLE tasks (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    project_id UUID NOT NULL,
+    id UUID PRIMARY KEY,
+    project_id UUID NOT NULL REFERENCES projects(id),
     name VARCHAR(150) NOT NULL,
+    assigned_user_id UUID REFERENCES users(id),
     description VARCHAR(500),
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    status task_status NOT NULL DEFAULT 'PENDING',
+    deadline TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE time_logs (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL,
-    task_id UUID, -- Optional, can be NULL
-    start_time TIMESTAMP, -- Optional, can be NULL
-    end_time TIMESTAMP, -- Optional, can be NULL
-    minutes INT, -- Optional, can be NULL if start_time and end_time are provided
-    description VARCHAR(500),
-    logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL -- Optional, can be NULL
-);
-
-CREATE TABLE chat_messages (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    content VARCHAR(1000) NOT NULL,
-    sender_id UUID NOT NULL,
-    recipient_email VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
+-- Task Assignments Table
 CREATE TABLE task_assignments (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    task_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    assigned_by UUID NOT NULL, -- User who assigned the task
-    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (task_id, user_id) 
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL REFERENCES tasks(id),
+    user_id UUID NOT NULL REFERENCES users(id),
+    assigned_by UUID NOT NULL REFERENCES users(id),
+    assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Time Logs Table
+CREATE TABLE time_logs (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id),
+    task_id UUID REFERENCES tasks(id),
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    minutes INTEGER,
+    description VARCHAR(500) NOT NULL DEFAULT '',
+    logged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Activities Table
+CREATE TABLE activities (
+    id UUID PRIMARY KEY,
+    project_id UUID NOT NULL REFERENCES projects(id),
+    type activity_type NOT NULL,
+    description VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Chat Messages Table
+CREATE TABLE chat_messages (
+    id UUID PRIMARY KEY,
+    content VARCHAR(1000) NOT NULL,
+    sender_id UUID NOT NULL REFERENCES users(id),
+    recipient_email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 ```
 

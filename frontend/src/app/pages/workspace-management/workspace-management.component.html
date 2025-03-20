@@ -1,75 +1,175 @@
 <div class="container">
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="alert error-message">
+  <mat-card *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
-  </div>
+  </mat-card>
 
-  <!-- Projects Section -->
-  <h5 class="projects-heading">Projects</h5>
-  <a class="waves-effect waves-light btn right blue white-text pd10 button-margin" href="/add-project">+ Add new project</a>
-  <a class="waves-effect waves-light btn right white black-text button-margin" (click)="deleteSelectedProjects('owned')">
-    Delete
-  </a>
-  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.</p>
+  <!-- Workspace Selection -->
+  <mat-card *ngIf="workspaces.length > 0">
+    <mat-form-field appearance="fill">
+      <mat-label>Select Workspace</mat-label>
+      <mat-select [(ngModel)]="selectedWorkspaceId" (selectionChange)="onWorkspaceChange()">
+        <mat-option *ngFor="let workspace of workspaces" [value]="workspace.id">
+          {{ workspace.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-card>
 
-  <!-- No Projects Message -->
-    <p>You are not part of any projects. <a href="/add-project">Create a new project</a> to get started.</p>
-  </div>
+  <!-- No Workspace Message -->
+  <mat-card *ngIf="workspaces.length === 0">
+    <p>You are not part of any workspace. <a href="/create-workspace">Create a workspace</a> to get started.</p>
+  </mat-card>
 
-  <!-- Owned Projects Table -->
-  <div *ngIf="ownedProjects.length > 0">
-    <h5 class="center-align blue-text">Owned Projects</h5>
-    <table class="highlight responsive-table thin-lines-table">
-      <thead>
-      <tr>
-        <th>
-          <label>
-            <input
-              type="checkbox"
-              (change)="toggleSelectAllOwned($event)"
-            />
-            <span></span>
-          </label>
+  <!-- Invite User Button -->
+  <mat-card *ngIf="selectedWorkspaceId">
+    <button mat-raised-button color="primary" (click)="toggleInviteUserForm()">
+      {{ showInviteUserForm ? 'Cancel' : 'Invite User to Workspace' }}
+    </button>
+
+    <!-- Invite User Form -->
+    <form *ngIf="showInviteUserForm" (ngSubmit)="inviteUserToWorkspace()" class="invite-user-form">
+      <mat-form-field appearance="fill">
+        <mat-label>User Email</mat-label>
+        <input matInput id="user-email" type="email" [(ngModel)]="inviteUserEmail" name="userEmail" required />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Role</mat-label>
+        <mat-select id="user-role" [(ngModel)]="inviteUserRole" name="userRole" required>
+          <mat-option value="ADMIN">Admin</mat-option>
+          <mat-option value="MANAGER">Manager</mat-option>
+          <mat-option value="USER">User</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="inviteUserDescription" name="userDescription"></textarea>
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit">Invite User</button>
+    </form>
+  </mat-card>
+
+  <!-- Workspace Projects Section -->
+  <mat-card *ngIf="selectedWorkspaceId">
+    <div class="projects-heading">
+      <h2>Projects</h2>
+      <div class="button-group">
+        <button mat-raised-button class="delete-button" (click)="deleteSelectedProjects('owned')">Delete</button>
+        <button mat-raised-button class="add-button" (click)="addNewProject()">+ Add New Project</button>
+      </div>
+    </div>
+    <p class="undertext">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Commodi doloribus dolorum est expedita id non quibusdam. Doloremque ex iusto veritatis.</p>
+
+    <!-- Workspace Projects Table -->
+    <!-- Workspace Projects Table -->
+    <table mat-table [dataSource]="ownedProjects" class="mat-elevation-z8">
+      <caption class="table-caption">LIST OF PROJECTS</caption>
+      <!-- Table Columns -->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="toggleSelectAllOwned($event)"></mat-checkbox>
         </th>
-        <th>PROJECTS</th>
-        <th>STATUS</th>
-        <th>COMMENTS</th>
-        <th>TIME STARTED</th>
-        <th>DEADLINE</th>
-        <th>ACTIONS</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let project of ownedProjects" (click)="goToProjectMembers(project.id)">
-        <td (click)="$event.stopPropagation()">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="project.selected"
-              (change)="updateSelectedOwnedProjects()"
-            />
-            <span></span>
-          </label>
+        <td mat-cell *matCellDef="let project">
+          <mat-checkbox [(ngModel)]="project.selected" (change)="updateSelectedOwnedProjects()"></mat-checkbox>
         </td>
-        <td>{{ project.name }}</td>
-        <td>{{ project.status || 'N/A' }}</td>
-        <td>{{ project.description || 'No comments' }}</td>
-        <td>{{ project.createdAt | date:'medium' }}</td>
-        <td>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell class="header-row name-column" *matHeaderCellDef>PROJECTS</th>
+        <td mat-cell class="name-column" *matCellDef="let project">{{ project.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell class="header-row status-column" *matHeaderCellDef>STATUS</th>
+        <td mat-cell class="status-column" *matCellDef="let project">{{ project.status || 'N/A' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th mat-header-cell class="header-row description-column" *matHeaderCellDef>COMMENTS</th>
+        <td mat-cell class="description-column" *matCellDef="let project">{{ project.description || 'No comments' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell class="header-row created-at-column" *matHeaderCellDef>TIME STARTED</th>
+        <td mat-cell class="created-at-column" *matCellDef="let project">{{ project.createdAt | date:'medium' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="deadline">
+        <th mat-header-cell class="header-row deadline-column" *matHeaderCellDef>DEADLINE</th>
+        <td mat-cell class="deadline-column" *matCellDef="let project">
           <ng-container *ngIf="project.deadline; else noDeadline">
             {{ project.deadline | date:'medium' }}
           </ng-container>
           <ng-template #noDeadline>No deadline set</ng-template>
         </td>
-        <td>
-          <a class="edit-delete-icon" (click)="deleteProject(project.id); $event.stopPropagation()">
-            <img class="buttons a1" src="assets/images/recycle-bin.png" alt="Delete" />
-          </a>
-          <a class="edit-delete-icon" (click)="startEdit(project); $event.stopPropagation()">
-            <img class="buttons" src="assets/images/edit.png" alt="Edit" />
-          </a>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell class="header-row actions-column" *matHeaderCellDef>ACTIONS</th>
+        <td mat-cell class="actions-column" *matCellDef="let project">
+          <button mat-icon-button (click)="deleteProject(project.id); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button mat-icon-button (click)="startEdit(project); $event.stopPropagation()">
+            <mat-icon>edit</mat-icon>
+          </button>
         </td>
-      </tr>
-      </tbody>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['select', 'name', 'status', 'description', 'createdAt', 'deadline', 'actions']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['select', 'name', 'status', 'description', 'createdAt', 'deadline', 'actions'];" (click)="goToProjectMembers(row.id)"></tr>
     </table>
-  </div>
+  </mat-card>
+
+  <!-- No Workspace Projects Message -->
+  <mat-card *ngIf="selectedWorkspaceId && ownedProjects.length === 0">
+    <p>No projects found in this workspace. <a href="/add-project">Create a new project</a> to get started.</p>
+  </mat-card>
+
+  <!-- Collaborated Projects Section -->
+  <mat-card *ngIf="collaboratedProjects.length > 0">
+    <h5 class="projects-heading">Collaborated Projects</h5>
+    <p>Projects where you are a collaborator but not a workspace member.</p>
+
+    <!-- Collaborated Projects Table -->
+    <table mat-table [dataSource]="collaboratedProjects" class="mat-elevation-z8">
+      <!-- Table Columns -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>PROJECTS</th>
+        <td mat-cell *matCellDef="let project">{{ project.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>STATUS</th>
+        <td mat-cell *matCellDef="let project">{{ project.status || 'N/A' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>COMMENTS</th>
+        <td mat-cell *matCellDef="let project">{{ project.description || 'No comments' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>TIME STARTED</th>
+        <td mat-cell *matCellDef="let project">{{ project.createdAt | date:'medium' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="deadline">
+        <th mat-header-cell *matHeaderCellDef>DEADLINE</th>
+        <td mat-cell *matCellDef="let project">
+          <ng-container *ngIf="project.deadline; else noDeadline">
+            {{ project.deadline | date:'medium' }}
+          </ng-container>
+          <ng-template #noDeadline>No deadline set</ng-template>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+        <td mat-cell *matCellDef="let project">
+          <button mat-icon-button (click)="deleteProject(project.id); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button mat-icon-button (click)="startEdit(project); $event.stopPropagation()">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['name', 'status', 'description', 'createdAt', 'deadline', 'actions']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['name', 'status', 'description', 'createdAt', 'deadline', 'actions'];" (click)="goToProjectMembers(row.id)"></tr>
+    </table>
+  </mat-card>
+
+  <!-- No Collaborated Projects Message -->
+  <mat-card class="bottom-text" *ngIf="collaboratedProjects.length === 0">
+    <p class="no-collaborated">No collaborated projects found.</p>
+  </mat-card>
+</div>
