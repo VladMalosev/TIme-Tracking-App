@@ -4,38 +4,46 @@
     {{ errorMessage }}
   </mat-card>
 
-  <!-- Workspace Selection -->
-  <mat-card *ngIf="workspaces.length > 0">
-    <mat-form-field appearance="fill">
-      <mat-label>Select Workspace</mat-label>
-      <mat-select [(ngModel)]="selectedWorkspaceId" (selectionChange)="onWorkspaceChange()">
-        <mat-option *ngFor="let workspace of workspaces" [value]="workspace.id">
-          {{ workspace.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </mat-card>
+  <!-- Workspace Selection and Invite User Button -->
+  <h2>Welcome to {{ selectedWorkspaceName || 'Your Workspaces' }}</h2>
+  <p>Select a workspace to get access to the projects.</p>
+  <div class="workspace-invite-container">
+    <!-- Workspace Selection -->
+    <mat-card *ngIf="workspaces.length > 0" class="workspace-selection">
+      <mat-form-field appearance="fill">
+        <mat-label>Select Workspace</mat-label>
+        <mat-select [(ngModel)]="selectedWorkspaceId" (selectionChange)="onWorkspaceChange()">
+          <mat-option *ngFor="let workspace of workspaces" [value]="workspace.id">
+            {{ workspace.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card>
+
+    <!-- Invite User Button -->
+    <mat-card *ngIf="selectedWorkspaceId" class="invite-button">
+      <button mat-raised-button class="primary" (click)="toggleInviteUserForm()">
+        {{ showInviteUserForm ? 'Cancel' : 'Invite User to Workspace' }}
+      </button>
+    </mat-card>
+  </div>
 
   <!-- No Workspace Message -->
   <mat-card *ngIf="workspaces.length === 0">
     <p>You are not part of any workspace. <a href="/create-workspace">Create a workspace</a> to get started.</p>
   </mat-card>
 
-  <!-- Invite User Button -->
-  <mat-card *ngIf="selectedWorkspaceId">
-    <button mat-raised-button color="primary" (click)="toggleInviteUserForm()">
-      {{ showInviteUserForm ? 'Cancel' : 'Invite User to Workspace' }}
-    </button>
-
-    <!-- Invite User Form -->
-    <form *ngIf="showInviteUserForm" (ngSubmit)="inviteUserToWorkspace()" class="invite-user-form">
+  <!-- Invite User Form -->
+  <mat-card *ngIf="showInviteUserForm && selectedWorkspaceId" class="invite-user-form">
+    <h3>Invite User to Workspace</h3>
+    <form (ngSubmit)="inviteUserToWorkspace()">
       <mat-form-field appearance="fill">
         <mat-label>User Email</mat-label>
-        <input matInput id="user-email" type="email" [(ngModel)]="inviteUserEmail" name="userEmail" required />
+        <input matInput type="email" [(ngModel)]="inviteUserEmail" name="userEmail" required />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Role</mat-label>
-        <mat-select id="user-role" [(ngModel)]="inviteUserRole" name="userRole" required>
+        <mat-select [(ngModel)]="inviteUserRole" name="userRole" required>
           <mat-option value="ADMIN">Admin</mat-option>
           <mat-option value="MANAGER">Manager</mat-option>
           <mat-option value="USER">User</mat-option>
@@ -45,22 +53,33 @@
         <mat-label>Description</mat-label>
         <textarea matInput [(ngModel)]="inviteUserDescription" name="userDescription"></textarea>
       </mat-form-field>
-      <button mat-raised-button color="primary" type="submit">Invite User</button>
+      <button mat-raised-button color="primary" class="submit" type="submit">Invite User</button>
     </form>
   </mat-card>
+
+
+
+
 
   <!-- Workspace Projects Section -->
   <mat-card *ngIf="selectedWorkspaceId">
     <div class="projects-heading">
       <h2>Projects</h2>
+
       <div class="button-group">
         <button mat-raised-button class="delete-button" (click)="deleteSelectedProjects('owned')">Delete</button>
         <button mat-raised-button class="add-button" (click)="addNewProject()">+ Add New Project</button>
       </div>
     </div>
+
     <p class="undertext">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Commodi doloribus dolorum est expedita id non quibusdam. Doloremque ex iusto veritatis.</p>
 
-    <!-- Workspace Projects Table -->
+
+    <!-- No Workspace Projects Message -->
+    <mat-card *ngIf="selectedWorkspaceId && ownedProjects.length === 0">
+      <p>No projects found in this workspace. <a href="/add-project">Create a new project</a> to get started.</p>
+    </mat-card>
+
     <!-- Workspace Projects Table -->
     <table mat-table [dataSource]="ownedProjects" class="mat-elevation-z8">
       <caption class="table-caption">LIST OF PROJECTS</caption>
@@ -70,7 +89,12 @@
           <mat-checkbox (change)="toggleSelectAllOwned($event)"></mat-checkbox>
         </th>
         <td mat-cell *matCellDef="let project">
-          <mat-checkbox [(ngModel)]="project.selected" (change)="updateSelectedOwnedProjects()"></mat-checkbox>
+          <!-- Add stopPropagation to the checkbox -->
+          <mat-checkbox
+            [(ngModel)]="project.selected"
+            (change)="updateSelectedOwnedProjects()"
+            (click)="$event.stopPropagation()">
+          </mat-checkbox>
         </td>
       </ng-container>
       <ng-container matColumnDef="name">
@@ -114,10 +138,7 @@
     </table>
   </mat-card>
 
-  <!-- No Workspace Projects Message -->
-  <mat-card *ngIf="selectedWorkspaceId && ownedProjects.length === 0">
-    <p>No projects found in this workspace. <a href="/add-project">Create a new project</a> to get started.</p>
-  </mat-card>
+
 
   <!-- Collaborated Projects Section -->
   <mat-card *ngIf="collaboratedProjects.length > 0">

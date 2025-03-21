@@ -60,12 +60,15 @@ export class WorkspaceManagementComponent implements OnInit {
   inviteUserRole: string = 'USER';
   inviteUserDescription: string = '';
   showInviteUserForm: boolean = false;
+  selectedWorkspaceName: string = '';
 
   constructor(private http: HttpClient, private router: Router, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.fetchWorkspaces();
   }
+
+
 
   toggleInviteUserForm(): void {
     this.showInviteUserForm = !this.showInviteUserForm;

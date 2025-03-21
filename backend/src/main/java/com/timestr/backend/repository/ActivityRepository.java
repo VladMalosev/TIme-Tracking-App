@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface ActivityRepository extends JpaRepository<Activity, UUID> {
     List<Activity> findByProjectIdOrderByCreatedAtDesc(UUID projectId);
+
+    void deleteByProjectId(UUID projectId);
 }

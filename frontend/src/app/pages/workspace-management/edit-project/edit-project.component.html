@@ -1,25 +1,35 @@
-<!-- Error Message -->
-<div *ngIf="errorMessage" class="alert error-message">
-  {{ errorMessage }}
-</div>
+<mat-spinner *ngIf="loading" class="loading-spinner"></mat-spinner>
 
-<!-- Loading Spinner -->
-<div *ngIf="loading" class="loading-spinner">
-  Loading...
-</div>
+<div *ngIf="!loading && project" class="edit-project-container">
+  <h2 class="mat-display-1">Edit Project: {{ project.name }}</h2>
 
-<!-- Project Details -->
-<div *ngIf="!loading && project">
-  <h2>Edit Project: {{ project.name }}</h2>
-
-  <!-- Edit Project Form -->
   <form (ngSubmit)="saveEdit()">
-    <label for="projectName">Name:</label>
-    <input id="projectName" [(ngModel)]="project.name" name="name" required>
+    <!-- Project Name -->
+    <h4>Project Name:</h4>
+    <p>Be careful when changing your project name, as other users may be confused.</p>
+    <mat-form-field appearance="fill" class="full-width">
+      <input matInput id="projectName" [(ngModel)]="project.name" name="name" required>
+    </mat-form-field>
 
-    <label for="projectDescription">Description:</label>
-    <textarea id="projectDescription" [(ngModel)]="project.description" name="description"></textarea>
+    <!-- Project Description -->
+    <h4>Description:</h4>
+    <p>Provide a detailed description of the project to keep everyone aligned.</p>
+    <mat-form-field appearance="fill" class="full-width">
+      <textarea matInput id="projectDescription" [(ngModel)]="project.description" name="description"></textarea>
+    </mat-form-field>
 
-    <button type="submit">Save Changes</button>
+    <!-- Project Deadline -->
+    <h4>Deadline:</h4>
+    <p>Set a realistic deadline to ensure timely delivery.</p>
+    <mat-form-field appearance="fill" class="full-width">
+      <input matInput [matDatepicker]="picker" [(ngModel)]="project.deadline" name="deadline">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+
+    <div class="button-container">
+      <button mat-raised-button class="custom-submit-button" color="primary" type="submit">Save Changes</button>
+    </div>
   </form>
 </div>

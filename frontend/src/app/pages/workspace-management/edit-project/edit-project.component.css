@@ -1,55 +1,51 @@
-.container {
+.edit-project-container {
+  margin: 0 auto;
+  max-width: 600px;
+  padding: 20px 60px 20px 60px;
+  background-color: #F9FAFB;
+  border-radius: 8px;
   margin-top: 20px;
-  width: 60%;
-}
-
-.alert {
-  padding: 10px;
   margin-bottom: 20px;
-  border-radius: 4px;
 }
 
 .error-message {
   background-color: #ffebee;
   color: #c62828;
-}
-
-.form-group {
+  padding: 10px;
+  border-radius: 4px;
   margin-bottom: 20px;
 }
 
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
+.loading-spinner {
+  margin: 20px auto;
 }
 
-.bordered-input {
+.full-width {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1em;
+  margin-bottom: 20px;
+}
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
-.materialize-textarea {
-  min-height: 100px;
-  resize: vertical;
+.mat-display-1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.btn {
-  margin-right: 10px;
-  padding: 10px 20px;
-  border-radius: 4px;
+.custom-submit-button {
+  color: white !important;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  box-shadow: none !important;
+  border: 1px solid #767676;
+  align-items: center;
   cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #2196f3;
-  color: #fff;
-}
-
-.btn-danger {
-  background-color: #f44336;
-  color: #fff;
+  background-color: #4A3AFF !important;
+  width: auto;
+  display: inline-block;
 }

@@ -3,6 +3,10 @@
   background-color: white;
 }
 
+.transparent-backdrop {
+  background-color: rgba(218, 8, 8, 0.5);
+}
+
 .error-message {
   background-color: #ffebee;
   color: #c62828;
@@ -96,3 +100,58 @@ mat-card {
 }
 
 
+.workspace-invite-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.workspace-selection {
+  flex: 1;
+}
+
+.invite-button{
+  margin-bottom: 20px;
+}
+
+.primary {
+  background-color: #4A3AFF !important;
+  color: white !important;
+  border-radius: 10px;
+  border: 1px solid #767676;
+}
+
+.invite-user-form {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.invite-user-form h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #4A3AFF;
+}
+
+.invite-user-form mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.invite-user-form textarea {
+  min-height: 100px;
+}
+
+.invite-user-form button[type="submit"] {
+  color: black;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  box-shadow: none !important;
+  border: 1px solid #767676;
+  align-items: center;
+}

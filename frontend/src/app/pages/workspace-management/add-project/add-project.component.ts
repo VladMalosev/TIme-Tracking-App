@@ -3,12 +3,29 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
 
 @Component({
   selector: 'app-add-project',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatCardModule,
+    MatMenu,
+    MatMenuTrigger,
+  ],
   templateUrl: './add-project.component.html',
-  styleUrls: ['./add-project.component.css']
+  styleUrls: ['./add-project.component.scss']
 })
 export class AddProjectComponent implements OnInit {
   project = {

@@ -161,18 +161,16 @@ public class ProjectController {
             throw new RuntimeException("Only the owner can delete the project");
         }
 
+        activityRepository.deleteByProjectId(projectId);
         projectUserRepository.deleteByProjectId(projectId);
-
         List<Task> tasks = taskRepository.findByProjectId(projectId);
         for (Task task : tasks) {
             timeLogRepository.deleteByTaskId(task.getId());
             taskAssignmentRepository.deleteByTaskId(task.getId());
         }
 
-        projectInvitationRepository.deleteByProjectId(projectId);
-
         taskRepository.deleteByProjectId(projectId);
-
+        projectInvitationRepository.deleteByProjectId(projectId);
         projectRepository.delete(project);
 
         return ResponseEntity.noContent().build();
