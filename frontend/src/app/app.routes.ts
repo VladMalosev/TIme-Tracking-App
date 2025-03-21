@@ -25,11 +25,12 @@ export const routes: Routes = [
     path: 'project-details/:id',
     component: ProjectComponent,
     children: [
+      { path: 'dashboard', component: ProjectComponent },
       { path: 'members', component: ProjectMembersComponent },
       { path: 'tasks', component: ProjectTasksComponent },
       { path: 'invitations', component: ProjectInvitationsComponent },
       { path: 'time-logs', component: TimeLogsComponent },
-      { path: '', redirectTo: 'members', pathMatch: 'full' }
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
   { path: '**', redirectTo: '/login' }

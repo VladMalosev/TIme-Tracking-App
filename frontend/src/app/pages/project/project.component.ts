@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ProjectMembersComponent } from './project-members/project-members.component';
@@ -11,7 +11,7 @@ import {ProjectInvitationsComponent} from "./project-invitations/project-invitat
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
-    imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent],
+  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent],
     styleUrls: ['./project.component.css']
 })
 export class ProjectComponent implements OnInit {
@@ -28,23 +28,31 @@ export class ProjectComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
-        private http: HttpClient
+        private http: HttpClient,
+        private router: Router
     ) {}
 
-    ngOnInit(): void {
-        this.projectId = this.route.snapshot.paramMap.get('id');
-        if (this.projectId) {
-            this.fetchProjectDetails(this.projectId);
-            this.fetchDashboardData(this.projectId);
-            this.fetchCurrentUserRole(this.projectId);
-            this.fetchCollaborators(this.projectId);
-            this.fetchTasks(this.projectId);
-            this.fetchUserId();
-        } else {
-            console.error('Project ID is missing');
-        }
+  ngOnInit(): void {
+    this.projectId = this.route.snapshot.paramMap.get('id');
+    if (this.projectId) {
+      this.fetchProjectDetails(this.projectId);
+      this.fetchDashboardData(this.projectId);
+      this.fetchCurrentUserRole(this.projectId);
+      this.fetchCollaborators(this.projectId);
+      this.fetchTasks(this.projectId);
+      this.fetchUserId();
+    } else {
+      console.error('Project ID is missing');
     }
 
+    this.route.firstChild?.url.subscribe(segments => {
+      if (segments.length > 0) {
+        this.activeTab = segments[0].path;
+      } else {
+        this.activeTab = 'dashboard';
+      }
+    });
+  }
     fetchProjectDetails(projectId: string): void {
         this.http.get<any>(`http://localhost:8080/api/projects/${projectId}`, { withCredentials: true })
             .subscribe(
@@ -143,7 +151,16 @@ export class ProjectComponent implements OnInit {
         return allowedRoles.includes(this.currentUserRole);
     }
 
-    setActiveTab(tab: string): void {
-        this.activeTab = tab;
-    }
+
+  setActiveTab(tab: string): void {
+    if (!this.projectId) return;
+    this.activeTab = tab;
+
+    const route = tab === 'dashboard'
+      ? [`/project-details/${this.projectId}`]
+      : [`/project-details/${this.projectId}/${tab}`];
+
+    this.router.navigate(route);
+  }
+
 }
