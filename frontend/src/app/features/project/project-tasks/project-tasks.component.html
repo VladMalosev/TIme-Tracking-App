@@ -1,0 +1,64 @@
+<div *ngIf="canManageRole('USER')" class="task-creation card-panel">
+  <h3 class="header">Create a New Task</h3>
+  <p class="description">Fill out the details below to add a new task to your project.</p>
+
+  <form (ngSubmit)="createTask(taskName.value, taskDescription.value, taskDeadline.value)">
+    <!-- Task Name -->
+    <div class="input-field">
+      <label for="taskName">Task Name</label>
+      <input #taskName id="taskName" type="text" class="validate" required placeholder="Enter task name">
+    </div>
+
+    <!-- Task Description -->
+    <div class="input-field">
+      <label for="taskDescription">Task Description</label>
+      <textarea #taskDescription id="taskDescription" class="materialize-textarea validate" required placeholder="Describe the task"></textarea>
+    </div>
+
+    <!-- Task Deadline -->
+    <div class="input-field">
+      <label for="taskDeadline">Deadline</label>
+      <input #taskDeadline id="taskDeadline" type="datetime-local" required>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary waves-effect waves-light">
+      <i class="material-icons left">add_task</i> Create Task
+    </button>
+  </form>
+
+  <!-- Task Selection -->
+  <div class="task-list card-panel">
+    <h3>Project Tasks</h3>
+
+    <div class="task-item" *ngFor="let task of tasks" (click)="onTaskSelected(task)" [class.selected]="selectedTask?.id === task.id">
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-name">{{ task.name }}</div>
+          <div class="task-status" [ngClass]="{
+          'status-pending': task.status === 'PENDING',
+          'status-completed': task.status === 'COMPLETED',
+          'status-in-progress': task.status === 'IN PROGRESS'
+        }">
+            {{ task.status }}
+          </div>
+        </div>
+        <div class="task-footer">
+          <div class="task-deadline">Deadline: {{ task.deadline | date:'shortDate' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Task Log Display -->
+  <div class="task-log-container" *ngIf="selectedTask">
+    <app-tasklog [task]="selectedTask" [logs]="taskLogs"></app-tasklog>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <i class="material-icons">error_outline</i> {{ errorMessage }}
+  </div>
+</div>
+

@@ -1,17 +1,17 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './authentication/login/login.component';
-import { RegisterComponent } from './authentication/register/register.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { AuthGuard } from './auth.guard';
-import { ChatComponent } from './pages/chat/chat.component';
-import { WorkspaceManagementComponent } from './pages/workspace-management/workspace-management.component';
-import { AddProjectComponent } from './pages/workspace-management/add-project/add-project.component';
-import { EditProjectComponent } from './pages/workspace-management/edit-project/edit-project.component';
-import { ProjectComponent } from './pages/project/project.component';
-import { ProjectMembersComponent } from './pages/project/project-members/project-members.component';
-import {ProjectTasksComponent} from './pages/project/project-tasks/project-tasks.component';
-import {ProjectInvitationsComponent} from './pages/project/project-invitations/project-invitations.component';
-import {TimeLogsComponent} from './pages/project/time-logs/time-logs.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { AuthGuard } from './core/auth/auth.guard';
+import { ChatComponent } from './features/chat/chat.component';
+import { WorkspaceManagementComponent } from './features/workspace-management/workspace-management.component';
+import { AddProjectComponent } from './features/workspace-management/add-project/add-project.component';
+import { EditProjectComponent } from './features/workspace-management/edit-project/edit-project.component';
+import { ProjectComponent } from './features/project/project.component';
+import { ProjectMembersComponent } from './features/project/project-members/project-members.component';
+import {ProjectTasksComponent} from './features/project/project-tasks/project-tasks.component';
+import {ProjectInvitationsComponent} from './features/project/project-invitations/project-invitations.component';
+import {TimeLogsComponent} from './features/project/time-logs/time-logs.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },

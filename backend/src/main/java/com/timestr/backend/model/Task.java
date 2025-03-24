@@ -38,7 +38,7 @@ public class Task {
     private TaskStatus status = TaskStatus.PENDING;
 
     @Column(name = "deadline")
-    private LocalDateTime deadline; // New field
+    private LocalDateTime deadline;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -46,12 +46,37 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @ManyToOne
+    @JoinColumn(name = "created_by", updatable = false)
+    private User createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "last_modified_by")
+    private User lastModifiedBy;
+
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public void setLastModifiedBy(User lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public User getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
     public UUID getId() {
         return id;
     }

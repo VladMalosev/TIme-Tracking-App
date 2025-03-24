@@ -1,11 +1,9 @@
 package com.timestr.backend.controller;
 
 import com.timestr.backend.dto.TaskCompletionDetails;
-import com.timestr.backend.model.Activity;
-import com.timestr.backend.model.ActivityType;
-import com.timestr.backend.model.Task;
-import com.timestr.backend.model.User;
+import com.timestr.backend.model.*;
 import com.timestr.backend.repository.ActivityRepository;
+import com.timestr.backend.repository.TaskLogRepository;
 import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +34,8 @@ public class TaskController {
     private ActivityRepository activityRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TaskLogRepository taskLogRepository;
 
     @Operation(summary = "Update a task", description = "Updates an existing task with the provided details.")
     @ApiResponses(value = {
@@ -147,20 +147,21 @@ public class TaskController {
     public ResponseEntity<Task> createTask(
             @RequestBody Task task,
             @Parameter(description = "ID of the project to associate the task with", required = true)
-            @RequestParam UUID projectId) {
-        Task createdTask = taskService.createTask(task, projectId);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            @RequestParam UUID projectId,
+            Authentication authentication) {
+
         String userEmail = authentication.getName();
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Task createdTask = taskService.createTask(task, projectId, user);
+
         Activity activity = new Activity();
         activity.setProject(createdTask.getProject());
         activity.setType(ActivityType.TASK_CREATED);
-        activity.setDescription("A new task was created by" + user.getName());
+        activity.setDescription("Task '" + createdTask.getName() + "' was created by " + user.getName());
         activity.setCreatedAt(LocalDateTime.now());
         activityRepository.save(activity);
-
 
         return ResponseEntity.ok(createdTask);
     }
@@ -204,5 +205,21 @@ public class TaskController {
         return ResponseEntity.ok(details);
     }
 
+
+    @Operation(summary = "Get task logs", description = "Retrieves all logs for a specific task.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logs retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Task not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{taskId}/logs")
+    public ResponseEntity<List<TaskLog>> getTaskLogs(
+            @Parameter(description = "ID of the task", required = true)
+            @PathVariable UUID taskId) {
+        taskService.getTaskById(taskId);
+
+        List<TaskLog> logs = taskService.getTaskLogs(taskId);
+        return ResponseEntity.ok(logs);
+    }
 
 }
