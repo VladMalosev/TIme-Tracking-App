@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -26,8 +27,17 @@ public class Task {
     @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(name = "assigned_user_id")
-    private UUID assignedUserId;
+    @ManyToOne
+    @JoinColumn(name = "assigned_to_user_id")
+    private User assignedTo;
+
+    @ManyToOne
+    @JoinColumn(name = "assigned_by_user_id")
+    private User assignedBy;
+
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
+
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(length = 500)
@@ -61,17 +71,42 @@ public class Task {
 
     // Getters and Setters
 
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public void setAssignedTo(User assignedTo) {
+        this.assignedTo = assignedTo;
+    }
+
+    public void setAssignedBy(User assignedBy) {
+        this.assignedBy = assignedBy;
+    }
+
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+
+    public User getAssignedBy() {
+        return assignedBy;
+    }
+
+    public User getAssignedTo() {
+        return assignedTo;
     }
 
     public void setLastModifiedBy(User lastModifiedBy) {
         this.lastModifiedBy = lastModifiedBy;
     }
 
-    public User getCreatedBy() {
-        return createdBy;
-    }
 
     public User getLastModifiedBy() {
         return lastModifiedBy;
@@ -101,13 +136,8 @@ public class Task {
         this.name = name;
     }
 
-    public UUID getAssignedUserId() {
-        return assignedUserId;
-    }
 
-    public void setAssignedUserId(UUID assignedUserId) {
-        this.assignedUserId = assignedUserId;
-    }
+
 
     public String getDescription() {
         return description;

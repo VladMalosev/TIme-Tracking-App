@@ -68,7 +68,9 @@ export class WorkspaceManagementComponent implements OnInit {
     this.fetchWorkspaces();
   }
 
-
+  get showProjectsTable(): boolean {
+    return this.ownedProjects.length > 2;
+  }
 
   toggleInviteUserForm(): void {
     this.showInviteUserForm = !this.showInviteUserForm;

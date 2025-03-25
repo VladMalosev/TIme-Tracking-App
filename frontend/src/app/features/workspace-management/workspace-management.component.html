@@ -74,11 +74,18 @@
 
     <p class="undertext">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Commodi doloribus dolorum est expedita id non quibusdam. Doloremque ex iusto veritatis.</p>
 
-
     <!-- No Workspace Projects Message -->
     <mat-card *ngIf="selectedWorkspaceId && ownedProjects.length === 0">
       <p>No projects found in this workspace. <a href="/add-project">Create a new project</a> to get started.</p>
     </mat-card>
+
+    <!-- Show text only when there are exactly 2 projects -->
+    <div *ngIf="ownedProjects.length === 2 && !showProjectsTable">
+      <p>You have 2 projects in this workspace:</p>
+      <ul>
+        <li *ngFor="let project of ownedProjects">{{ project.name }}</li>
+      </ul>
+    </div>
 
     <!-- Workspace Projects Table -->
     <table mat-table [dataSource]="ownedProjects" class="mat-elevation-z8">

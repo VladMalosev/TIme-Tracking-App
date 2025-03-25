@@ -112,14 +112,19 @@ public class TaskController {
     })
     @PostMapping("/{taskId}/assign")
     public ResponseEntity<Task> assignTask(
-            @Parameter(description = "ID of the task to assign", required = true)
             @PathVariable UUID taskId,
-            @Parameter(description = "ID of the user to assign the task to", required = true)
             @RequestParam UUID userId,
-            @Parameter(description = "ID of the user assigning the task", required = true)
-            @RequestParam UUID assignedBy) {
-        Task task = taskService.assignTask(taskId, userId, assignedBy);
-        System.out.println("Assigned Task: " + task);
+            Authentication authentication) {
+
+        String assignerEmail = authentication.getName();
+        User assigner = userRepository.findByEmail(assignerEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        User assignee = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Task task = taskService.assignTask(taskId, assignee, assigner);
+
         return ResponseEntity.ok(task);
     }
 
@@ -146,7 +151,6 @@ public class TaskController {
     @PostMapping
     public ResponseEntity<Task> createTask(
             @RequestBody Task task,
-            @Parameter(description = "ID of the project to associate the task with", required = true)
             @RequestParam UUID projectId,
             Authentication authentication) {
 
@@ -154,14 +158,9 @@ public class TaskController {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        task.setCreatedBy(user);
+        task.setLastModifiedBy(user);
         Task createdTask = taskService.createTask(task, projectId, user);
-
-        Activity activity = new Activity();
-        activity.setProject(createdTask.getProject());
-        activity.setType(ActivityType.TASK_CREATED);
-        activity.setDescription("Task '" + createdTask.getName() + "' was created by " + user.getName());
-        activity.setCreatedAt(LocalDateTime.now());
-        activityRepository.save(activity);
 
         return ResponseEntity.ok(createdTask);
     }

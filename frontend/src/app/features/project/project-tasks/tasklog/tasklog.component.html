@@ -1,58 +1,58 @@
 <div class="task-log-container">
-    <h3>Task History: {{task.name}}</h3>
+  <h3>Task History: {{task.name}}</h3>
 
-    <!-- Filter Controls -->
-    <div class="filter-controls">
-        <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Action</mat-label>
-            <mat-select [(ngModel)]="actionFilter">
-                <mat-option *ngFor="let option of actionOptions" [value]="option.value">
-                    {{option.label}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+  <!-- Filter Controls -->
+  <div class="filter-controls">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Action</mat-label>
+      <mat-select [(ngModel)]="actionFilter">
+        <mat-option *ngFor="let option of actionOptions" [value]="option.value">
+          {{option.label}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-        <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>User</mat-label>
-            <input matInput [(ngModel)]="userFilter" placeholder="Filter by user">
-        </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>User</mat-label>
+      <input matInput [(ngModel)]="userFilter" placeholder="Filter by user">
+    </mat-form-field>
 
-        <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Status</mat-label>
-            <mat-select [(ngModel)]="statusFilter">
-                <mat-option *ngFor="let option of statusOptions" [value]="option.value">
-                    {{option.label}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="statusFilter">
+        <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+          {{option.label}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-        <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>From Date</mat-label>
-            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom">
-            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-            <mat-datepicker #fromPicker></mat-datepicker>
-        </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>From Date</mat-label>
+      <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom">
+      <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+      <mat-datepicker #fromPicker></mat-datepicker>
+    </mat-form-field>
 
-        <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>To Date</mat-label>
-            <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo">
-            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-            <mat-datepicker #toPicker></mat-datepicker>
-        </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>To Date</mat-label>
+      <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo">
+      <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+      <mat-datepicker #toPicker></mat-datepicker>
+    </mat-form-field>
 
-        <button mat-raised-button color="warn" (click)="resetFilters()" class="reset-btn">
-            Reset Filters
-        </button>
-    </div>
+    <button mat-raised-button color="warn" (click)="resetFilters()" class="reset-btn">
+      Reset Filters
+    </button>
+  </div>
 
-    <div class="log-table" *ngIf="logs.length > 0">
-        <table mat-table [dataSource]="filteredLogs" class="full-width-table">
-            <!-- Action Column -->
-            <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('action')">
-                    Action <span class="sort-indicator">{{getSortIndicator('action')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
+  <div class="log-table" *ngIf="logs.length > 0">
+    <table mat-table [dataSource]="filteredLogs" class="full-width-table">
+      <!-- Action Column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('action')">
+          Action <span class="sort-indicator">{{getSortIndicator('action')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
           <span class="log-badge"
                 [class.created]="log.action === 'CREATED'"
                 [class.updated]="log.action === 'UPDATED'"
@@ -60,92 +60,92 @@
                 [class.completed]="log.action === 'COMPLETED'">
             {{ log.action }}
           </span>
-                </td>
-            </ng-container>
+        </td>
+      </ng-container>
 
-            <!-- User Column -->
-            <ng-container matColumnDef="user">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('user')">
-                    Performed By <span class="sort-indicator">{{getSortIndicator('user')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-                    {{ log.user?.name || 'System' }}
-                </td>
-            </ng-container>
+      <!-- User Column -->
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('user')">
+          Performed By <span class="sort-indicator">{{getSortIndicator('user')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+          {{ log.user?.name || 'System' }}
+        </td>
+      </ng-container>
 
-            <!-- Target User Column -->
-            <ng-container matColumnDef="targetUser">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('targetUser')">
-                    Target User <span class="sort-indicator">{{getSortIndicator('targetUser')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
+      <!-- Target User Column -->
+      <ng-container matColumnDef="targetUser">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('targetUser')">
+          Target User <span class="sort-indicator">{{getSortIndicator('targetUser')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
           <span *ngIf="log.action === 'ASSIGNED'">
             {{ task.assignedTo?.name || 'Unassigned' }}
           </span>
-                    <span *ngIf="log.action !== 'ASSIGNED'">-</span>
-                </td>
-            </ng-container>
+          <span *ngIf="log.action !== 'ASSIGNED'">-</span>
+        </td>
+      </ng-container>
 
-            <!-- Status Change Column -->
-            <ng-container matColumnDef="statusChange">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('statusChange')">
-                    Status <span class="sort-indicator">{{getSortIndicator('statusChange')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-          <span *ngIf="log.action === 'STATUS_CHANGED' || log.action === 'CREATED' || log.action === 'COMPLETED'"
-                [class]="getStatusClass(task.status)">
-            {{ task.status }}
-          </span>
-                    <span *ngIf="log.action !== 'STATUS_CHANGED' && log.action !== 'CREATED' && log.action !== 'COMPLETED'">-</span>
-                </td>
-            </ng-container>
+      <!-- Status Change Column -->
+      <ng-container matColumnDef="statusChange">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('statusChange')">
+          Status <span class="sort-indicator">{{getSortIndicator('statusChange')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+    <span *ngIf="(log.action === 'STATUS_CHANGED' || log.action === 'CREATED' || log.action === 'COMPLETED' || log.action === 'ASSIGNED')"
+          [class]="getStatusClass(getLogStatus(log))">
+      {{ getLogStatus(log) }}
+    </span>
+          <span *ngIf="!(log.action === 'STATUS_CHANGED' || log.action === 'CREATED' || log.action === 'COMPLETED' || log.action === 'ASSIGNED')">-</span>
+        </td>
+      </ng-container>
 
-            <!-- Task Name Column -->
-            <ng-container matColumnDef="taskName">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('taskName')">
-                    Task Name <span class="sort-indicator">{{getSortIndicator('taskName')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-                    {{ task.name }}
-                </td>
-            </ng-container>
+      <!-- Task Name Column -->
+      <ng-container matColumnDef="taskName">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('taskName')">
+          Task Name <span class="sort-indicator">{{getSortIndicator('taskName')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+          {{ task.name }}
+        </td>
+      </ng-container>
 
-            <!-- Description Column -->
-            <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('description')">
-                    Description <span class="sort-indicator">{{getSortIndicator('description')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-                    {{ task.description || '-' }}
-                </td>
-            </ng-container>
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('description')">
+          Description <span class="sort-indicator">{{getSortIndicator('description')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+          {{ task.description || '-' }}
+        </td>
+      </ng-container>
 
-            <!-- Deadline Column -->
-            <ng-container matColumnDef="deadline">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('deadline')">
-                    Deadline <span class="sort-indicator">{{getSortIndicator('deadline')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-                    {{ task.deadline ? (task.deadline | date:'mediumDate') : '-' }}
-                </td>
-            </ng-container>
+      <!-- Deadline Column -->
+      <ng-container matColumnDef="deadline">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('deadline')">
+          Deadline <span class="sort-indicator">{{getSortIndicator('deadline')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+          {{ task.deadline ? (task.deadline | date:'mediumDate') : '-' }}
+        </td>
+      </ng-container>
 
-            <!-- Timestamp Column -->
-            <ng-container matColumnDef="timestamp">
-                <th mat-header-cell *matHeaderCellDef (click)="sortData('timestamp')">
-                    When <span class="sort-indicator">{{getSortIndicator('timestamp')}}</span>
-                </th>
-                <td mat-cell *matCellDef="let log">
-                    {{ log.timestamp | date:'medium' }}
-                </td>
-            </ng-container>
+      <!-- Timestamp Column -->
+      <ng-container matColumnDef="timestamp">
+        <th mat-header-cell *matHeaderCellDef (click)="sortData('timestamp')">
+          When <span class="sort-indicator">{{getSortIndicator('timestamp')}}</span>
+        </th>
+        <td mat-cell *matCellDef="let log">
+          {{ log.timestamp | date:'medium' }}
+        </td>
+      </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
-        <div class="no-results" *ngIf="filteredLogs.length === 0">
-            No logs match your filter criteria.
-        </div>
+    <div class="no-results" *ngIf="filteredLogs.length === 0">
+      No logs match your filter criteria.
     </div>
+  </div>
 </div>

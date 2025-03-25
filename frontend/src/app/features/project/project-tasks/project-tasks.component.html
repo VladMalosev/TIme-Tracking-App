@@ -18,7 +18,12 @@
     <!-- Task Deadline -->
     <mat-form-field appearance="outline" class="input-field">
       <mat-label>Deadline</mat-label>
-      <input #taskDeadline matInput id="taskDeadline" type="datetime-local" required>
+      <input #taskDeadline matInput id="taskDeadline" type="datetime-local"
+             placeholder="yyyy-MM-ddTHH:mm" required
+             (change)="validateDeadlineTime(taskDeadline.value)">
+      <mat-error *ngIf="timeNotSelectedError">
+        Please select both date and time for the deadline
+      </mat-error>
     </mat-form-field>
 
     <!-- Submit Button -->
@@ -28,24 +33,118 @@
   </form>
 
   <!-- Task Selection -->
-  <div class="task-list mat-elevation-z8">
+  <div class="task-list-header">
     <h3 class="mat-headline-5">Project Tasks</h3>
+
+    <div class="header-actions">
+      <button mat-button (click)="toggleFilters()" class="toggle-filters-btn">
+        <mat-icon>{{ showFilters ? 'filter_alt_off' : 'filter_alt' }}</mat-icon>
+        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+      </button>
+
+      <div class="selection-actions" *ngIf="canManageRole('MANAGER') && selectedTasks.length > 0">
+        <button class="btn-delete" mat-raised-button
+                (click)="deleteSelectedTasks()"
+                [disabled]="hasCompletedTasksSelected()">
+          <mat-icon>delete</mat-icon> Delete Selected ({{selectedTasks.length}})
+        </button>
+        <span class="error-message" *ngIf="hasCompletedTasksSelected()">
+        Cannot delete completed tasks
+      </span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Add this section before the table in your project-tasks.component.html -->
+  <div *ngIf="showFilters" class="filter-controls">
+    <div class="filter-controls">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Task Name</mat-label>
+        <input matInput [(ngModel)]="nameFilter" placeholder="Filter by task name">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="statusFilter">
+          <mat-option value="">All Statuses</mat-option>
+          <mat-option value="PENDING">Pending</mat-option>
+          <mat-option value="ASSIGNED">Assigned</mat-option>
+          <mat-option value="IN_PROGRESS">In Progress</mat-option>
+          <mat-option value="COMPLETED">Completed</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Assigned To</mat-label>
+        <input matInput [(ngModel)]="assignedToFilter" placeholder="Filter by assignee">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Created By</mat-label>
+        <input matInput [(ngModel)]="createdByFilter" placeholder="Filter by creator">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>From Date</mat-label>
+        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom">
+        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+        <mat-datepicker #fromPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>To Date</mat-label>
+        <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo">
+        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+        <mat-datepicker #toPicker></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-raised-button color="warn" (click)="resetFilters()" class="reset-btn">
+        Reset Filters
+      </button>
+    </div>
+  </div>
 
     <table class="task-table">
       <thead>
       <tr>
-        <th>Task Name</th>
-        <th>Status</th>
-        <th>Assigned To</th>
-        <th>Created By</th>
-        <th>Deadline</th>
-        <th>Created At</th>
+        <th>
+          <mat-checkbox (change)="toggleSelectAll($event)"
+                        [checked]="allSelected()"
+                        [indeterminate]="someSelected()">
+          </mat-checkbox>
+        </th>
+        <th (click)="sortData('name')">
+          Task Name <span class="sort-indicator">{{getSortIndicator('name')}}</span>
+        </th>
+        <th (click)="sortData('status')">
+          Status <span class="sort-indicator">{{getSortIndicator('status')}}</span>
+        </th>
+        <th (click)="sortData('assignedTo')">
+          Assigned To <span class="sort-indicator">{{getSortIndicator('assignedTo')}}</span>
+        </th>
+        <th (click)="sortData('createdBy')">
+          Created By <span class="sort-indicator">{{getSortIndicator('createdBy')}}</span>
+        </th>
+        <th (click)="sortData('deadline')">
+          Deadline <span class="sort-indicator">{{getSortIndicator('deadline')}}</span>
+        </th>
+        <th (click)="sortData('createdAt')">
+          Created At <span class="sort-indicator">{{getSortIndicator('createdAt')}}</span>
+        </th>
+        <th>Actions</th>
       </tr>
       </thead>
+
       <tbody>
-      <ng-container *ngFor="let task of tasks">
-        <!-- Main row -->
+      <ng-container *ngFor="let task of filteredTasks">
         <tr (click)="onTaskSelected(task)" [class.selected]="selectedTask?.id === task.id">
+          <td (click)="$event.stopPropagation()">
+            <mat-checkbox [(ngModel)]="task.selected"
+                          (change)="updateSelection()"
+                          (click)="$event.stopPropagation()">
+            </mat-checkbox>
+          </td>
           <td>{{ task.name }}</td>
           <td>
             <span [ngClass]="{
@@ -60,11 +159,18 @@
           <td>{{ task.createdBy?.name || 'System' }}</td>
           <td>{{ task.deadline | date:'shortDate' }}</td>
           <td>{{ task.createdAt | date:'shortDate' }}</td>
+          <td (click)="$event.stopPropagation()">
+            <button mat-icon-button
+                    (click)="deleteTask(task)"
+                    *ngIf="canManageRole('MANAGER')"
+                    [disabled]="task.status === 'COMPLETED'">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
         </tr>
 
-        <!-- Expanded content row -->
         <tr class="expandable-row" *ngIf="selectedTask?.id === task.id">
-          <td colspan="6">
+          <td colspan="8">
             <app-tasklog [task]="selectedTask" [logs]="taskLogs"></app-tasklog>
           </td>
         </tr>
@@ -77,4 +183,3 @@
   <div *ngIf="errorMessage" class="error-message mat-elevation-z1">
     <mat-icon>error_outline</mat-icon> {{ errorMessage }}
   </div>
-</div>

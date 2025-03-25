@@ -19,7 +19,11 @@ public class Activity {
     @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
-    @Enumerated
+    @ManyToOne
+    @JoinColumn(name="user_id", nullable=false)
+    private User user;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActivityType type;
 
@@ -28,6 +32,15 @@ public class Activity {
 
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
 
     public void setId(UUID id) {
         this.id = id;

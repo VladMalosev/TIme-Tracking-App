@@ -94,5 +94,20 @@
 
   .reset-btn {
     margin-left: auto;
+    background: var(--blue-button-color) !important;
+    color: white !important;
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
   }
 }
+
+.status-assigned {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+

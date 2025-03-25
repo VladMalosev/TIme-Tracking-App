@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -26,7 +26,14 @@ import { MatNativeDateModule } from '@angular/material/core';
   templateUrl: './tasklog.component.html',
   styleUrls: ['./tasklog.component.scss']
 })
-export class TaskLogComponent {
+export class TaskLogComponent implements OnInit{
+
+
+  ngOnInit() {
+    console.log('Task logs:', this.logs);
+    console.log('Task:', this.task);
+  }
+
   @Input() task: any;
   @Input() logs: any[] = [];
 
@@ -51,6 +58,7 @@ export class TaskLogComponent {
   statusOptions = [
     { value: '', label: 'All Statuses' },
     { value: 'PENDING', label: 'Pending' },
+    { value: 'ASSIGNED', label: 'Assigned' },
     { value: 'IN_PROGRESS', label: 'In Progress' },
     { value: 'COMPLETED', label: 'Completed' }
   ];
@@ -73,15 +81,20 @@ export class TaskLogComponent {
       }
 
       if (this.userFilter &&
-          (!log.user?.name ||
-              !log.user.name.toLowerCase().includes(this.userFilter.toLowerCase()))) {
+        (!log.user?.name ||
+          !log.user.name.toLowerCase().includes(this.userFilter.toLowerCase()))) {
         return false;
       }
 
-      if (this.statusFilter &&
-          (log.action === 'STATUS_CHANGED' || log.action === 'CREATED' || log.action === 'COMPLETED') &&
-          this.task.status !== this.statusFilter) {
-        return false;
+      if (this.statusFilter) {
+        const isStatusAction = log.action === 'STATUS_CHANGED' ||
+          log.action === 'CREATED' ||
+          log.action === 'COMPLETED' ||
+          log.action === 'ASSIGNED';
+
+        if (!isStatusAction || this.getLogStatus(log) !== this.statusFilter) {
+          return false;
+        }
       }
 
       const logDate = new Date(log.timestamp);
@@ -126,9 +139,7 @@ export class TaskLogComponent {
       case 'targetUser':
         return log.action === 'ASSIGNED' ? (this.task.assignedTo?.name || 'Unassigned') : '';
       case 'statusChange':
-        return (log.action === 'STATUS_CHANGED' || log.action === 'CREATED' || log.action === 'COMPLETED')
-            ? this.task.status
-            : '';
+        return this.getLogStatus(log);
       case 'taskName':
         return this.task.name;
       case 'description':
@@ -161,6 +172,7 @@ export class TaskLogComponent {
   getStatusClass(status: string): string {
     switch(status) {
       case 'PENDING': return 'status-pending';
+      case 'ASSIGNED': return 'status-assigned';
       case 'IN_PROGRESS': return 'status-in-progress';
       case 'COMPLETED': return 'status-completed';
       default: return '';
@@ -175,5 +187,25 @@ export class TaskLogComponent {
     this.dateTo = null;
     this.sortColumn = '';
     this.sortDirection = 'asc';
+  }
+
+  getLogStatus(log: any): string {
+    if (log.status) {
+      return log.status;
+    }
+
+    if (log.action === 'CREATED') {
+      return this.task.status;
+    }
+
+    if (log.action === 'ASSIGNED') {
+      return 'ASSIGNED';
+    }
+
+    if (log.action === 'COMPLETED') {
+      return 'COMPLETED';
+    }
+
+    return 'PENDING';
   }
 }

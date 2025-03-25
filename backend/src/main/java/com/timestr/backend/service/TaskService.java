@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final TimeLogRepository timeLogRepository;
     private final TaskLogRepository taskLogRepository;
+    private final ActivityRepository activityRepository;
 
     @Autowired
     public TaskService(
@@ -34,7 +36,7 @@ public class TaskService {
             TimeLogService timeLogService,
             ProjectRepository projectRepository,
             TimeLogRepository timeLogRepository,
-            TaskLogRepository taskLogRepository) {
+            TaskLogRepository taskLogRepository, ActivityRepository activityRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.taskAssignmentRepository = taskAssignmentRepository;
@@ -42,6 +44,7 @@ public class TaskService {
         this.projectRepository = projectRepository;
         this.timeLogRepository = timeLogRepository;
         this.taskLogRepository = taskLogRepository;
+        this.activityRepository = activityRepository;
     }
 
 
@@ -74,26 +77,42 @@ public class TaskService {
         return savedTask;
     }
 
+
     @Transactional
     public void deleteTask(UUID taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        if (task.getStatus() == TaskStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot delete a completed task");
+        }
+
         User currentUser = getCurrentUser();
-        logTaskAction(task, TaskAction.DELETED, currentUser,
-                "Task deleted");
+
+        String taskName = task.getName();
 
         timeLogRepository.deleteByTaskId(taskId);
+        taskLogRepository.deleteByTaskId(taskId);
         taskAssignmentRepository.deleteByTaskId(taskId);
+
+        // Then delete the task
         taskRepository.delete(task);
+
+        Activity activity = new Activity();
+        activity.setProject(task.getProject());
+        activity.setUser(currentUser);
+        activity.setType(ActivityType.TASK_DELETED);
+        activity.setDescription("Task '" + taskName + "' was deleted");
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
     }
+
 
     public TaskCompletionDetails getTaskCompletionDetails(UUID taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        User completedBy = userRepository.findById(task.getAssignedUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User completedBy = task.getAssignedTo();
 
         List<TimeLog> timeLogs = timeLogRepository.findByTaskId(taskId);
 
@@ -121,48 +140,53 @@ public class TaskService {
         return taskRepository.findByProjectId(projectId);
     }
 
-    public Task assignTask(UUID taskId, UUID userId, UUID assignedBy) {
+    public Task assignTask(UUID taskId, User assignee, User assigner) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        User assigner = userRepository.findById(assignedBy)
-                .orElseThrow(() -> new RuntimeException("Assigner not found"));
 
         if (task.getStatus() == TaskStatus.COMPLETED) {
             throw new IllegalStateException("Cannot assign a completed task.");
         }
 
-        task.setAssignedUserId(userId);
+        task.setAssignedTo(assignee);
+        task.setAssignedBy(assigner);
+        task.setAssignedAt(LocalDateTime.now());
+        task.setLastModifiedBy(assigner);
 
-        TaskAssignment assignment = new TaskAssignment();
-        assignment.setTask(task);
-        assignment.setUser(user);
-        assignment.setAssignedBy(assigner);
-        taskAssignmentRepository.save(assignment);
+        if (task.getStatus() != TaskStatus.IN_PROGRESS) {
+            task.setStatus(TaskStatus.ASSIGNED);
+        }
 
         Task savedTask = taskRepository.save(task);
+
         logTaskAction(savedTask, TaskAction.ASSIGNED, assigner,
-                "Assigned to " + user.getName());
+                "Assigned to " + assignee.getName() + " by " + assigner.getName());
+
         return savedTask;
     }
 
     public List<Task> getAssignedTasks(UUID userId) {
-        return taskRepository.findByAssignedUserId(userId);
+        return taskRepository.findByAssignedToId(userId);
     }
 
 
 
 
     public Task createTask(Task task, UUID projectId, User creator) {
+        if (task.getDeadline() != null && task.getDeadline().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Deadline cannot be in the past");
+        }
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         task.setProject(project);
         task.setCreatedBy(creator);
+        task.setLastModifiedBy(creator);
 
         Task createdTask = taskRepository.save(task);
+        logTaskAction(createdTask, TaskAction.CREATED, creator,
+                "Task created by " + creator.getName());
 
-        logTaskAction(createdTask, TaskAction.CREATED, creator, "Task created");
         return createdTask;
     }
 
@@ -178,19 +202,26 @@ public class TaskService {
         }
 
         task.setStatus(taskStatus);
+        task.setLastModifiedBy(getCurrentUser());
 
         User currentUser = getCurrentUser();
         logTaskAction(task, TaskAction.STATUS_CHANGED, currentUser,
                 "Status changed to " + taskStatus);
 
-        if (taskStatus == TaskStatus.IN_PROGRESS) {
-            timeLogService.startTimer(task.getAssignedUserId(), taskId, "Task started: " + task.getName());
-        } else if (taskStatus == TaskStatus.COMPLETED) {
-            if (timeLogService.hasActiveTimer(task.getAssignedUserId(), taskId)) {
-                timeLogService.stopTimer(task.getAssignedUserId(), taskId);
-            } else {
-                logger.warn("No active timer found for taskId: {}", taskId);
+        if (task.getAssignedTo() != null) {
+            UUID assignedUserId = task.getAssignedTo().getId();
+
+            if (taskStatus == TaskStatus.IN_PROGRESS) {
+                timeLogService.startTimer(assignedUserId, taskId, "Task started: " + task.getName());
+            } else if (taskStatus == TaskStatus.COMPLETED) {
+                if (timeLogService.hasActiveTimer(assignedUserId, taskId)) {
+                    timeLogService.stopTimer(assignedUserId, taskId);
+                } else {
+                    logger.warn("No active timer found for taskId: {}", taskId);
+                }
             }
+        } else {
+            logger.warn("Task {} has no assigned user, cannot start/stop timer", taskId);
         }
 
         return taskRepository.save(task);
