@@ -1,42 +1,45 @@
-<div *ngIf="canManageRole('USER')" class="task-creation card-panel">
-  <h3 class="header">Create a New Task</h3>
-  <p class="description">Fill out the details below to add a new task to your project.</p>
+<div *ngIf="canManageRole('USER')" class="task-creation mat-elevation-z8">
+  <h3 class="mat-headline-5">Create a New Task</h3>
+  <p class="mat-body-1 description">Fill out the details below to add a new task to your project.</p>
 
   <form (ngSubmit)="createTask(taskName.value, taskDescription.value, taskDeadline.value)">
     <!-- Task Name -->
-    <div class="input-field">
-      <label for="taskName">Task Name</label>
-      <input #taskName id="taskName" type="text" class="validate" required placeholder="Enter task name">
-    </div>
+    <mat-form-field appearance="outline" class="input-field">
+      <mat-label>Task Name</mat-label>
+      <input #taskName matInput id="taskName" type="text" required placeholder="Enter task name">
+    </mat-form-field>
 
     <!-- Task Description -->
-    <div class="input-field">
-      <label for="taskDescription">Task Description</label>
-      <textarea #taskDescription id="taskDescription" class="materialize-textarea validate" required placeholder="Describe the task"></textarea>
-    </div>
+    <mat-form-field appearance="outline" class="input-field">
+      <mat-label>Task Description</mat-label>
+      <textarea #taskDescription matInput id="taskDescription" required placeholder="Describe the task"></textarea>
+    </mat-form-field>
 
     <!-- Task Deadline -->
-    <div class="input-field">
-      <label for="taskDeadline">Deadline</label>
-      <input #taskDeadline id="taskDeadline" type="datetime-local" required>
-    </div>
+    <mat-form-field appearance="outline" class="input-field">
+      <mat-label>Deadline</mat-label>
+      <input #taskDeadline matInput id="taskDeadline" type="datetime-local" required>
+    </mat-form-field>
 
     <!-- Submit Button -->
-    <button mat-raised-button type="submit" class="btn-primary">
-      <i class="material-icons left">add_task</i> Create Task
+    <button mat-raised-button type="submit" color="primary" class="btn-primary ">
+      <mat-icon>add_task</mat-icon> Create Task
     </button>
   </form>
 
   <!-- Task Selection -->
-  <div class="task-list card-panel">
-    <h3>Project Tasks</h3>
+  <div class="task-list mat-elevation-z8">
+    <h3 class="mat-headline-5">Project Tasks</h3>
 
     <table class="task-table">
       <thead>
       <tr>
         <th>Task Name</th>
         <th>Status</th>
+        <th>Assigned To</th>
+        <th>Created By</th>
         <th>Deadline</th>
+        <th>Created At</th>
       </tr>
       </thead>
       <tbody>
@@ -48,17 +51,20 @@
             <span [ngClass]="{
               'status-pending': task.status === 'PENDING',
               'status-completed': task.status === 'COMPLETED',
-              'status-in-progress': task.status === 'IN PROGRESS'
+              'status-in-progress': task.status === 'IN_PROGRESS'
             }">
               {{ task.status }}
             </span>
           </td>
+          <td>{{ task.assignedTo?.name || 'Unassigned' }}</td>
+          <td>{{ task.createdBy?.name || 'System' }}</td>
           <td>{{ task.deadline | date:'shortDate' }}</td>
+          <td>{{ task.createdAt | date:'shortDate' }}</td>
         </tr>
 
         <!-- Expanded content row -->
         <tr class="expandable-row" *ngIf="selectedTask?.id === task.id">
-          <td colspan="3">
+          <td colspan="6">
             <app-tasklog [task]="selectedTask" [logs]="taskLogs"></app-tasklog>
           </td>
         </tr>
@@ -67,10 +73,8 @@
     </table>
   </div>
 
-
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="error-message">
-    <i class="material-icons">error_outline</i> {{ errorMessage }}
+  <div *ngIf="errorMessage" class="error-message mat-elevation-z1">
+    <mat-icon>error_outline</mat-icon> {{ errorMessage }}
   </div>
 </div>
-

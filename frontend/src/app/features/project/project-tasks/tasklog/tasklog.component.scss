@@ -5,6 +5,7 @@
   margin-top: 20px;
 
   h3 {
+    padding-top: 20px;
     margin-bottom: 20px;
     color: #333;
     font-size: 1.2rem;
@@ -77,5 +78,21 @@
       background: #f1f8e9;
       color: #689f38;
     }
+  }
+}
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: center;
+
+  .filter-field {
+    min-width: 180px;
+    flex: 1;
+  }
+
+  .reset-btn {
+    margin-left: auto;
   }
 }

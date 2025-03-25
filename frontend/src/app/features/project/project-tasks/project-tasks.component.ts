@@ -2,14 +2,32 @@ import { Component, Input, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
 import {TaskLogComponent} from './tasklog/tasklog.component';
-import {MatButton} from '@angular/material/button';
+
 
 @Component({
   selector: 'app-project-tasks',
-  imports: [CommonModule, FormsModule, TaskLogComponent, MatButton],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatTableModule,
+    MatCardModule,
+    TaskLogComponent
+  ],
   templateUrl: './project-tasks.component.html',
   styleUrl: './project-tasks.component.scss'
+
+
 })
 export class ProjectTasksComponent implements OnInit {
   @Input() projectId!: string;
@@ -18,6 +36,7 @@ export class ProjectTasksComponent implements OnInit {
   selectedTask: any = null;
   taskLogs: any[] = [];
   tasks: any[] = [];
+  displayedColumns: string[] = ['name', 'status', 'deadline'];
 
   constructor(private http: HttpClient) {}
 
@@ -25,15 +44,18 @@ export class ProjectTasksComponent implements OnInit {
     this.loadTasks();
   }
 
-
-
   loadTasks(): void {
     this.http.get<any[]>(
       `http://localhost:8080/api/tasks/project/${this.projectId}`,
       { withCredentials: true }
     ).subscribe(
       (tasks) => {
-        this.tasks = tasks;
+        this.tasks = tasks.map(task => ({
+          ...task,
+          createdBy: task.createdBy || { name: 'System' },
+          assignedTo: task.assignedTo || null,
+          assignedBy: task.assignedBy || null
+        }));
       },
       (error) => {
         console.error('Error loading tasks', error);
@@ -81,6 +103,7 @@ export class ProjectTasksComponent implements OnInit {
       (response) => {
         alert('Task created successfully!');
         this.errorMessage = null;
+        this.loadTasks();
       },
       (error) => {
         console.error('Error creating task', error);

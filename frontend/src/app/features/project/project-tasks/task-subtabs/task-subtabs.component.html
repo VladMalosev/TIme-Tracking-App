@@ -1,16 +1,30 @@
-<div class="task-tabs">
-  <button (click)="setActiveTab('my-tasks')" [class.active]="activeTab === 'my-tasks'">
-    My Tasks
-  </button>
-  <button (click)="setActiveTab('creation')" [class.active]="activeTab === 'creation'" *ngIf="canAssignTasks">
-    Task Creation
-  </button>
-  <button (click)="setActiveTab('assignment')" [class.active]="activeTab === 'assignment'" *ngIf="canAssignTasks">
-    Task Assignment
-  </button>
-</div>
+<div class="subtab-container">
+  <nav class="subtab-nav">
+    <button class="subtab-button"
+            (click)="setActiveTab('my-tasks')"
+            [class.active]="activeTab === 'my-tasks'">
+      <span class="subtab-label">My Tasks</span>
+      <span class="subtab-indicator"></span>
+    </button>
 
-<div class="tasks-container">
-  <!-- Content will be projected here -->
-  <ng-content></ng-content>
+    <button class="subtab-button"
+            (click)="setActiveTab('creation')"
+            [class.active]="activeTab === 'creation'"
+            *ngIf="canAssignTasks">
+      <span class="subtab-label">Task Creation</span>
+      <span class="subtab-indicator"></span>
+    </button>
+
+    <button class="subtab-button"
+            (click)="setActiveTab('assignment')"
+            [class.active]="activeTab === 'assignment'"
+            *ngIf="canAssignTasks">
+      <span class="subtab-label">Task Assignment</span>
+      <span class="subtab-indicator"></span>
+    </button>
+  </nav>
+
+  <div class="subtab-content">
+    <ng-content></ng-content>
+  </div>
 </div>

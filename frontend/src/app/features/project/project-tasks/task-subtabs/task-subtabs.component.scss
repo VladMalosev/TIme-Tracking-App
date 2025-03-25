@@ -1,0 +1,93 @@
+:host {
+  --subtab-bg: #ffffff;
+  --subtab-text: #4a4a4a;
+  --subtab-active-bg: #f8f9fa;
+  --subtab-active-text: #4A3AFF;
+  --subtab-border: #e0e0e0;
+  --subtab-indicator: #4A3AFF;
+  --subtab-hover: #f1f3f5;
+  --subtab-spacing: 1rem;
+  --subtab-radius: 8px;
+}
+
+.subtab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.subtab-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 var(--subtab-spacing);
+  border-bottom: 1px solid var(--subtab-border);
+}
+
+.subtab-button {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--subtab-text);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--subtab-radius) var(--subtab-radius) 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:hover {
+    background: var(--subtab-hover);
+    color: var(--subtab-active-text);
+  }
+
+  &.active {
+    color: var(--subtab-active-text);
+
+    .subtab-indicator {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+}
+
+.subtab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--subtab-indicator);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  border-radius: 2px 2px 0 0;
+}
+
+.subtab-content {
+  padding: var(--subtab-spacing);
+  background: var(--subtab-active-bg);
+  border-radius: 0 0 var(--subtab-radius) var(--subtab-radius);
+  min-height: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .subtab-nav {
+    overflow-x: auto;
+    padding-bottom: 4px; /* For scrollbar space */
+    scrollbar-width: none; /* Firefox */
+
+    &::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+  }
+
+  .subtab-button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
