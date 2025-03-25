@@ -1,0 +1,16 @@
+<div class="task-tabs">
+  <button (click)="setActiveTab('my-tasks')" [class.active]="activeTab === 'my-tasks'">
+    My Tasks
+  </button>
+  <button (click)="setActiveTab('creation')" [class.active]="activeTab === 'creation'" *ngIf="canAssignTasks">
+    Task Creation
+  </button>
+  <button (click)="setActiveTab('assignment')" [class.active]="activeTab === 'assignment'" *ngIf="canAssignTasks">
+    Task Assignment
+  </button>
+</div>
+
+<div class="tasks-container">
+  <!-- Content will be projected here -->
+  <ng-content></ng-content>
+</div>

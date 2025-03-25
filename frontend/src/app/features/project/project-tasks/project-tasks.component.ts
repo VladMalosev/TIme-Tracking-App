@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {TaskLogComponent} from './tasklog/tasklog.component';
+import {MatButton} from '@angular/material/button';
 
 @Component({
   selector: 'app-project-tasks',
-  imports: [CommonModule, FormsModule, TaskLogComponent],
+  imports: [CommonModule, FormsModule, TaskLogComponent, MatButton],
   templateUrl: './project-tasks.component.html',
   styleUrl: './project-tasks.component.scss'
 })

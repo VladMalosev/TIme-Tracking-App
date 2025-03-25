@@ -12,3 +12,11 @@ main {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+:root {
+  --blue-button-color: #4A3AFF;
+  --main-color-light: #fbfbff;
+  --grey-text-color: #9291A5;
+  --border-color: #F0F0F2;
+}

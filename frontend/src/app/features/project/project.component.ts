@@ -7,11 +7,13 @@ import { ProjectTasksComponent } from './project-tasks/project-tasks.component';
 import { FormsModule } from '@angular/forms';
 import {TaskAssignmentComponent} from "./task-assignment/task-assignment.component";
 import {ProjectInvitationsComponent} from "./project-invitations/project-invitations.component";
+import {TaskSubtabsComponent} from './project-tasks/task-subtabs/task-subtabs.component';
+import {TaskTabsService} from '../../services/task-tabs-service';
 
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
-  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent],
+  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent, TaskSubtabsComponent],
     styleUrls: ['./project.component.css']
 })
 export class ProjectComponent implements OnInit {
@@ -30,7 +32,8 @@ export class ProjectComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private http: HttpClient,
-        private router: Router
+        private router: Router,
+        private taskTabsService: TaskTabsService
     ) {}
 
   ngOnInit(): void {
@@ -42,27 +45,23 @@ export class ProjectComponent implements OnInit {
       this.fetchCollaborators(this.projectId);
       this.fetchTasks(this.projectId);
       this.fetchUserId();
+      this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
+      this.taskTabsService.setActiveTab(this.activeTaskTab);
     } else {
       console.error('Project ID is missing');
     }
 
-    this.route.firstChild?.url.subscribe(segments => {
-      if (segments.length > 0) {
-        this.activeTab = segments[0].path;
-      } else {
-        this.activeTab = 'dashboard';
-      }
+    this.taskTabsService.activeTab$.subscribe(tab => {
+      this.activeTaskTab = tab;
+      this.router.navigate([], {
+        queryParams: { taskTab: tab },
+        queryParamsHandling: 'merge'
+      });
     });
   }
 
 
-  setTaskTab(tab: string): void {
-    this.activeTaskTab = tab;
-    this.router.navigate([], {
-      queryParams: { taskTab: tab },
-      queryParamsHandling: 'merge'
-    });
-  }
+
 
     fetchProjectDetails(projectId: string): void {
         this.http.get<any>(`http://localhost:8080/api/projects/${projectId}`, { withCredentials: true })
@@ -108,18 +107,20 @@ export class ProjectComponent implements OnInit {
             );
     }
 
-    fetchCurrentUserRole(projectId: string): void {
-        this.http.get<any>(`http://localhost:8080/api/projects/${projectId}/current-user-role`, { withCredentials: true })
-            .subscribe(
-                (response) => {
-                    this.currentUserRole = response.role;
-                    console.log("Role in the project:", response.role);
-                },
-                (error) => {
-                    console.error('Error fetching current user role', error);
-                }
-            );
-    }
+  fetchCurrentUserRole(projectId: string): void {
+    this.http.get<any>(`http://localhost:8080/api/projects/${projectId}/current-user-role`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.currentUserRole = response.role;
+          console.log("Role in the project:", response.role);
+          // Update the service with the new role information
+          this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
+        },
+        (error) => {
+          console.error('Error fetching current user role', error);
+        }
+      );
+  }
 
     fetchCollaborators(projectId: string): void {
         this.http.get<any[]>(`http://localhost:8080/api/projects/${projectId}/collaborators`, { withCredentials: true })
