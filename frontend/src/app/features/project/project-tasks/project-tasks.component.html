@@ -31,30 +31,42 @@
   <div class="task-list card-panel">
     <h3>Project Tasks</h3>
 
-    <div class="task-item" *ngFor="let task of tasks" (click)="onTaskSelected(task)" [class.selected]="selectedTask?.id === task.id">
-      <div class="task-card">
-        <div class="task-header">
-          <div class="task-name">{{ task.name }}</div>
-          <div class="task-status" [ngClass]="{
-          'status-pending': task.status === 'PENDING',
-          'status-completed': task.status === 'COMPLETED',
-          'status-in-progress': task.status === 'IN PROGRESS'
-        }">
-            {{ task.status }}
-          </div>
-        </div>
-        <div class="task-footer">
-          <div class="task-deadline">Deadline: {{ task.deadline | date:'shortDate' }}</div>
-        </div>
-      </div>
-    </div>
+    <table class="task-table">
+      <thead>
+      <tr>
+        <th>Task Name</th>
+        <th>Status</th>
+        <th>Deadline</th>
+      </tr>
+      </thead>
+      <tbody>
+      <ng-container *ngFor="let task of tasks">
+        <!-- Main row -->
+        <tr (click)="onTaskSelected(task)" [class.selected]="selectedTask?.id === task.id">
+          <td>{{ task.name }}</td>
+          <td>
+            <span [ngClass]="{
+              'status-pending': task.status === 'PENDING',
+              'status-completed': task.status === 'COMPLETED',
+              'status-in-progress': task.status === 'IN PROGRESS'
+            }">
+              {{ task.status }}
+            </span>
+          </td>
+          <td>{{ task.deadline | date:'shortDate' }}</td>
+        </tr>
+
+        <!-- Expanded content row -->
+        <tr class="expandable-row" *ngIf="selectedTask?.id === task.id">
+          <td colspan="3">
+            <app-tasklog [task]="selectedTask" [logs]="taskLogs"></app-tasklog>
+          </td>
+        </tr>
+      </ng-container>
+      </tbody>
+    </table>
   </div>
 
-
-  <!-- Task Log Display -->
-  <div class="task-log-container" *ngIf="selectedTask">
-    <app-tasklog [task]="selectedTask" [logs]="taskLogs"></app-tasklog>
-  </div>
 
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="error-message">

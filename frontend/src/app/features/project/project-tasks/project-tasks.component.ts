@@ -24,6 +24,8 @@ export class ProjectTasksComponent implements OnInit {
     this.loadTasks();
   }
 
+
+
   loadTasks(): void {
     this.http.get<any[]>(
       `http://localhost:8080/api/tasks/project/${this.projectId}`,
@@ -39,8 +41,13 @@ export class ProjectTasksComponent implements OnInit {
   }
 
   onTaskSelected(task: any): void {
-    this.selectedTask = task;
-    this.loadTaskLogs(task.id);
+    if (this.selectedTask && this.selectedTask.id === task.id) {
+      this.selectedTask = null;
+      this.taskLogs = [];
+    } else {
+      this.selectedTask = task;
+      this.loadTaskLogs(task.id);
+    }
   }
 
   loadTaskLogs(taskId: string): void {
