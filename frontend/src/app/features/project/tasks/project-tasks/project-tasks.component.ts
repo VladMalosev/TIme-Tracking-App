@@ -14,8 +14,9 @@ import {MatCheckbox, MatCheckboxChange} from '@angular/material/checkbox';
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
 import {MatOption} from '@angular/material/core';
 import {MatSelect} from '@angular/material/select';
-import {TaskLogService} from '../../../services/project-tasks/task-log.service';
-import {ProjectTasksService} from '../../../services/project-tasks/project-tasks.service';
+import {TaskLogService} from '../../../../services/project-tasks/task-log.service';
+import {ProjectTasksService} from '../../../../services/project-tasks/project-tasks.service';
+import {MatDivider} from '@angular/material/divider';
 
 
 @Component({
@@ -35,7 +36,8 @@ import {ProjectTasksService} from '../../../services/project-tasks/project-tasks
     MatDatepickerToggle,
     MatDatepicker,
     MatDatepickerInput,
-    MatSelect
+    MatSelect,
+    MatDivider
   ],
   templateUrl: './project-tasks.component.html',
   styleUrl: './project-tasks.component.scss'

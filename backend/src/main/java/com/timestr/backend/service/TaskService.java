@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -246,4 +247,14 @@ public class TaskService {
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public List<Task>getUnassignedTasks(UUID projectId) {
+        List<Task> projectTasks = taskRepository.findByProjectId(projectId);
+
+        return projectTasks.stream()
+                .filter(task -> task.getAssignedTo() == null)
+                .filter(task -> task.getStatus() == TaskStatus.PENDING)
+                .collect(Collectors.toList());
+    }
+
 }

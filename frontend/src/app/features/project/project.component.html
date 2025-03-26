@@ -99,7 +99,7 @@
 
               <!-- Future My Tasks Section -->
               <div *ngIf="activeTaskTab === 'my-tasks'">
-                <p>Here you will see assigned tasks (Coming Soon).</p>
+                <app-my-tasks *ngIf="projectId"></app-my-tasks>
               </div>
             </app-task-subtabs>
           </div>

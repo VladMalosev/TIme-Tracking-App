@@ -1,7 +1,7 @@
 // task-subtabs.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TaskTabsService } from '../../../../services/task-tabs-service';
+import { TaskTabsService } from '../../../../../services/task-tabs-service';
 
 @Component({
   selector: 'app-task-subtabs',

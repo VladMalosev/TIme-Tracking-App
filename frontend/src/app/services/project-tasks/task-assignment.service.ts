@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import {environment} from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -54,8 +55,15 @@ export class TaskAssignmentService {
 
   assignTask(taskId: string, userId: string, assignedBy: string): Observable<any> {
     return this.http.post<any>(
-      `http://localhost:8080/api/tasks/${taskId}/assign?userId=${userId}&assignedBy=${assignedBy}`,
-      {},
+      `${environment.apiBaseUrl}/tasks/${taskId}/assign`,
+      { userId, assignedBy },
+      { withCredentials: true }
+    );
+  }
+
+  getUnassignedPendingTasks(projectId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/tasks/unassigned-pending/${projectId}`,
       { withCredentials: true }
     );
   }
@@ -63,5 +71,35 @@ export class TaskAssignmentService {
   canAssignTasks(): boolean {
     const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];
     return allowedRoles.includes(this.currentUserRoleSubject.value);
+  }
+
+  getAssignedTasks(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/tasks/assigned/${userId}`,
+      { withCredentials: true }
+    );
+  }
+
+  updateTaskStatus(taskId: string, status: string): Observable<any> {
+    return this.http.put<any>(
+      `${environment.apiBaseUrl}/tasks/${taskId}/status`,
+      { status },
+      { withCredentials: true }
+    );
+  }
+
+  startTask(taskId: string): Observable<any> {
+    return this.updateTaskStatus(taskId, 'IN_PROGRESS');
+  }
+
+  completeTask(taskId: string): Observable<any> {
+    return this.updateTaskStatus(taskId, 'COMPLETED');
+  }
+
+  getTaskCompletionDetails(taskId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiBaseUrl}/tasks/${taskId}/completion-details`,
+      { withCredentials: true }
+    );
   }
 }

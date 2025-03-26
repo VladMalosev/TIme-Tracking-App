@@ -1,0 +1,82 @@
+.assignment-card, .unassigned-tasks-card {
+  margin: 20px 0;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  mat-card-header {
+    padding: 16px 16px 0;
+
+    mat-card-title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    mat-card-subtitle {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    mat-icon {
+      color: #3f51b5; /* Indigo color */
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  mat-divider {
+    margin: 16px 0;
+  }
+
+  .description {
+    margin: 16px 0;
+    padding: 0 8px;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .form-field {
+    width: 100%;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+
+    .assign-button {
+      padding: 0 24px;
+
+      mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+.error-message {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background-color: #ffebee;
+  color: #d32f2f;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.unassigned-tasks-card {
+  mat-icon {
+    color: #f44336;
+  }
+}

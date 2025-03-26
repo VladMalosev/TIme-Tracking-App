@@ -1,0 +1,57 @@
+<div class="unassigned-tasks-card">
+  <mat-card-header class="unassigned-tasks-card">
+    <mat-card-title>Unassigned Pending Tasks</mat-card-title>
+    <mat-card-subtitle>Tasks waiting to be assigned</mat-card-subtitle>
+    <button mat-icon-button (click)="refreshTasks()" matTooltip="Refresh">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div *ngIf="(unassignedTasks$ | async) as tasks">
+      <table *ngIf="tasks.length > 0" mat-table [dataSource]="tasks" class="mat-elevation-z1">
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef> Task Name </th>
+          <td mat-cell *matCellDef="let task"> {{task.name}} </td>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef> Description </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.description || 'No description'}}
+          </td>
+        </ng-container>
+
+        <!-- Deadline Column -->
+        <ng-container matColumnDef="deadline">
+          <th mat-header-cell *matHeaderCellDef> Deadline </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.deadline ? (task.deadline | date:'mediumDate') : 'Not set'}}
+          </td>
+        </ng-container>
+
+        <!-- Created At Column -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef> Created </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.createdAt | date:'mediumDate'}}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!loading && tasks.length === 0" class="no-tasks-message">
+        <mat-icon>check_circle</mat-icon>
+        <span>All tasks are assigned!</span>
+      </div>
+    </div>
+  </mat-card-content>
+</div>

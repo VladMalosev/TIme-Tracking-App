@@ -9,7 +9,7 @@ import { AddProjectComponent } from './features/workspace-management/add-project
 import { EditProjectComponent } from './features/workspace-management/edit-project/edit-project.component';
 import { ProjectComponent } from './features/project/project.component';
 import { ProjectMembersComponent } from './features/project/project-members/project-members.component';
-import {ProjectTasksComponent} from './features/project/project-tasks/project-tasks.component';
+import {ProjectTasksComponent} from './features/project/tasks/project-tasks/project-tasks.component';
 import {ProjectInvitationsComponent} from './features/project/project-invitations/project-invitations.component';
 import {TimeLogsComponent} from './features/project/time-logs/time-logs.component';
 

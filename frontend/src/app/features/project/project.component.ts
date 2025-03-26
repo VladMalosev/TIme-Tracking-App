@@ -3,20 +3,21 @@ import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ProjectMembersComponent } from './project-members/project-members.component';
-import { ProjectTasksComponent } from './project-tasks/project-tasks.component';
+import { ProjectTasksComponent } from './tasks/project-tasks/project-tasks.component';
 import { FormsModule } from '@angular/forms';
-import {TaskAssignmentComponent} from "./task-assignment/task-assignment.component";
+import {TaskAssignmentComponent} from "./tasks/task-assignment/task-assignment.component";
 import {ProjectInvitationsComponent} from "./project-invitations/project-invitations.component";
-import {TaskSubtabsComponent} from './project-tasks/task-subtabs/task-subtabs.component';
+import {TaskSubtabsComponent} from './tasks/project-tasks/task-subtabs/task-subtabs.component';
 import {TaskTabsService} from '../../services/task-tabs-service';
 import {ProjectTasksService} from '../../services/project-tasks/project-tasks.service';
 import {InvitationsService} from '../../services/project-tasks/invitations.service';
 import {TaskAssignmentService} from '../../services/project-tasks/task-assignment.service';
+import {MyTasksComponent} from './tasks/my-tasks/my-tasks.component';
 
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
-  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent, TaskSubtabsComponent],
+  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent, TaskSubtabsComponent, MyTasksComponent],
     styleUrls: ['./project.component.css']
 })
 export class ProjectComponent implements OnInit {

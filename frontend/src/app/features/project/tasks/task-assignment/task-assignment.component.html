@@ -1,0 +1,90 @@
+<ng-container *ngIf="canAssignTasks$ | async">
+  <mat-card class="assignment-card">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon>assignment_ind</mat-icon>
+      </div>
+      <mat-card-title>Task Assignment</mat-card-title>
+      <mat-card-subtitle>Distribute work among your team members</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content>
+      <div class="description">
+        <p>
+          Use this form to assign tasks to your team members. Select a task from the list and choose
+          the appropriate collaborator to handle it. This helps maintain clear responsibilities
+          and workload distribution.
+        </p>
+      </div>
+
+      <form (ngSubmit)="assignTask()" class="assignment-form">
+        <!-- Task Select -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Select Task</mat-label>
+          <mat-select (selectionChange)="onTaskSelected($event.value)">
+            <mat-option *ngFor="let task of tasks$ | async" [value]="task">
+              {{ task.name }}
+            </mat-option>
+          </mat-select>
+          <mat-hint>Choose the task to assign</mat-hint>
+        </mat-form-field>
+
+        <!-- User Select -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Select Collaborator</mat-label>
+          <mat-select (selectionChange)="onUserSelected($event.value)">
+            <mat-option *ngFor="let user of collaborators$ | async" [value]="user">
+              {{ user.user.name }}
+            </mat-option>
+          </mat-select>
+          <mat-hint>Select who will be responsible</mat-hint>
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <div class="button-container">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="assign-button"
+            [disabled]="!(selectedTask$ | async) || !(selectedUser$ | async)">
+            <mat-icon>send</mat-icon>
+            Assign Task
+          </button>
+        </div>
+      </form>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message mat-elevation-z1">
+        <mat-icon>error_outline</mat-icon>
+        {{ errorMessage }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+
+<!-- Unassigned Tasks Section -->
+<mat-card class="unassigned-tasks-card">
+  <mat-card-header>
+    <div mat-card-avatar>
+      <mat-icon>assignment_late</mat-icon>
+    </div>
+    <mat-card-title>Unassigned Tasks</mat-card-title>
+    <mat-card-subtitle>Tasks waiting for assignment</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+    <div class="description">
+      <p>
+        Below is a list of all tasks that haven't been assigned to any team member yet.
+        These tasks require attention to ensure they're properly allocated.
+      </p>
+    </div>
+
+    <app-unassigned-tasks-table></app-unassigned-tasks-table>
+  </mat-card-content>
+</mat-card>

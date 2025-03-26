@@ -8,7 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {EMPTY, map, Observable, switchMap, take, withLatestFrom} from 'rxjs';
-import {TaskAssignmentService} from '../../../services/project-tasks/task-assignment.service';
+import {TaskAssignmentService} from '../../../../services/project-tasks/task-assignment.service';
+import {MatDivider} from '@angular/material/divider';
+import {MatIcon} from '@angular/material/icon';
+import {UnassignedTasksTableComponent} from './unassigned-tasks-table/unassigned-tasks-table.component';
 
 @Component({
   selector: 'app-task-assignment',
@@ -21,7 +24,10 @@ import {TaskAssignmentService} from '../../../services/project-tasks/task-assign
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDivider,
+    MatIcon,
+    UnassignedTasksTableComponent
   ],
   templateUrl: './task-assignment.component.html',
   styleUrls: ['./task-assignment.component.scss']

@@ -1,0 +1,115 @@
+<mat-card class="my-tasks-card">
+  <mat-card-header>
+    <div mat-card-avatar>
+      <mat-icon class="assignment">assignment_turned_in</mat-icon>
+    </div>
+    <mat-card-title>My Tasks</mat-card-title>
+    <mat-card-subtitle>Tasks assigned to you</mat-card-subtitle>
+
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+    <div class="description-container">
+      <div class="description">
+        <p>
+          Below is a list of all tasks assigned to you. You can start working on them,
+          update their status, or mark them as completed.
+        </p>
+      </div>
+      <button mat-icon-button (click)="loadAssignedTasks()" matTooltip="Refresh">
+        <mat-icon class="refresh">refresh</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div class *ngIf="(assignedTasks$ | async) as tasks">
+      <table *ngIf="tasks.length > 0" mat-table [dataSource]="tasks" class="mat-elevation-z1">
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef> Task Name </th>
+          <td mat-cell *matCellDef="let task"> {{task.name}} </td>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef> Description </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.description || 'No description'}}
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let task">
+            <mat-chip [color]="getStatusColor(task.status)">
+              {{task.status}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Deadline Column -->
+        <ng-container matColumnDef="deadline">
+          <th mat-header-cell *matHeaderCellDef> Deadline </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.deadline ? (task.deadline | date:'mediumDate') : 'Not set'}}
+          </td>
+        </ng-container>
+
+        <!-- Assigned By Column -->
+        <ng-container matColumnDef="assignedBy">
+          <th mat-header-cell *matHeaderCellDef> Assigned By </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.assignedBy?.name || 'System'}}
+            <span *ngIf="task.assignedAt"></span>
+          </td>
+        </ng-container>
+
+        <!-- Assignment Date Column -->
+        <ng-container matColumnDef="assignedDate">
+          <th mat-header-cell *matHeaderCellDef> Assignment Date </th>
+          <td mat-cell *matCellDef="let task">
+            {{task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available'}}
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
+          <td mat-cell *matCellDef="let task">
+            <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Task actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button *ngIf="task.status !== TASK_STATUS.IN_PROGRESS" mat-menu-item (click)="startTask(task.id)">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Start Task</span>
+              </button>
+              <button *ngIf="task.status !== TASK_STATUS.COMPLETED" mat-menu-item (click)="completeTask(task.id)">
+                <mat-icon>check_circle</mat-icon>
+                <span>Complete Task</span>
+              </button>
+              <button mat-menu-item disabled>
+                <mat-icon>info</mat-icon>
+                <span>View Details</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!loading && tasks.length === 0" class="no-tasks-message">
+        <mat-icon>check_circle</mat-icon>
+        <span>No tasks assigned to you!</span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
