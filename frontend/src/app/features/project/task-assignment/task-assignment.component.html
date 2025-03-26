@@ -1,35 +1,46 @@
-<div *ngIf="canAssignTasks()" class="card-panel">
-  <h3 class="header">Assign Task</h3>
-  <p class="description">Assign a task to a collaborator. Select a task and a user from the dropdowns below.</p>
-  <form (ngSubmit)="assignTask()">
-    <!-- Task Dropdown -->
-    <div class="input-field">
-      <app-dropdown
-        [items]="tasks"
-        [displayKey]="'name'"
-        [defaultText]="'Select Task'"
-        (itemSelected)="onTaskSelected($event)">
-      </app-dropdown>
-    </div>
+<ng-container *ngIf="canAssignTasks$ | async">
+  <mat-card class="assignment-card">
+    <mat-card-header>
+      <mat-card-title>Assign Task</mat-card-title>
+      <mat-card-subtitle>Assign a task to a collaborator</mat-card-subtitle>
+    </mat-card-header>
 
-    <!-- User Dropdown -->
-    <div class="input-field">
-      <app-user-dropdown
-        [users]="collaborators"
-        [defaultText]="'Select User'"
-        (userSelected)="onUserSelected($event)">
-      </app-user-dropdown>
-    </div>
+    <mat-card-content>
+      <form (ngSubmit)="assignTask()" class="assignment-form">
+        <!-- Task Select -->
+        <mat-form-field appearance="outline">
+          <mat-label>Task</mat-label>
+          <mat-select (selectionChange)="onTaskSelected($event.value)">
+            <mat-option *ngFor="let task of tasks$ | async" [value]="task">
+              {{ task.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-    <!-- Submit Button -->
-    <button type="submit" class="btn waves-effect waves-light" [disabled]="!selectedTask || !selectedUser">
-      Assign Task
-      <i class="material-icons right">assignment_turned_in</i>
-    </button>
-  </form>
+        <!-- User Select -->
+        <mat-form-field appearance="outline">
+          <mat-label>User</mat-label>
+          <mat-select (selectionChange)="onUserSelected($event.value)">
+            <mat-option *ngFor="let user of collaborators$ | async" [value]="user">
+              {{ user.user.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-  <!-- Error Message -->
-  <div *ngIf="errorMessage" class="card-panel red lighten-4 red-text text-darken-4">
-    {{ errorMessage }}
-  </div>
-</div>
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="!(selectedTask$ | async) || !(selectedUser$ | async)">
+          Assign Task
+        </button>
+      </form>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

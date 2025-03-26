@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -8,6 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import {Subscription} from 'rxjs';
+import {TaskLogService} from '../../../../services/project-tasks/task-log.service';
 
 @Component({
   selector: 'app-tasklog',
@@ -26,16 +28,32 @@ import { MatNativeDateModule } from '@angular/material/core';
   templateUrl: './tasklog.component.html',
   styleUrls: ['./tasklog.component.scss']
 })
-export class TaskLogComponent implements OnInit{
+export class TaskLogComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
+  task: any;
+  logs: any[] = [];
+
+  constructor(private taskLogService: TaskLogService) {}
+
 
 
   ngOnInit() {
-    console.log('Task logs:', this.logs);
-    console.log('Task:', this.task);
+    this.subscriptions.add(
+      this.taskLogService.task$.subscribe(task => {
+        this.task = task;
+      })
+    );
+
+    this.subscriptions.add(
+      this.taskLogService.logs$.subscribe(logs => {
+        this.logs = logs;
+      })
+    );
   }
 
-  @Input() task: any;
-  @Input() logs: any[] = [];
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 
   actionFilter: string = '';
   userFilter: string = '';

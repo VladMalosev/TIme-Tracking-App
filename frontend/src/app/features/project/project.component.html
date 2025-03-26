@@ -89,18 +89,12 @@
 
               <!-- Task Creation Component -->
               <div *ngIf="activeTaskTab === 'creation'">
-                <app-project-tasks *ngIf="projectId" [projectId]="projectId!" [currentUserRole]="currentUserRole"></app-project-tasks>
+                <app-project-tasks *ngIf="projectId"></app-project-tasks>
               </div>
 
               <!-- Task Assignment Component -->
               <div *ngIf="activeTaskTab === 'assignment'">
-                <app-task-assignment *ngIf="projectId && canAssignTasks()"
-                                     [projectId]="projectId!"
-                                     [tasks]="tasks"
-                                     [collaborators]="collaborators"
-                                     [currentUserRole]="currentUserRole"
-                                     [userId]="userId">
-                </app-task-assignment>
+                <app-task-assignment *ngIf="projectId"></app-task-assignment>
               </div>
 
               <!-- Future My Tasks Section -->
@@ -112,11 +106,7 @@
 
             <!-- Invitations Tab -->
             <div *ngIf="activeTab === 'invitations'">
-                <app-project-invitations
-                        *ngIf="projectId"
-                        [projectId]="projectId!"
-                        [currentUserRole]="currentUserRole">
-                </app-project-invitations>
+              <app-project-invitations *ngIf="projectId"></app-project-invitations>
             </div>
         </div>
     </div>

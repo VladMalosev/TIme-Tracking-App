@@ -9,6 +9,9 @@ import {TaskAssignmentComponent} from "./task-assignment/task-assignment.compone
 import {ProjectInvitationsComponent} from "./project-invitations/project-invitations.component";
 import {TaskSubtabsComponent} from './project-tasks/task-subtabs/task-subtabs.component';
 import {TaskTabsService} from '../../services/task-tabs-service';
+import {ProjectTasksService} from '../../services/project-tasks/project-tasks.service';
+import {InvitationsService} from '../../services/project-tasks/invitations.service';
+import {TaskAssignmentService} from '../../services/project-tasks/task-assignment.service';
 
 @Component({
     selector: 'app-project',
@@ -33,15 +36,23 @@ export class ProjectComponent implements OnInit {
         private route: ActivatedRoute,
         private http: HttpClient,
         private router: Router,
-        private taskTabsService: TaskTabsService
+        private taskTabsService: TaskTabsService,
+        private projectTasksService: ProjectTasksService,
+        private invitationsService: InvitationsService,
+        private taskAssignmentService: TaskAssignmentService
     ) {}
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.paramMap.get('id');
     if (this.projectId) {
+      this.projectTasksService.setProjectId(this.projectId);
+      this.invitationsService.setProjectId(this.projectId);
+      this.invitationsService.setCurrentUserRole(this.currentUserRole);
+      this.projectTasksService.setCurrentUserRole(this.currentUserRole);
       this.fetchProjectDetails(this.projectId);
       this.fetchDashboardData(this.projectId);
       this.fetchCurrentUserRole(this.projectId);
+      this.taskAssignmentService.setProjectId(this.projectId);
       this.fetchCollaborators(this.projectId);
       this.fetchTasks(this.projectId);
       this.fetchUserId();
@@ -112,8 +123,9 @@ export class ProjectComponent implements OnInit {
       .subscribe(
         (response) => {
           this.currentUserRole = response.role;
-          console.log("Role in the project:", response.role);
-          // Update the service with the new role information
+          this.taskAssignmentService.setCurrentUserRole(response.role);
+          this.projectTasksService.setCurrentUserRole(response.role);
+          this.invitationsService.setCurrentUserRole(response.role);
           this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
         },
         (error) => {
@@ -122,41 +134,46 @@ export class ProjectComponent implements OnInit {
       );
   }
 
-    fetchCollaborators(projectId: string): void {
-        this.http.get<any[]>(`http://localhost:8080/api/projects/${projectId}/collaborators`, { withCredentials: true })
-            .subscribe(
-                (response) => {
-                    this.collaborators = response;
-                },
-                (error) => {
-                    console.error('Error fetching collaborators', error);
-                }
-            );
-    }
+  fetchCollaborators(projectId: string): void {
+    this.http.get<any[]>(`http://localhost:8080/api/projects/${projectId}/collaborators`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.collaborators = response;
+          this.taskAssignmentService.setCollaborators(response);
+        },
+        (error) => {
+          console.error('Error fetching collaborators', error);
+        }
+      );
+  }
 
-    fetchTasks(projectId: string): void {
-        this.http.get<any[]>(`http://localhost:8080/api/tasks/project/${projectId}`, { withCredentials: true })
-            .subscribe(
-                (response) => {
-                    this.tasks = response;
-                },
-                (error) => {
-                    console.error('Error fetching tasks', error);
-                }
-            );
-    }
+  fetchTasks(projectId: string): void {
+    this.http.get<any[]>(`http://localhost:8080/api/tasks/project/${projectId}`, { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.tasks = response;
+          this.taskAssignmentService.setTasks(response);
+        },
+        (error) => {
+          console.error('Error fetching tasks', error);
+        }
+      );
+  }
 
-    fetchUserId(): void {
-        this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true })
-            .subscribe(
-                (response) => {
-                    this.userId = response.userId;
-                },
-                (error) => {
-                    console.error('Error fetching user ID', error);
-                }
-            );
-    }
+
+  fetchUserId(): void {
+    this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true })
+      .subscribe(
+        (response) => {
+          this.userId = response.userId;
+          this.taskAssignmentService.setUserId(response.userId);
+        },
+        (error) => {
+          console.error('Error fetching user ID', error);
+        }
+      );
+  }
+
 
     canAssignTasks(): boolean {
         const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];

@@ -14,6 +14,8 @@ import {MatCheckbox, MatCheckboxChange} from '@angular/material/checkbox';
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
 import {MatOption} from '@angular/material/core';
 import {MatSelect} from '@angular/material/select';
+import {TaskLogService} from '../../../services/project-tasks/task-log.service';
+import {ProjectTasksService} from '../../../services/project-tasks/project-tasks.service';
 
 
 @Component({
@@ -41,11 +43,8 @@ import {MatSelect} from '@angular/material/select';
 
 })
 export class ProjectTasksComponent implements OnInit {
-  @Input() projectId!: string;
-  @Input() currentUserRole!: string;
   errorMessage: string | null = null;
   selectedTask: any = null;
-  taskLogs: any[] = [];
   tasks: any[] = [];
   timeNotSelectedError: boolean = false;
   selectedTasks: any[] = [];
@@ -55,17 +54,31 @@ export class ProjectTasksComponent implements OnInit {
   createdByFilter: string = '';
   dateFrom: Date | null = null;
   dateTo: Date | null = null;
-
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   showFilters: boolean = false;
+  currentUserRole: string = '';
+  currentProjectId: string = '';
 
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(
+    private http: HttpClient,
+    private projectTasksService: ProjectTasksService,
+    private taskLogService: TaskLogService
+  ) {}
+
 
   ngOnInit(): void {
-    this.loadTasks();
+    this.projectTasksService.currentUserRole$.subscribe(role => {
+      this.currentUserRole = role;
+    });
+
+    this.projectTasksService.projectId$.subscribe(projectId => {
+      if (projectId) {
+        this.currentProjectId = projectId;
+        this.loadTasks();
+      }
+    });
   }
 
   toggleFilters(): void {
@@ -250,9 +263,8 @@ export class ProjectTasksComponent implements OnInit {
             this.selectedTasks = this.selectedTasks.filter(t => t.id !== task.id);
             if (this.selectedTask?.id === task.id) {
               this.selectedTask = null;
-              this.taskLogs = [];
+              this.taskLogService.clear();
             }
-
             this.errorMessage = null;
           },
           error: (error) => {
@@ -269,28 +281,30 @@ export class ProjectTasksComponent implements OnInit {
   }
 
   loadTasks(): void {
-    this.http.get<any[]>(
-      `http://localhost:8080/api/tasks/project/${this.projectId}`,
-      { withCredentials: true }
-    ).subscribe(
-      (tasks) => {
-        this.tasks = tasks.map(task => ({
-          ...task,
-          selected: false,
-          createdBy: task.createdBy || { name: 'System' },
-          assignedTo: task.assignedTo || null,
-          assignedBy: task.assignedBy || null
-        }));
-      },
-      (error) => {
-        console.error('Error loading tasks', error);
-      }
-    );
+    this.projectTasksService.projectId$.subscribe(projectId => {
+      if (!projectId) return;
+
+      this.projectTasksService.loadTasks(projectId).subscribe(
+        (tasks) => {
+          this.tasks = tasks.map(task => ({
+            ...task,
+            selected: false,
+            createdBy: task.createdBy || { name: 'System' },
+            assignedTo: task.assignedTo || null,
+            assignedBy: task.assignedBy || null
+          }));
+        },
+        (error) => {
+          console.error('Error loading tasks', error);
+        }
+      );
+    });
   }
+
   onTaskSelected(task: any): void {
     if (this.selectedTask && this.selectedTask.id === task.id) {
       this.selectedTask = null;
-      this.taskLogs = [];
+      this.taskLogService.clear();
     } else {
       this.selectedTask = task;
       this.loadTaskLogs(task.id);
@@ -303,7 +317,8 @@ export class ProjectTasksComponent implements OnInit {
       { withCredentials: true }
     ).subscribe(
       (logs) => {
-        this.taskLogs = logs;
+        this.taskLogService.setTask(this.selectedTask);
+        this.taskLogService.setLogs(logs);
       },
       (error) => {
         console.error('Error loading task logs', error);
@@ -340,7 +355,7 @@ export class ProjectTasksComponent implements OnInit {
     }
 
     this.http.post<any>(
-      `http://localhost:8080/api/tasks?projectId=${this.projectId}`,
+      `http://localhost:8080/api/tasks?projectId=${this.currentProjectId}`,
       task,
       { withCredentials: true }
     ).subscribe(

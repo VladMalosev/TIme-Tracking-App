@@ -1,95 +1,126 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { CommonModule, NgIf } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RoleDropdownComponent } from './role-dropdown/role-dropdown.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {InvitationsService} from '../../../services/project-tasks/invitations.service';
+import {map, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-project-invitations',
-  imports: [FormsModule, CommonModule, NgIf, RoleDropdownComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatTableModule,
+    MatIconModule,
+    MatMenuModule,
+    MatSnackBarModule
+  ],
   templateUrl: './project-invitations.component.html',
-  styleUrls: ['./project-invitations.component.css']
+  styleUrls: ['./project-invitations.component.scss']
 })
 export class ProjectInvitationsComponent implements OnInit {
-  @Input() projectId!: string;
-  @Input() currentUserRole!: string;
   errorMessage: string | null = null;
   selectedRole: string | null = null;
-  invitations: any[] = [];
+  collaboratorEmail: string = '';
+  currentUserRole: string = '';
+  assignableRoles: string[] = [];
+  displayedColumns: string[] = ['email', 'name', 'role', 'status', 'sentBy', 'sentAt', 'actions'];
+  invitations$: Observable<any[]>;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private invitationsService: InvitationsService,
+    private snackBar: MatSnackBar
+  ) {
+    this.invitations$ = this.invitationsService.invitations$.pipe(
+      map(invitations => invitations || [])
+    );
+  }
+
 
   ngOnInit(): void {
+    this.invitationsService.currentUserRole$.subscribe(role => {
+      this.currentUserRole = role;
+      this.assignableRoles = this.getAssignableRoles();
+    });
+
     this.loadInvitations();
   }
 
+
   loadInvitations(): void {
-    this.http.get<any[]>(`http://localhost:8080/api/invitations/project/${this.projectId}`, { withCredentials: true })
-      .subscribe(
-        (data) => {
-          console.log('Fetched invitations:', data);
-          this.invitations = data.sort((a, b) => {
-            if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
-            if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
-            return 0;
-          });
+    this.invitationsService.projectId$.subscribe(projectId => {
+      if (!projectId) return;
+
+      this.invitationsService.loadInvitations(projectId).subscribe({
+        next: (data) => {
+          this.invitationsService.setInvitations(
+            (data || []).sort((a, b) => {
+              if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
+              if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
+              return 0;
+            })
+          );
         },
-        (error) => {
+        error: (error) => {
           console.error('Error fetching invitations', error);
         }
-      );
+      });
+    });
   }
 
-  onRoleSelected(role: string): void {
-    this.selectedRole = role;
-  }
-
-  addCollaborator(email: string, role: string | null): void {
-    if (!role) {
+  addCollaborator(): void {
+    if (!this.selectedRole) {
       this.errorMessage = 'Please select a role.';
       return;
     }
 
-    this.http.post<any>(
-      `http://localhost:8080/api/projects/${this.projectId}/collaborators?email=${email}&role=${role}`,
-      {}, { withCredentials: true }
-    ).subscribe(
-      () => {
-        alert('Collaborator added!');
-        this.errorMessage = null;
-        this.selectedRole = null;
-        this.loadInvitations();
-      },
-      (error) => {
-        console.error('Error adding collaborator', error);
-        this.errorMessage = 'Failed to add collaborator.';
-      }
-    );
+    this.invitationsService.projectId$.subscribe(projectId => {
+      if (!projectId) return;
+
+      this.invitationsService.addCollaborator(projectId, this.collaboratorEmail, this.selectedRole!).subscribe({
+        next: () => {
+          this.snackBar.open('Invitation sent successfully!', 'Close', { duration: 3000 });
+          this.errorMessage = null;
+          this.selectedRole = null;
+          this.collaboratorEmail = '';
+          this.loadInvitations();
+        },
+        error: (error) => {
+          console.error('Error sending invitation', error);
+          this.errorMessage = error.error?.message || 'Failed to send invitation.';
+        }
+      });
+    });
   }
 
   removeInvitation(invitationId: string): void {
-    console.log('Invitation ID:', invitationId);
-    if (!invitationId) {
-      this.errorMessage = 'Invalid invitation ID.';
-      return;
-    }
-
     if (confirm('Are you sure you want to remove this invitation?')) {
-      this.http.delete(`http://localhost:8080/api/invitations/${invitationId}`, { withCredentials: true })
-        .subscribe(
-          () => {
-            alert('Invitation removed successfully!');
-            this.loadInvitations();
-          },
-          (error) => {
-            console.error('Error removing invitation', error);
-            if (error.status === 400) {
-              this.errorMessage = 'Invitation is not pending and cannot be deleted.';
-            } else {
-              this.errorMessage = 'Failed to remove invitation.';
-            }
-          }
-        );
+      this.invitationsService.removeInvitation(invitationId).subscribe({
+        next: () => {
+          this.snackBar.open('Invitation removed successfully!', 'Close', { duration: 3000 });
+          this.loadInvitations();
+        },
+        error: (error) => {
+          console.error('Error removing invitation', error);
+          this.errorMessage = error.status === 400
+            ? 'Invitation is not pending and cannot be deleted.'
+            : 'Failed to remove invitation.';
+        }
+      });
     }
   }
 

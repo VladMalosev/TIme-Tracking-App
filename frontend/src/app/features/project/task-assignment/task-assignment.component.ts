@@ -1,69 +1,104 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {FormsModule} from '@angular/forms';
-import {NgIf} from '@angular/common';
-import {DropdownComponent} from '../../old-components-from-dashboard/dropdown/dropdown.component';
-import {UserDropdownComponent} from './user-dropdown/user-dropdown.component';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {EMPTY, map, Observable, switchMap, take, withLatestFrom} from 'rxjs';
+import {TaskAssignmentService} from '../../../services/project-tasks/task-assignment.service';
 
 @Component({
   selector: 'app-task-assignment',
+  standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
-    NgIf,
-    DropdownComponent,
-    UserDropdownComponent
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSnackBarModule
   ],
   templateUrl: './task-assignment.component.html',
-  styleUrl: './task-assignment.component.css'
+  styleUrls: ['./task-assignment.component.scss']
 })
 export class TaskAssignmentComponent implements OnInit {
-  @Input() projectId!: string;
-  @Input() tasks: any[] = [];
-  @Input() collaborators: any[] = [];
-  @Input() currentUserRole!: string;
-  @Input() userId!: string;
   errorMessage: string | null = null;
 
-  selectedTask: any = null;
-  selectedUser: any = null;
-
-  constructor(private http: HttpClient) {}
+  constructor(
+    private taskAssignmentService: TaskAssignmentService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {}
 
-  onTaskSelected(task: any): void {
-    this.selectedTask = task;
-  }
-
-  onUserSelected(user: any): void {
-    this.selectedUser = user;
-  }
-
-  assignTask(): void {
-    if (!this.selectedTask || !this.selectedUser) {
-      this.errorMessage = 'Please select a task and a user.';
-      return;
-    }
-
-    this.http.post<any>(
-      `http://localhost:8080/api/tasks/${this.selectedTask.id}/assign?userId=${this.selectedUser.user.id}&assignedBy=${this.userId}`,
-      {}, { withCredentials: true }
-    ).subscribe(
-      () => {
-        alert('Task assigned successfully!');
-        this.errorMessage = null;
-        this.selectedTask = null;
-        this.selectedUser = null;
-      },
-      (error) => {
-        console.error('Error assigning task', error);
-        this.errorMessage = 'Failed to assign task.';
-      }
+  get canAssignTasks$(): Observable<boolean> {
+    return this.taskAssignmentService.currentUserRole$.pipe(
+      map(role => {
+        const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];
+        return allowedRoles.includes(role);
+      })
     );
   }
 
-  canAssignTasks(): boolean {
-    const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];
-    return allowedRoles.includes(this.currentUserRole);
+  get tasks$() {
+    return this.taskAssignmentService.tasks$;
+  }
+
+  get collaborators$() {
+    return this.taskAssignmentService.collaborators$;
+  }
+
+  get selectedTask$() {
+    return this.taskAssignmentService.selectedTask$;
+  }
+
+  get selectedUser$() {
+    return this.taskAssignmentService.selectedUser$;
+  }
+
+  onTaskSelected(task: any): void {
+    this.taskAssignmentService.setSelectedTask(task);
+  }
+
+  onUserSelected(user: any): void {
+    this.taskAssignmentService.setSelectedUser(user);
+  }
+
+  assignTask(): void {
+    this.taskAssignmentService.selectedTask$.pipe(
+      take(1),
+      withLatestFrom(
+        this.taskAssignmentService.selectedUser$,
+        this.taskAssignmentService.userId$
+      ),
+      switchMap(([task, user, userId]) => {
+        if (!task || !user) {
+          this.errorMessage = 'Please select a task and a user.';
+          return EMPTY;
+        }
+
+        return this.taskAssignmentService.assignTask(
+          task.id,
+          user.user.id,
+          userId
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.snackBar.open('Task assigned successfully!', 'Close', { duration: 3000 });
+        this.errorMessage = null;
+        this.taskAssignmentService.setSelectedTask(null);
+        this.taskAssignmentService.setSelectedUser(null);
+      },
+      error: (error) => {
+        console.error('Error assigning task', error);
+        this.errorMessage = 'Failed to assign task.';
+      }
+    });
   }
 }

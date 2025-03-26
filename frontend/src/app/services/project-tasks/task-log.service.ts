@@ -5,17 +5,22 @@ import {BehaviorSubject} from 'rxjs';
   providedIn: 'root'
 })
 export class TaskLogService {
-  private taskSource = new BehaviorSubject<any>(null);
-  private logsSource = new BehaviorSubject<any[]>([]);
+  private taskSubject = new BehaviorSubject<any>(null);
+  private logsSubject = new BehaviorSubject<any[]>([]);
 
-  currentTask = this.taskSource.asObservable();
-  currentLogs = this.logsSource.asObservable();
+  task$ = this.taskSubject.asObservable();
+  logs$ = this.logsSubject.asObservable();
 
-  setTask(task: any) {
-    this.taskSource.next(task);
+  setTask(task: any): void {
+    this.taskSubject.next(task);
   }
 
-  setLogs(logs: any[]) {
-    this.logsSource.next(logs);
+  setLogs(logs: any[]): void {
+    this.logsSubject.next(logs);
+  }
+
+  clear(): void {
+    this.taskSubject.next(null);
+    this.logsSubject.next([]);
   }
 }
