@@ -1,0 +1,69 @@
+.task-details-card {
+  margin: 20px;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  mat-card-header {
+    padding: 16px 16px 0;
+
+    mat-card-title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    mat-card-subtitle {
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .assignment {
+      color: #3f51b5;
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  mat-divider {
+    margin: 16px 0;
+  }
+
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .task-details-container {
+    padding: 16px;
+
+    .detail-row {
+      display: flex;
+      margin-bottom: 16px;
+      align-items: center;
+
+      .detail-label {
+        font-weight: 500;
+        width: 150px;
+        color: rgba(0, 0, 0, 0.7);
+      }
+
+      .detail-value {
+        flex: 1;
+      }
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 24px;
+      justify-content: flex-end;
+
+      button {
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {environment} from '../../../environments/environment';
 
@@ -54,10 +54,14 @@ export class TaskAssignmentService {
   }
 
   assignTask(taskId: string, userId: string, assignedBy: string): Observable<any> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('assignedBy', assignedBy);
+
     return this.http.post<any>(
       `${environment.apiBaseUrl}/tasks/${taskId}/assign`,
-      { userId, assignedBy },
-      { withCredentials: true }
+      null,
+      { params, withCredentials: true }
     );
   }
 
@@ -102,4 +106,11 @@ export class TaskAssignmentService {
       { withCredentials: true }
     );
   }
+
+  getTaskDetails(taskId: string): Observable<any> {
+    return this.http.get<any>(
+      `${environment.apiBaseUrl}/tasks/${taskId}`,
+      { withCredentials: true } );
+  }
+
 }

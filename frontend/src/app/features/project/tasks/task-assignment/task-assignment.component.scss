@@ -17,7 +17,7 @@
     }
 
     mat-icon {
-      color: #3f51b5; /* Indigo color */
+      color: #3f51b5;
       font-size: 36px;
       width: 36px;
       height: 36px;
@@ -51,7 +51,12 @@
     justify-content: flex-end;
 
     .assign-button {
+      background-color: #4A3AFF !important;
+      color: white !important;
+      border-radius: 10px;
+      border: 1px solid #767676;
       padding: 0 24px;
+
 
       mat-icon {
         margin-right: 8px;

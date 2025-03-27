@@ -23,4 +23,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     int countByProjectIdAndDeadlineAfter(UUID projectId, LocalDateTime deadline);
     List<Task> findByProjectIdAndDeadlineBetween(UUID projectId, LocalDateTime start, LocalDateTime end);
     void deleteByProjectId(UUID projectId);
+
+    List<Task> findByProjectIdAndStatusAndAssignedToIsNull(UUID projectId, TaskStatus taskStatus);
 }

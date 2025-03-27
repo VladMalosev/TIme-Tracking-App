@@ -8,10 +8,25 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {EMPTY, map, Observable, switchMap, take, withLatestFrom} from 'rxjs';
-import {TaskAssignmentService} from '../../../../services/project-tasks/task-assignment.service';
-import {MatDivider} from '@angular/material/divider';
-import {MatIcon} from '@angular/material/icon';
-import {UnassignedTasksTableComponent} from './unassigned-tasks-table/unassigned-tasks-table.component';
+import { TaskAssignmentService } from '../../../../services/project-tasks/task-assignment.service';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { UnassignedTasksTableComponent } from './unassigned-tasks-table/unassigned-tasks-table.component';
+
+interface Task {
+  id: string;
+  name: string;
+  status: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Collaborator {
+  user: User;
+}
 
 @Component({
   selector: 'app-task-assignment',
@@ -25,8 +40,8 @@ import {UnassignedTasksTableComponent} from './unassigned-tasks-table/unassigned
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
-    MatDivider,
-    MatIcon,
+    MatDividerModule,
+    MatIconModule,
     UnassignedTasksTableComponent
   ],
   templateUrl: './task-assignment.component.html',
@@ -40,38 +55,59 @@ export class TaskAssignmentComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadUnassignedTasks();
+  }
+
+  private loadUnassignedTasks(): void {
+    this.taskAssignmentService.projectId$.pipe(
+      take(1),
+      switchMap(projectId => {
+        if (!projectId) {
+          this.errorMessage = 'No project selected';
+          return EMPTY;
+        }
+        return this.taskAssignmentService.getUnassignedPendingTasks(projectId);
+      })
+    ).subscribe({
+      next: (tasks: Task[]) => this.taskAssignmentService.setTasks(tasks),
+      error: (error) => {
+        console.error('Error loading unassigned tasks', error);
+        this.errorMessage = 'Failed to load unassigned tasks';
+      }
+    });
+  }
 
   get canAssignTasks$(): Observable<boolean> {
     return this.taskAssignmentService.currentUserRole$.pipe(
-      map(role => {
+      map((role: string | undefined) => {
         const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];
-        return allowedRoles.includes(role);
+        return role ? allowedRoles.includes(role) : false;
       })
     );
   }
 
-  get tasks$() {
+  get tasks$(): Observable<Task[]> {
     return this.taskAssignmentService.tasks$;
   }
 
-  get collaborators$() {
+  get collaborators$(): Observable<Collaborator[]> {
     return this.taskAssignmentService.collaborators$;
   }
 
-  get selectedTask$() {
+  get selectedTask$(): Observable<Task | null> {
     return this.taskAssignmentService.selectedTask$;
   }
 
-  get selectedUser$() {
+  get selectedUser$(): Observable<Collaborator | null> {
     return this.taskAssignmentService.selectedUser$;
   }
 
-  onTaskSelected(task: any): void {
+  onTaskSelected(task: Task): void {
     this.taskAssignmentService.setSelectedTask(task);
   }
 
-  onUserSelected(user: any): void {
+  onUserSelected(user: Collaborator): void {
     this.taskAssignmentService.setSelectedUser(user);
   }
 
@@ -83,8 +119,8 @@ export class TaskAssignmentComponent implements OnInit {
         this.taskAssignmentService.userId$
       ),
       switchMap(([task, user, userId]) => {
-        if (!task || !user) {
-          this.errorMessage = 'Please select a task and a user.';
+        if (!task || !user?.user?.id || !userId) {
+          this.errorMessage = 'Please select both a task and a user';
           return EMPTY;
         }
 
@@ -93,18 +129,34 @@ export class TaskAssignmentComponent implements OnInit {
           user.user.id,
           userId
         );
-      })
+      }),
+      switchMap(() => this.taskAssignmentService.projectId$),
+      take(1)
     ).subscribe({
-      next: () => {
-        this.snackBar.open('Task assigned successfully!', 'Close', { duration: 3000 });
-        this.errorMessage = null;
-        this.taskAssignmentService.setSelectedTask(null);
-        this.taskAssignmentService.setSelectedUser(null);
+      next: (projectId: string | undefined) => {
+        if (projectId) {
+          this.showSuccessMessage();
+          this.resetForm();
+          this.loadUnassignedTasks();
+        }
       },
       error: (error) => {
         console.error('Error assigning task', error);
-        this.errorMessage = 'Failed to assign task.';
+        this.errorMessage = 'Failed to assign task. Please try again.';
       }
     });
+  }
+
+  private showSuccessMessage(): void {
+    this.snackBar.open('Task assigned successfully!', 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private resetForm(): void {
+    this.errorMessage = null;
+    this.taskAssignmentService.setSelectedTask(null);
+    this.taskAssignmentService.setSelectedUser(null);
   }
 }

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SelfTaskService } from './self-task.service';
+import { TaskStateService } from './task-state.service';
 
-describe('SelfTaskService', () => {
-  let service: SelfTaskService;
+describe('TaskStateService', () => {
+  let service: TaskStateService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SelfTaskService);
+    service = TestBed.inject(TaskStateService);
   });
 
   it('should be created', () => {

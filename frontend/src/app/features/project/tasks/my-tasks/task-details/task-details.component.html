@@ -1,0 +1,56 @@
+<div *ngIf="loading" class="loading-spinner">
+  <mat-spinner diameter="40"></mat-spinner>
+</div>
+
+<div *ngIf="!loading && task" class="task-details-container">
+  <div class="detail-row">
+    <span class="detail-label">Task Name:</span>
+    <span class="detail-value">{{ task.name }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Description:</span>
+    <span class="detail-value">{{ task.description || 'No description' }}</span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Status:</span>
+    <span class="detail-value">
+      <mat-chip [color]="getStatusColor(task.status)">
+        {{ task.status }}
+      </mat-chip>
+    </span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Deadline:</span>
+    <span class="detail-value">
+      {{ task.deadline ? (task.deadline | date:'mediumDate') : 'Not set' }}
+    </span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Assigned By:</span>
+    <span class="detail-value">
+      {{ task.assignedBy?.name || 'System' }}
+    </span>
+  </div>
+
+  <div class="detail-row">
+    <span class="detail-label">Assignment Date:</span>
+    <span class="detail-value">
+      {{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}
+    </span>
+  </div>
+
+  <div class="actions-row">
+    <button *ngIf="task.status !== TASK_STATUS.IN_PROGRESS" mat-raised-button color="primary" (click)="startTask()">
+      <mat-icon>play_arrow</mat-icon>
+      Start Task
+    </button>
+    <button *ngIf="task.status !== TASK_STATUS.COMPLETED" mat-raised-button color="accent" (click)="completeTask()">
+      <mat-icon>check_circle</mat-icon>
+      Complete Task
+    </button>
+  </div>
+</div>

@@ -8,6 +8,16 @@
   --subtab-hover: #f1f3f5;
   --subtab-spacing: 1rem;
   --subtab-radius: 8px;
+
+  /* Nested tab specific variables */
+  --nested-tab-bg: #f8f9fa;
+  --nested-tab-text: #5f6368;
+  --nested-tab-active-bg: #ffffff;
+  --nested-tab-active-text: #4A3AFF;
+  --nested-tab-hover: #edf0f2;
+  --nested-tab-padding: 0.75rem 1.25rem;
+  --nested-tab-radius: 6px;
+  --nested-tab-gap: 0.5rem;
 }
 
 .subtab-container {
@@ -68,26 +78,135 @@
 }
 
 .subtab-content {
-  padding: var(--subtab-spacing);
   background: var(--subtab-active-bg);
   border-radius: 0 0 var(--subtab-radius) var(--subtab-radius);
   min-height: 200px;
 }
 
+.nested-tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.nested-subtab-nav {
+  background: var(--nested-tab-bg);
+  border-radius: var(--nested-tab-radius);
+}
+
+.nested-tab-group {
+  display: flex;
+  gap: var(--nested-tab-gap);
+}
+
+.nested-subtab-button {
+  position: relative;
+  padding: var(--nested-tab-padding);
+  background: transparent;
+  border: none;
+  color: var(--nested-tab-text);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: calc(var(--nested-tab-radius) - 2px);
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    background: var(--nested-tab-hover);
+    color: var(--nested-tab-active-text);
+  }
+
+  &.active {
+    color: var(--nested-tab-active-text);
+
+    .nested-indicator {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    .tab-icon {
+      color: var(--nested-tab-active-text);
+    }
+  }
+}
+
+.nested-subtab-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.tab-icon {
+  font-size: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--nested-tab-text);
+  transition: color 0.2s ease;
+}
+
+.tab-text {
+  white-space: nowrap;
+}
+
+.nested-indicator {
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--subtab-indicator);
+  transform: scaleX(0.8);
+  transform-origin: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  border-radius: 2px;
+}
+
+.nested-subtab-content {
+  padding: 0.5rem 0;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0.6; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .subtab-nav {
+  .subtab-nav, .nested-tab-group {
     overflow-x: auto;
-    padding-bottom: 4px; /* For scrollbar space */
-    scrollbar-width: none; /* Firefox */
+    padding-bottom: 4px;
+    scrollbar-width: none;
 
     &::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
+      display: none;
     }
   }
 
-  .subtab-button {
+  .subtab-button, .nested-subtab-button {
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  .nested-tab-group {
+    gap: 0.25rem;
+  }
+
+  .nested-subtab-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+
+    .tab-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+    }
   }
 }

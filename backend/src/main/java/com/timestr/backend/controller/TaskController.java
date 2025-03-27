@@ -221,6 +221,9 @@ public class TaskController {
         return ResponseEntity.ok(logs);
     }
 
+
+
+
     @Operation(summary = "Get unassigned pending tasks", description = "Retrieves all tasks that are unassigned and have PENDING status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
@@ -231,7 +234,8 @@ public class TaskController {
     public ResponseEntity<List<Task>> getUnassignedPendingTasks(
             @Parameter(description = "ID of the project", required = true)
             @PathVariable UUID projectId) {
-        List<Task> tasks = taskService.getUnassignedTasks(projectId);
+        List<Task> tasks = taskService.getUnassignedPendingTasks(projectId);
         return ResponseEntity.ok(tasks);
     }
+
 }

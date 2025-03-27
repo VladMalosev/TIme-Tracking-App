@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -9,11 +8,10 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatTabsModule } from '@angular/material/tabs';
 import { Observable, of, switchMap } from 'rxjs';
 import { TaskAssignmentService } from '../../../../services/project-tasks/task-assignment.service';
-
-
+import { TaskStateService } from '../../../../services/my-tasks/task-state.service';
+import {TaskDetailsComponent} from './task-details/task-details.component';
 
 @Component({
   selector: 'app-my-tasks',
@@ -21,7 +19,6 @@ import { TaskAssignmentService } from '../../../../services/project-tasks/task-a
   imports: [
     CommonModule,
     MatCardModule,
-    MatTableModule,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -29,8 +26,7 @@ import { TaskAssignmentService } from '../../../../services/project-tasks/task-a
     MatChipsModule,
     MatTooltipModule,
     MatDividerModule,
-    MatTabsModule,
-
+    TaskDetailsComponent
   ],
   templateUrl: './my-tasks.component.html',
   styleUrls: ['./my-tasks.component.scss']
@@ -38,8 +34,7 @@ import { TaskAssignmentService } from '../../../../services/project-tasks/task-a
 export class MyTasksComponent implements OnInit {
   assignedTasks$: Observable<any[]> = of([]);
   loading = true;
-  activeTabIndex = 0;
-  displayedColumns: string[] = ['name', 'description', 'status', 'deadline', 'assignedBy', 'assignedDate', 'actions'];
+  expandedTaskId: string | null = null;
 
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
@@ -48,7 +43,10 @@ export class MyTasksComponent implements OnInit {
     COMPLETED: 'COMPLETED'
   };
 
-  constructor(private taskAssignmentService: TaskAssignmentService) {}
+  constructor(
+    private taskAssignmentService: TaskAssignmentService,
+    private taskStateService: TaskStateService
+  ) {}
 
   ngOnInit(): void {
     this.loadAssignedTasks();
@@ -62,7 +60,17 @@ export class MyTasksComponent implements OnInit {
         return this.taskAssignmentService.getAssignedTasks(userId);
       })
     );
-    this.loading = false;
+
+    this.assignedTasks$.subscribe(() => this.loading = false);
+  }
+
+  toggleTaskDetails(taskId: string): void {
+    this.expandedTaskId = this.expandedTaskId === taskId ? null : taskId;
+    if (this.expandedTaskId) {
+      this.taskStateService.setSelectedTaskId(taskId);
+    } else {
+      this.taskStateService.clearSelectedTaskId();
+    }
   }
 
   updateTaskStatus(taskId: string, newStatus: string): void {
@@ -86,9 +94,5 @@ export class MyTasksComponent implements OnInit {
       case this.TASK_STATUS.COMPLETED: return 'success';
       default: return '';
     }
-  }
-
-  onTabChange(index: number): void {
-    this.activeTabIndex = index;
   }
 }

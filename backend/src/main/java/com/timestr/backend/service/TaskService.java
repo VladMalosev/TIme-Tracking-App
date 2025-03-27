@@ -248,13 +248,10 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    public List<Task>getUnassignedTasks(UUID projectId) {
-        List<Task> projectTasks = taskRepository.findByProjectId(projectId);
 
-        return projectTasks.stream()
-                .filter(task -> task.getAssignedTo() == null)
-                .filter(task -> task.getStatus() == TaskStatus.PENDING)
-                .collect(Collectors.toList());
+
+
+    public List<Task> getUnassignedPendingTasks(UUID projectId) {
+        return taskRepository.findByProjectIdAndStatusAndAssignedToIsNull(projectId, TaskStatus.PENDING);
     }
-
 }

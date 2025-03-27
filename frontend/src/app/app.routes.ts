@@ -12,6 +12,7 @@ import { ProjectMembersComponent } from './features/project/project-members/proj
 import {ProjectTasksComponent} from './features/project/tasks/project-tasks/project-tasks.component';
 import {ProjectInvitationsComponent} from './features/project/project-invitations/project-invitations.component';
 import {TimeLogsComponent} from './features/project/time-logs/time-logs.component';
+import {TaskDetailsComponent} from './features/project/tasks/my-tasks/task-details/task-details.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -30,6 +31,7 @@ export const routes: Routes = [
       { path: 'tasks', component: ProjectTasksComponent },
       { path: 'invitations', component: ProjectInvitationsComponent },
       { path: 'time-logs', component: TimeLogsComponent },
+      { path: 'task/:taskId', component: TaskDetailsComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

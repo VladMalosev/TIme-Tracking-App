@@ -1,6 +1,13 @@
-.my-tasks-card {
+.task-management-container {
   margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   padding: 16px;
+  border-radius: 8px;
+}
+
+.task-card {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
@@ -16,79 +23,125 @@
       color: rgba(0, 0, 0, 0.6);
     }
 
-    .assignment {
+    mat-icon {
       color: #3f51b5;
       font-size: 36px;
       width: 36px;
       height: 36px;
     }
-
   }
 
   mat-divider {
     margin: 16px 0;
   }
 
+  mat-card-content {
+    padding: 20px 16px 16px;
+  }
+}
+
+.description-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
   .description {
-    margin: 16px 0;
+    margin: 0;
     padding: 0 8px;
     color: rgba(0, 0, 0, 0.7);
     font-size: 14px;
     line-height: 1.5;
   }
 
-  .loading-spinner {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  table {
-    width: 100%;
-    margin-top: 10px;
-    background: white;
-
-
-    th {
-      color: #4A3AFF;
-      background-color: #fbfbff;
-      font-weight: 500;
-      white-space: nowrap;
-
-    }
-
-    td {
-      padding: 12px 16px;
-
-    }
-
-    mat-chip {
-      font-weight: 500;
-    }
-  }
-
-  .no-tasks-message {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: #4caf50;
-
-    mat-icon {
-      margin-right: 8px;
-    }
-  }
-}
-.description-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 16px 0;
-  padding: 0 8px;
-
   button {
     margin-left: auto;
   }
 }
 
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
 
+.table-container {
+  overflow-x: auto;
+}
+
+.task-table {
+  background: white;
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+
+  th {
+    color: #4A3AFF;
+    background-color: #fbfbff;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  .expandable-row {
+    background-color: #fafafa;
+
+    td {
+      padding: 0;
+    }
+  }
+}
+
+.no-tasks-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #4caf50;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.task-details-container {
+  padding: 16px;
+
+  .detail-row {
+    display: flex;
+    margin-bottom: 16px;
+    align-items: center;
+
+    .detail-label {
+      font-weight: 500;
+      width: 150px;
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .detail-value {
+      flex: 1;
+    }
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    justify-content: flex-end;
+
+    button {
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
