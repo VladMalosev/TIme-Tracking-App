@@ -1,56 +1,224 @@
 <div *ngIf="loading" class="loading-spinner">
   <mat-spinner diameter="40"></mat-spinner>
+  <div class="loading-text">Loading task details...</div>
 </div>
 
 <div *ngIf="!loading && task" class="task-details-container">
-  <div class="detail-row">
-    <span class="detail-label">Task Name:</span>
-    <span class="detail-value">{{ task.name }}</span>
+  <div class="detail-header">
+    <h2>Task Details</h2>
+    <p class="subtitle">Review and manage all aspects of this task including time tracking, logs, and status updates.</p>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">Description:</span>
-    <span class="detail-value">{{ task.description || 'No description' }}</span>
+  <div class="detail-grid">
+    <div class="detail-card name-card">
+      <div class="detail-label">
+        <mat-icon>title</mat-icon>
+        Task Name
+      </div>
+      <div class="detail-value">{{ task.name }}</div>
+      <div class="detail-hint">The primary identifier for this task</div>
+    </div>
+
+    <div class="detail-card description-card">
+      <div class="detail-label">
+        <mat-icon>description</mat-icon>
+        Description
+      </div>
+      <div class="detail-value" [class.empty-value]="!task.description">
+        {{ task.description || 'No description provided' }}
+      </div>
+      <div class="detail-hint">Detailed information about what needs to be accomplished</div>
+    </div>
+
+    <div class="detail-card status-card" [class.status-pending]="task.status === 'PENDING'"
+         [class.status-assigned]="task.status === 'ASSIGNED'"
+         [class.status-in_progress]="task.status === 'IN_PROGRESS'"
+         [class.status-completed]="task.status === 'COMPLETED'"
+         [class.status-reopened]="task.status === 'REOPENED'">
+      <div class="detail-label">
+        <mat-icon>flag</mat-icon>
+        Status
+      </div>
+      <div class="detail-value">
+        {{ task.status | titlecase }}
+      </div>
+      <div class="detail-hint">Current progress state of this task</div>
+    </div>
+
+    <div class="detail-card deadline-card">
+      <div class="detail-label">
+        <mat-icon>event</mat-icon>
+        Deadline
+      </div>
+      <div class="detail-value" [class.empty-value]="!task.deadline">
+        {{ task.deadline ? (task.deadline | date:'mediumDate') : 'Not set' }}
+      </div>
+      <div class="detail-hint">Target completion date for this task</div>
+    </div>
+
+    <div class="detail-card assigned-card">
+      <div class="detail-label">
+        <mat-icon>person</mat-icon>
+        Assigned By
+      </div>
+      <div class="detail-value">
+        {{ task.assignedBy?.name || 'System' }}
+        <span *ngIf="task.assignedBy?.email" class="email">({{ task.assignedBy?.email }})</span>
+      </div>
+      <div class="detail-hint">The person who assigned this task to you</div>
+    </div>
+
+    <div class="detail-card date-card">
+      <div class="detail-label">
+        <mat-icon>event_available</mat-icon>
+        Assignment Date
+      </div>
+      <div class="detail-value" [class.empty-value]="!task.assignedAt">
+        {{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}
+      </div>
+      <div class="detail-hint">When this task was assigned to you</div>
+    </div>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">Status:</span>
-    <span class="detail-value">
-      <mat-chip [color]="getStatusColor(task.status)">
-        {{ task.status }}
-      </mat-chip>
-    </span>
+  <div class="time-sections-container">
+    <div class="section-intro">
+      <h3><mat-icon>access_time</mat-icon> Time Management</h3>
+      <p>Track and log your working time to maintain accurate records of your effort on this task.</p>
+    </div>
+
+    <div class="time-tracking-columns">
+
+      <!-- Time Tracking -->
+      <div class="time-logging-section">
+        <h4>
+          <mat-icon>timer</mat-icon>
+          Real-time Tracking
+        </h4>
+        <p class="section-description">Start and stop the timer as you work on this task to automatically record your time.</p>
+        <div class="stopwatch">
+          <div class="timer">{{ formatTime(elapsedTime) }}</div>
+          <div *ngIf="errorMessage" class="error-message">
+            <mat-icon>error</mat-icon> {{ errorMessage }}
+          </div>
+          <div class="description">
+            <mat-form-field class="work-description" appearance="outline">
+              <mat-label>Work Description</mat-label>
+              <input matInput [(ngModel)]="description" placeholder="What are you working on?">
+              <mat-hint>Briefly describe your current activity</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="controls">
+            <button mat-raised-button
+                    (click)="startTimer()"
+                    [disabled]="isRunning || task.status === TASK_STATUS.COMPLETED">
+              <mat-icon>play_arrow</mat-icon> Start
+            </button>
+            <button class="controls-btn" mat-raised-button
+                    (click)="stopTimer()"
+                    [disabled]="!isRunning">
+              <mat-icon>stop</mat-icon> Stop
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Manual Time Entry -->
+      <div class="manual-time-section">
+        <h4>
+          <mat-icon>schedule</mat-icon>
+          Manual Time Entry
+        </h4>
+        <p class="section-description">Add time entries for work already completed or when you forget to start the timer.</p>
+        <form (ngSubmit)="createManualTimeLog()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Time</mat-label>
+              <input matInput type="datetime-local" [(ngModel)]="manualStartTime" name="manualStartTime" required>
+              <mat-hint>When you began working</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Time</mat-label>
+              <input matInput type="datetime-local" [(ngModel)]="manualEndTime" name="manualEndTime" required>
+              <mat-hint>When you stopped working</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field class="work-description" appearance="outline">
+              <mat-label >Work Description</mat-label>
+              <input matInput [(ngModel)]="manualDescription" name="manualDescription" placeholder="What did you work on?">
+              <mat-hint>Describe the work performed during this period</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div *ngIf="manualTimeError" class="error-message">
+            <mat-icon>error</mat-icon> {{ manualTimeError }}
+          </div>
+
+          <button mat-raised-button color="primary" type="submit">
+            <mat-icon>add</mat-icon> Add Time Entry
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Time Logs -->
+    <div class="time-logs-section">
+      <div class="section-header">
+        <h4>
+          <mat-icon>list</mat-icon>
+          Time Log History
+        </h4>
+      </div>
+      <div class="app-time">
+      <app-time-log-list></app-time-log-list>
+      </div>
+    </div>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">Deadline:</span>
-    <span class="detail-value">
-      {{ task.deadline ? (task.deadline | date:'mediumDate') : 'Not set' }}
-    </span>
+  <!-- Task Actions Section -->
+  <div class="task-actions-section">
+    <h3><mat-icon>build</mat-icon> Task Management</h3>
+    <p>Update the status of this task as you progress through your work.</p>
+
+    <div class="actions-row">
+      <button class="controls-btn" *ngIf="task.status === TASK_STATUS.PENDING || task.status === TASK_STATUS.ASSIGNED"
+              mat-raised-button color="primary" (click)="startTask()">
+        <mat-icon>play_arrow</mat-icon> Start Task
+      </button>
+
+      <button class="controls-btn"  *ngIf="task.status === TASK_STATUS.IN_PROGRESS || task.status === TASK_STATUS.REOPENED"
+              mat-raised-button color="accent" (click)="completeTask()">
+        <mat-icon>check_circle</mat-icon> Complete Task
+      </button>
+
+      <button class="controls-btn"  *ngIf="task.status === TASK_STATUS.COMPLETED"
+              mat-raised-button color="primary" (click)="reopenTask()">
+        <mat-icon>replay</mat-icon> Reopen Task
+      </button>
+    </div>
+
+    <div *ngIf="task.status === TASK_STATUS.COMPLETED" class="status-warning">
+      <mat-icon>warning</mat-icon>
+      <span>This task is marked as completed. You need to reopen it to add more time logs or change its status.</span>
+    </div>
   </div>
 
-  <div class="detail-row">
-    <span class="detail-label">Assigned By:</span>
-    <span class="detail-value">
-      {{ task.assignedBy?.name || 'System' }}
-    </span>
-  </div>
-
-  <div class="detail-row">
-    <span class="detail-label">Assignment Date:</span>
-    <span class="detail-value">
-      {{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}
-    </span>
-  </div>
-
-  <div class="actions-row">
-    <button *ngIf="task.status !== TASK_STATUS.IN_PROGRESS" mat-raised-button color="primary" (click)="startTask()">
-      <mat-icon>play_arrow</mat-icon>
-      Start Task
-    </button>
-    <button *ngIf="task.status !== TASK_STATUS.COMPLETED" mat-raised-button color="accent" (click)="completeTask()">
-      <mat-icon>check_circle</mat-icon>
-      Complete Task
-    </button>
+  <div class="resources-section">
+    <h3><mat-icon>help_outline</mat-icon> Need Help?</h3>
+    <div class="resource-links">
+      <a class="need-help-btns" mat-button href="#">
+        <mat-icon>description</mat-icon> View Task Documentation
+      </a>
+      <a class="need-help-btns" mat-button href="#">
+        <mat-icon>forum</mat-icon> Ask a Question
+      </a>
+      <a class="need-help-btns" mat-button href="#">
+        <mat-icon>video_library</mat-icon> Training Videos
+      </a>
+    </div>
   </div>
 </div>

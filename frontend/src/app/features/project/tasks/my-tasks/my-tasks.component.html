@@ -18,26 +18,40 @@
             update their status, or mark them as completed.
           </p>
         </div>
-        <button mat-icon-button (click)="loadAssignedTasks()" matTooltip="Refresh">
-          <mat-icon class="refresh">refresh</mat-icon>
-        </button>
+        <div class="actions">
+
+          <button mat-icon-button (click)="loadAssignedTasks()" matTooltip="Refresh">
+            <mat-icon class="refresh">refresh</mat-icon>
+          </button>
+        </div>
       </div>
+
 
       <div *ngIf="loading" class="loading-spinner">
         <mat-spinner diameter="40"></mat-spinner>
       </div>
 
-      <div *ngIf="(assignedTasks$ | async) as tasks">
+      <div *ngIf="(filteredTasks$ | async) as tasks">
         <div class="table-container">
           <table class="task-table">
             <thead>
             <tr>
-              <th>Task Name</th>
+              <th (click)="sortData('name')">Task Name
+                <span class="sort-indicator">{{getSortIndicator('name')}}</span>
+              </th>
               <th>Description</th>
-              <th>Status</th>
-              <th>Deadline</th>
-              <th>Assigned By</th>
-              <th>Assignment Date</th>
+              <th (click)="sortData('status')">Status
+                <span class="sort-indicator">{{getSortIndicator('status')}}</span>
+              </th>
+              <th (click)="sortData('deadline')">Deadline
+                <span class="sort-indicator">{{getSortIndicator('deadline')}}</span>
+              </th>
+              <th (click)="sortData('assignedBy')">Assigned By
+                <span class="sort-indicator">{{getSortIndicator('assignedBy')}}</span>
+              </th>
+              <th (click)="sortData('assignedAt')">Assignment Date
+                <span class="sort-indicator">{{getSortIndicator('assignedAt')}}</span>
+              </th>
               <th>Actions</th>
             </tr>
             </thead>
@@ -56,25 +70,35 @@
                 <td>{{ task.assignedBy?.name || 'System' }}</td>
                 <td>{{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}</td>
                 <td>
-                  <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Task actions">
+                  <button mat-icon-button [matMenuTriggerFor]="menu" #menuTrigger="matMenuTrigger" matTooltip="Task actions">
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #menu="matMenu">
-                    <button *ngIf="task.status !== TASK_STATUS.IN_PROGRESS" mat-menu-item (click)="startTask(task.id); $event.stopPropagation()">
+                    <button *ngIf="task.status === TASK_STATUS.COMPLETED"
+                            mat-menu-item
+                            (click)="updateTaskStatus(task.id, TASK_STATUS.REOPENED); $event.stopPropagation()">
+                      <mat-icon>replay</mat-icon>
+                      <span>Reopen Task</span>
+                    </button>
+                    <button *ngIf="task.status !== TASK_STATUS.IN_PROGRESS && task.status !== TASK_STATUS.COMPLETED"
+                            mat-menu-item
+                            (click)="startTask(task.id); $event.stopPropagation()">
                       <mat-icon>play_arrow</mat-icon>
                       <span>Start Task</span>
                     </button>
-                    <button *ngIf="task.status !== TASK_STATUS.COMPLETED" mat-menu-item (click)="completeTask(task.id); $event.stopPropagation()">
+                    <button *ngIf="task.status !== TASK_STATUS.COMPLETED"
+                            mat-menu-item
+                            (click)="completeTask(task.id); $event.stopPropagation()">
                       <mat-icon>check_circle</mat-icon>
                       <span>Complete Task</span>
                     </button>
-                    <button mat-menu-item (click)="toggleTaskDetails(task.id); $event.stopPropagation()">
+                    <button mat-menu-item
+                            (click)="toggleTaskDetails(task.id, menuTrigger); $event.stopPropagation()">
                       <mat-icon>info</mat-icon>
                       <span>View Details</span>
                     </button>
                   </mat-menu>
                 </td>
-              </tr>
 
               <tr class="expandable-row" *ngIf="expandedTaskId === task.id">
                 <td colspan="7">

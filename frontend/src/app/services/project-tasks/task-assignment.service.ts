@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import {BehaviorSubject, Observable, switchMap, take} from 'rxjs';
 import {environment} from '../../../environments/environment';
 
 @Injectable({
@@ -23,7 +23,8 @@ export class TaskAssignmentService {
   selectedTask$ = this.selectedTaskSubject.asObservable();
   selectedUser$ = this.selectedUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   setProjectId(projectId: string): void {
     this.projectIdSubject.next(projectId);
@@ -61,14 +62,14 @@ export class TaskAssignmentService {
     return this.http.post<any>(
       `${environment.apiBaseUrl}/tasks/${taskId}/assign`,
       null,
-      { params, withCredentials: true }
+      {params, withCredentials: true}
     );
   }
 
   getUnassignedPendingTasks(projectId: string): Observable<any[]> {
     return this.http.get<any[]>(
       `${environment.apiBaseUrl}/tasks/unassigned-pending/${projectId}`,
-      { withCredentials: true }
+      {withCredentials: true}
     );
   }
 
@@ -80,15 +81,16 @@ export class TaskAssignmentService {
   getAssignedTasks(userId: string): Observable<any[]> {
     return this.http.get<any[]>(
       `${environment.apiBaseUrl}/tasks/assigned/${userId}`,
-      { withCredentials: true }
+      {withCredentials: true}
     );
   }
 
   updateTaskStatus(taskId: string, status: string): Observable<any> {
+    const params = new HttpParams().set('status', status);
     return this.http.put<any>(
       `${environment.apiBaseUrl}/tasks/${taskId}/status`,
-      { status },
-      { withCredentials: true }
+      null,
+      {params, withCredentials: true}
     );
   }
 
@@ -103,14 +105,82 @@ export class TaskAssignmentService {
   getTaskCompletionDetails(taskId: string): Observable<any> {
     return this.http.get(
       `${environment.apiBaseUrl}/tasks/${taskId}/completion-details`,
-      { withCredentials: true }
+      {withCredentials: true}
     );
   }
 
   getTaskDetails(taskId: string): Observable<any> {
     return this.http.get<any>(
       `${environment.apiBaseUrl}/tasks/${taskId}`,
-      { withCredentials: true } );
+      {withCredentials: true});
   }
 
+  startTimeLog(taskId: string, description: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.post(
+          `${environment.apiBaseUrl}/timelogs/start`,
+          {
+            userId,
+            taskId,
+            description
+          },
+          {withCredentials: true}
+        );
+      })
+    );
+  }
+
+  stopTimeLog(taskId: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.post(
+          `${environment.apiBaseUrl}/timelogs/stop`,
+          {
+            userId,
+            taskId
+          },
+          {withCredentials: true}
+        );
+      })
+    );
+  }
+
+  createManualTimeLog(taskId: string, startTime: string, endTime: string, description: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.post(
+          `${environment.apiBaseUrl}/timelogs/manual`,
+          {
+            userId,
+            taskId,
+            startTime,
+            endTime,
+            description
+          },
+          { withCredentials: true }
+        );
+      })
+    );
+  }
+
+  reopenTask(taskId: string): Observable<any> {
+    return this.http.put(
+      `${environment.apiBaseUrl}/tasks/${taskId}/reopen`,
+      {},
+      { withCredentials: true }
+    );
+  }
 }

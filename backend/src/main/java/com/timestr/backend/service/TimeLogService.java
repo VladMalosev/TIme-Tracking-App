@@ -1,8 +1,6 @@
     package com.timestr.backend.service;
 
-    import com.timestr.backend.model.Task;
-    import com.timestr.backend.model.TimeLog;
-    import com.timestr.backend.model.User;
+    import com.timestr.backend.model.*;
     import com.timestr.backend.repository.TaskRepository;
     import com.timestr.backend.repository.TimeLogRepository;
     import com.timestr.backend.repository.UserRepository;
@@ -43,6 +41,7 @@
         public TimeLog startTimer(UUID userId, UUID taskId, String description) {
             logger.info("Starting timer for userId: {}, taskId: {}, description: {}", userId, taskId, description);
 
+
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -52,8 +51,12 @@
             if (taskId != null) {
                 Task task = taskRepository.findById(taskId)
                         .orElseThrow(() -> new RuntimeException("Task not found"));
-                timeLog.setTask(task);
 
+                if (task.getStatus() == TaskStatus.COMPLETED) {
+                    throw new IllegalStateException("Cannot start timer for completed task. Please reopen the task first.");
+                }
+
+                timeLog.setTask(task);
                 taskService.updateTaskStatusIfTimeLogExists(taskId);
             } else {
                 logger.info("No task selected. Setting task to null.");
@@ -92,7 +95,8 @@
         }
 
         public TimeLog createManualTimeLog(UUID userId, UUID taskId, LocalDateTime startTime, LocalDateTime endTime, String description) {
-            logger.info("Creating manual time log for userId: {}, taskId: {}, startTime: {}, endTime: {}, description: {}", userId, taskId, startTime, endTime, description);
+            logger.info("Creating manual time log for userId: {}, taskId: {}, startTime: {}, endTime: {}, description: {}",
+                    userId, taskId, startTime, endTime, description);
 
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
@@ -103,9 +107,13 @@
             if (taskId != null) {
                 Task task = taskRepository.findById(taskId)
                         .orElseThrow(() -> new RuntimeException("Task not found"));
-                timeLog.setTask(task);
 
-                taskService.updateTaskStatusIfTimeLogExists(taskId);
+                if (task.getStatus() == TaskStatus.COMPLETED) {
+                    throw new IllegalStateException("Cannot add time logs to completed task. Please reopen the task first.");
+                }
+
+                timeLog.setTask(task);
+                taskService.ensureTaskStatusMatchesTimeLogs(taskId);
             } else {
                 logger.info("No task selected. Setting task to null.");
                 timeLog.setTask(null);
@@ -137,4 +145,12 @@
                 return timeLogRepository.existsByUserAndTaskIsNullAndEndTimeIsNull(user);
             }
         }
+
+        public List<TimeLog> getTimeLogsByTask(UUID taskId) {
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new RuntimeException("Task not found"));
+            return timeLogRepository.findByTask(task);
+        }
+
+
     }

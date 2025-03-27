@@ -254,4 +254,44 @@ public class TaskService {
     public List<Task> getUnassignedPendingTasks(UUID projectId) {
         return taskRepository.findByProjectIdAndStatusAndAssignedToIsNull(projectId, TaskStatus.PENDING);
     }
+
+    @Transactional
+    public Task updateTaskStatusWithValidation(UUID taskId, TaskStatus newStatus) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (task.getStatus() == TaskStatus.COMPLETED && newStatus != TaskStatus.REOPENED) {
+            throw new IllegalStateException("Completed tasks can only be reopened");
+        }
+
+        if (task.getStatus() == TaskStatus.COMPLETED && newStatus == TaskStatus.REOPENED) {
+            task.setStatus(newStatus);
+            task.setLastModifiedBy(getCurrentUser());
+            logTaskAction(task, TaskAction.REOPENED, getCurrentUser(), "Task reopened for additional work");
+            return taskRepository.save(task);
+        }
+
+        return updateTaskStatus(taskId, newStatus.name());
+    }
+
+    public void ensureTaskStatusMatchesTimeLogs(UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        boolean hasTimeLogs = timeLogRepository.existsByTaskId(taskId);
+
+        if (hasTimeLogs && task.getStatus() == TaskStatus.PENDING) {
+            task.setStatus(TaskStatus.IN_PROGRESS);
+            task.setLastModifiedBy(getCurrentUser());
+            taskRepository.save(task);
+            logTaskAction(task, TaskAction.STATUS_CHANGED, getCurrentUser(),
+                    "Status automatically changed to IN_PROGRESS (first time log added)");
+        } else if (!hasTimeLogs && task.getStatus() == TaskStatus.IN_PROGRESS) {
+            task.setStatus(TaskStatus.PENDING);
+            task.setLastModifiedBy(getCurrentUser());
+            taskRepository.save(task);
+            logTaskAction(task, TaskAction.STATUS_CHANGED, getCurrentUser(),
+                    "Status reverted to PENDING (no time logs exist)");
+        }
+    }
 }

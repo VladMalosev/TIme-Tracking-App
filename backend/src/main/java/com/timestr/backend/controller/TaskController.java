@@ -176,7 +176,13 @@ public class TaskController {
             @Parameter(description = "ID of the task to update", required = true)
             @PathVariable UUID taskId,
             @Parameter(description = "New status of the task", required = true)
-            @RequestParam String status) {
+            @RequestParam String status,
+            Authentication authentication) {
+
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Task task = taskService.updateTaskStatus(taskId, status);
         if (status.equalsIgnoreCase("COMPLETED")) {
             Activity activity = new Activity();
@@ -184,10 +190,10 @@ public class TaskController {
             activity.setType(ActivityType.TASK_COMPLETED);
             activity.setDescription("Task '" + task.getName() + "' was completed");
             activity.setCreatedAt(LocalDateTime.now());
+            activity.setUser(user);
             activityRepository.save(activity);
         }
         return ResponseEntity.ok(task);
-
     }
 
     @Operation(summary = "Get task completion details", description = "Retrieves completion details for a specific task.")
@@ -236,6 +242,21 @@ public class TaskController {
             @PathVariable UUID projectId) {
         List<Task> tasks = taskService.getUnassignedPendingTasks(projectId);
         return ResponseEntity.ok(tasks);
+    }
+
+    @Operation(summary = "Reopen completed task", description = "Reopens a completed task to allow adding more time logs")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task reopened successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid status transition"),
+            @ApiResponse(responseCode = "404", description = "Task not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/{taskId}/reopen")
+    public ResponseEntity<Task> reopenTask(
+            @Parameter(description = "ID of the task to reopen", required = true)
+            @PathVariable UUID taskId) {
+        Task task = taskService.updateTaskStatusWithValidation(taskId, TaskStatus.REOPENED);
+        return ResponseEntity.ok(task);
     }
 
 }

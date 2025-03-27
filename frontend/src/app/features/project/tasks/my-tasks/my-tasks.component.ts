@@ -8,9 +8,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { Observable, of, switchMap } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { Observable, of, switchMap, map } from 'rxjs';
 import { TaskAssignmentService } from '../../../../services/project-tasks/task-assignment.service';
-import { TaskStateService } from '../../../../services/my-tasks/task-state.service';
+import { TaskSelectionService } from '../../../../services/my-tasks/task-selection.service';
 import {TaskDetailsComponent} from './task-details/task-details.component';
 
 @Component({
@@ -26,26 +30,43 @@ import {TaskDetailsComponent} from './task-details/task-details.component';
     MatChipsModule,
     MatTooltipModule,
     MatDividerModule,
-    TaskDetailsComponent
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    FormsModule,
+    TaskDetailsComponent,
   ],
   templateUrl: './my-tasks.component.html',
   styleUrls: ['./my-tasks.component.scss']
 })
 export class MyTasksComponent implements OnInit {
   assignedTasks$: Observable<any[]> = of([]);
+  filteredTasks$: Observable<any[]> = of([]);
   loading = true;
   expandedTaskId: string | null = null;
+  showFilters = false;
+
+  nameFilter = '';
+  statusFilter = '';
+  assignedByFilter = '';
+  dateFrom: string | null = null;
+  dateTo: string | null = null;
+  sortColumn = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
     ASSIGNED: 'ASSIGNED',
     IN_PROGRESS: 'IN_PROGRESS',
-    COMPLETED: 'COMPLETED'
+    COMPLETED: 'COMPLETED',
+    REOPENED: 'REOPENED'
   };
+
+  statusOptions = Object.values(this.TASK_STATUS);
 
   constructor(
     private taskAssignmentService: TaskAssignmentService,
-    private taskStateService: TaskStateService
+    private taskSelectionService: TaskSelectionService
   ) {}
 
   ngOnInit(): void {
@@ -58,19 +79,111 @@ export class MyTasksComponent implements OnInit {
       switchMap(userId => {
         if (!userId) return of([]);
         return this.taskAssignmentService.getAssignedTasks(userId);
-      })
+      }),
+      map(tasks => tasks.map(task => ({
+        ...task,
+        assignedBy: task.assignedBy || { name: 'System' }
+      })))
+    );
+
+    this.filteredTasks$ = this.assignedTasks$.pipe(
+      map(tasks => this.applyFilters(tasks))
     );
 
     this.assignedTasks$.subscribe(() => this.loading = false);
   }
 
-  toggleTaskDetails(taskId: string): void {
+  applyFilters(tasks: any[]): any[] {
+    let filtered = tasks.filter(task => {
+      if (this.nameFilter &&
+        !task.name.toLowerCase().includes(this.nameFilter.toLowerCase())) {
+        return false;
+      }
+
+      if (this.statusFilter && task.status !== this.statusFilter) {
+        return false;
+      }
+
+      if (this.assignedByFilter &&
+        (!task.assignedBy?.name ||
+          !task.assignedBy.name.toLowerCase().includes(this.assignedByFilter.toLowerCase()))) {
+        return false;
+      }
+
+      if (this.dateFrom) {
+        const taskDate = new Date(task.assignedAt);
+        const fromDate = new Date(this.dateFrom);
+        if (taskDate < fromDate) {
+          return false;
+        }
+      }
+
+      if (this.dateTo) {
+        const taskDate = new Date(task.assignedAt);
+        const toDate = new Date(this.dateTo);
+        toDate.setDate(toDate.getDate() + 1);
+        if (taskDate > toDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    if (this.sortColumn) {
+      filtered = [...filtered].sort((a, b) => {
+        const valueA = this.getSortableValue(a, this.sortColumn);
+        const valueB = this.getSortableValue(b, this.sortColumn);
+
+        if (valueA < valueB) {
+          return this.sortDirection === 'asc' ? -1 : 1;
+        } else if (valueA > valueB) {
+          return this.sortDirection === 'asc' ? 1 : -1;
+        } else {
+          return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }
+
+  getSortableValue(task: any, column: string): any {
+    switch(column) {
+      case 'name': return task.name;
+      case 'status': return task.status;
+      case 'deadline': return task.deadline || '';
+      case 'assignedBy': return task.assignedBy?.name || '';
+      case 'assignedAt': return new Date(task.assignedAt).getTime();
+      default: return '';
+    }
+  }
+
+  sortData(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.loadAssignedTasks();
+  }
+
+  getSortIndicator(column: string): string {
+    if (this.sortColumn === column) {
+      return this.sortDirection === 'asc' ? '▲' : '▼';
+    }
+    return '';
+  }
+
+  toggleTaskDetails(taskId: string, menuTrigger: any): void {
     this.expandedTaskId = this.expandedTaskId === taskId ? null : taskId;
     if (this.expandedTaskId) {
-      this.taskStateService.setSelectedTaskId(taskId);
+      this.taskSelectionService.setSelectedTaskId(taskId);
     } else {
-      this.taskStateService.clearSelectedTaskId();
+      this.taskSelectionService.clearSelectedTaskId();
     }
+    menuTrigger.closeMenu();
   }
 
   updateTaskStatus(taskId: string, newStatus: string): void {
@@ -92,6 +205,7 @@ export class MyTasksComponent implements OnInit {
       case this.TASK_STATUS.ASSIGNED: return 'primary';
       case this.TASK_STATUS.IN_PROGRESS: return 'accent';
       case this.TASK_STATUS.COMPLETED: return 'success';
+      case this.TASK_STATUS.REOPENED: return 'primary';
       default: return '';
     }
   }

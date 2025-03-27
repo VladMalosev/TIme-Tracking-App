@@ -6,5 +6,6 @@ public enum TaskAction {
     ASSIGNED,
     COMPLETED,
     STATUS_CHANGED,
+    REOPENED,
     DELETED
 }

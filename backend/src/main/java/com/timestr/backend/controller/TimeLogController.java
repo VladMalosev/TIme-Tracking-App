@@ -5,6 +5,7 @@ import com.timestr.backend.model.TimeLog;
 import com.timestr.backend.service.TaskService;
 import com.timestr.backend.service.TimeLogService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -100,6 +101,21 @@ public class TimeLogController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TimeLog>> getTimeLogsByUser(@PathVariable UUID userId) {
         List<TimeLog> timeLogs = timeLogService.getTimeLogsByUser(userId);
+        return ResponseEntity.ok(timeLogs);
+    }
+
+    @Operation(summary = "Get time logs by task", description = "Retrieves all time logs for a specific task.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Time logs retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Task not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/task/{taskId}")
+    public ResponseEntity<List<TimeLog>> getTimeLogsByTask(
+            @Parameter(description = "ID of the task", required = true)
+            @PathVariable UUID taskId) {
+
+        List<TimeLog> timeLogs = timeLogService.getTimeLogsByTask(taskId);
         return ResponseEntity.ok(timeLogs);
     }
 }

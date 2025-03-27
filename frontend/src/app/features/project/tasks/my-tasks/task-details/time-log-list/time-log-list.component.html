@@ -1,0 +1,45 @@
+<div class="time-log-container">
+  <div class="header">
+    <h3>Time Logs</h3>
+    <button mat-icon-button (click)="refreshLogs()" matTooltip="Refresh">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading">
+    <table *ngIf="timeLogs.length > 0">
+      <thead>
+      <tr>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Duration</th>
+        <th>Description</th>
+        <th>Task</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let log of timeLogs">
+        <td>{{ log.startTime | date:'medium' }}</td>
+        <td>{{ log.endTime | date:'medium' }}</td>
+        <td>{{ log.duration }}</td>
+        <td>{{ log.description || 'No description' }}</td>
+        <td>
+            <span *ngIf="log.task">
+              {{ log.task.name }}
+            </span>
+          <span *ngIf="!log.task">No Task</span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="timeLogs.length === 0" class="no-logs">
+      <mat-icon>timer_off</mat-icon>
+      <span>No time logs recorded for this task</span>
+    </div>
+  </div>
+</div>
