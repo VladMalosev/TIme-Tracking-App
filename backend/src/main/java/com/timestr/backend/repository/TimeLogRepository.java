@@ -56,4 +56,10 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
     List<TimeLog> findByUserIdAndLoggedAtBetween(UUID userId, LocalDateTime startTime, LocalDateTime endTime);
 
     List<TimeLog> findByTask(Task task);
+
+    boolean existsByUserAndEndTimeIsNull(User user);
+
+    List<TimeLog> findByUserIdAndProjectIsNull(UUID userId);
+
+    List<TimeLog> findByProjectIdAndUserIdOrderByStartTimeDesc(UUID projectId, UUID userId);
 }

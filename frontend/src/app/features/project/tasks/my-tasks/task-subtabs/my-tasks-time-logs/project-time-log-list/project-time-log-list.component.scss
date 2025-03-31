@@ -1,0 +1,69 @@
+.time-logs-container {
+  padding: 20px;
+  width: 100%;
+
+  .controls {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .task-group {
+    margin-bottom: 30px;
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 0 10px;
+
+      h3 {
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .total-duration {
+        font-weight: bold;
+        color: #3f51b5;
+      }
+    }
+  }
+
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+
+    .loading-text {
+      margin-top: 16px;
+      color: #666;
+    }
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+}
+.task-group {
+  margin-bottom: 10px;
+  .mat-expansion-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .mat-expansion-panel-header h3 {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .mat-expansion-panel-header .mat-panel-description {
+    font-weight: bold;
+    color: #3f51b5;
+  }
+}

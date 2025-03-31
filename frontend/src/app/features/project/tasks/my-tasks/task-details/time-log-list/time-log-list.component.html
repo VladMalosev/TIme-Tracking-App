@@ -1,5 +1,5 @@
 <div class="time-log-container">
-  <div class="header">
+  <div class="header" *ngIf="!loading && timeLogs.length > 0">
     <h3>Time Logs</h3>
     <button mat-icon-button (click)="refreshLogs()" matTooltip="Refresh">
       <mat-icon>refresh</mat-icon>
@@ -14,11 +14,21 @@
     <table *ngIf="timeLogs.length > 0">
       <thead>
       <tr>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Duration</th>
-        <th>Description</th>
-        <th>Task</th>
+        <th (click)="sortData('startTime')">
+          Start Time <span class="sort-indicator">{{getSortIndicator('startTime')}}</span>
+        </th>
+        <th (click)="sortData('endTime')">
+          End Time <span class="sort-indicator">{{getSortIndicator('endTime')}}</span>
+        </th>
+        <th (click)="sortData('duration')">
+          Duration <span class="sort-indicator">{{getSortIndicator('duration')}}</span>
+        </th>
+        <th (click)="sortData('description')">
+          Description <span class="sort-indicator">{{getSortIndicator('description')}}</span>
+        </th>
+        <th (click)="sortData('task')">
+          Task <span class="sort-indicator">{{getSortIndicator('task')}}</span>
+        </th>
       </tr>
       </thead>
       <tbody>

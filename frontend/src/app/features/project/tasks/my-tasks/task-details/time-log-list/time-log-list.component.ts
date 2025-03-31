@@ -27,6 +27,8 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['startTime', 'endTime', 'duration', 'description'];
   timeLogs: any[] = [];
   loading = false;
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
   private taskSubscription!: Subscription;
   private refreshSubscription!: Subscription;
 
@@ -60,6 +62,58 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
     this.refreshSubscription?.unsubscribe();
   }
 
+  sortData(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.sortLogs();
+  }
+
+  private sortLogs(): void {
+    if (!this.sortColumn) return;
+
+    this.timeLogs.sort((a, b) => {
+      const valueA = this.getSortableValue(a, this.sortColumn);
+      const valueB = this.getSortableValue(b, this.sortColumn);
+
+      if (valueA < valueB) {
+        return this.sortDirection === 'asc' ? -1 : 1;
+      } else if (valueA > valueB) {
+        return this.sortDirection === 'asc' ? 1 : -1;
+      } else {
+        return 0;
+      }
+    });
+  }
+
+  private getSortableValue(log: any, column: string): any {
+    switch(column) {
+      case 'startTime': return log.startTimeValue;
+      case 'endTime': return log.endTimeValue;
+      case 'duration': return log.durationValue;
+      case 'description': return log.description?.toLowerCase() || '';
+      case 'task': return log.task?.name?.toLowerCase() || '';
+      default: return '';
+    }
+  }
+
+  private getDurationInMinutes(startTime: string, endTime: string): number {
+    if (!startTime || !endTime) return 0;
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    return (end.getTime() - start.getTime()) / (1000 * 60);
+  }
+
+  getSortIndicator(column: string): string {
+    if (this.sortColumn === column) {
+      return this.sortDirection === 'asc' ? '▲' : '▼';
+    }
+    return '';
+  }
+
   loadTimeLogs(taskId: string): void {
     console.log('Loading logs for task:', taskId);
     this.loading = true;
@@ -68,8 +122,12 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
         console.log('Received logs:', logs);
         this.timeLogs = logs.map(log => ({
           ...log,
-          duration: this.calculateDuration(log.startTime, log.endTime)
+          duration: this.calculateDuration(log.startTime, log.endTime),
+          startTimeValue: new Date(log.startTime).getTime(),
+          endTimeValue: new Date(log.endTime).getTime(),
+          durationValue: this.getDurationInMinutes(log.startTime, log.endTime)
         }));
+        this.sortLogs();
         this.loading = false;
       },
       error: (error) => {
@@ -79,6 +137,8 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+
 
   calculateDuration(startTime: string, endTime: string): string {
     if (!startTime || !endTime) return 'N/A';

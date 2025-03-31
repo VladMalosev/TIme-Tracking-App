@@ -35,17 +35,25 @@ public class TimeLogController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/start")
-    public ResponseEntity<TimeLog> startTimer(
-            @RequestBody Map<String, String> request) {
+    public ResponseEntity<TimeLog> startTimer(@RequestBody Map<String, String> request) {
+        if (!request.containsKey("userId") || !request.containsKey("projectId")) {
+            throw new IllegalArgumentException("userId and projectId are required");
+        }
+
         UUID userId = UUID.fromString(request.get("userId"));
+        UUID projectId = UUID.fromString(request.get("projectId"));
+
         UUID taskId = null;
         if (request.containsKey("taskId") && request.get("taskId") != null) {
             taskId = UUID.fromString(request.get("taskId"));
         }
+
         String description = request.get("description");
-        TimeLog timeLog = timeLogService.startTimer(userId, taskId, description);
+
+        TimeLog timeLog = timeLogService.startTimer(userId, projectId, taskId, description);
         return ResponseEntity.ok(timeLog);
     }
+
 
     @Operation(summary = "Stop a timer", description = "Stops a timer for a specific user and task.")
     @ApiResponses(value = {
@@ -57,11 +65,7 @@ public class TimeLogController {
     public ResponseEntity<TimeLog> stopTimer(
             @RequestBody Map<String, String> request) {
         UUID userId = UUID.fromString(request.get("userId"));
-        UUID taskId = null;
-        if (request.containsKey("taskId") && request.get("taskId") != null) {
-            taskId = UUID.fromString(request.get("taskId"));
-        }
-        TimeLog timeLog = timeLogService.stopTimer(userId, taskId);
+        TimeLog timeLog = timeLogService.stopTimer(userId);
         return ResponseEntity.ok(timeLog);
     }
 
@@ -78,6 +82,7 @@ public class TimeLogController {
         if (request.containsKey("taskId") && request.get("taskId") != null) {
             taskId = UUID.fromString(request.get("taskId"));
         }
+        UUID projectId = UUID.fromString(request.get("projectId"));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
         LocalDateTime startTime = LocalDateTime.parse(request.get("startTime"), formatter);
@@ -88,7 +93,7 @@ public class TimeLogController {
             description = "";
         }
 
-        TimeLog timeLog = timeLogService.createManualTimeLog(userId, taskId, startTime, endTime, description);
+        TimeLog timeLog = timeLogService.createManualTimeLog(userId, projectId, taskId, startTime, endTime, description);
         return ResponseEntity.ok(timeLog);
     }
 
@@ -116,6 +121,24 @@ public class TimeLogController {
             @PathVariable UUID taskId) {
 
         List<TimeLog> timeLogs = timeLogService.getTimeLogsByTask(taskId);
+        return ResponseEntity.ok(timeLogs);
+    }
+
+    @Operation(summary = "Get time logs by project and user",
+            description = "Retrieves all time logs for a specific project and user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Time logs retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project or user not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/project/{projectId}/user/{userId}")
+    public ResponseEntity<List<TimeLog>> getTimeLogsByProjectAndUser(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId,
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID userId) {
+
+        List<TimeLog> timeLogs = timeLogService.getTimeLogsByProjectAndUser(projectId, userId);
         return ResponseEntity.ok(timeLogs);
     }
 }

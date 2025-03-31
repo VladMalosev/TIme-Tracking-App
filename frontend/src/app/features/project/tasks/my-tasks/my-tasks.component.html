@@ -19,20 +19,18 @@
           </p>
         </div>
         <div class="actions">
-
           <button mat-icon-button (click)="loadAssignedTasks()" matTooltip="Refresh">
             <mat-icon class="refresh">refresh</mat-icon>
           </button>
         </div>
       </div>
 
-
       <div *ngIf="loading" class="loading-spinner">
         <mat-spinner diameter="40"></mat-spinner>
       </div>
 
       <div *ngIf="(filteredTasks$ | async) as tasks">
-        <div class="table-container">
+        <div class="table-container" *ngIf="tasks.length > 0">
           <table class="task-table">
             <thead>
             <tr>
@@ -95,10 +93,11 @@
                     <button mat-menu-item
                             (click)="toggleTaskDetails(task.id, menuTrigger); $event.stopPropagation()">
                       <mat-icon>info</mat-icon>
-                      <span>View Details</span>
+                      <span>{{ expandedTaskId == task.id ? 'Close Details' : 'View Details'}}</span>
                     </button>
                   </mat-menu>
                 </td>
+              </tr>
 
               <tr class="expandable-row" *ngIf="expandedTaskId === task.id">
                 <td colspan="7">

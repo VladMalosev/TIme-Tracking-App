@@ -7,12 +7,13 @@ import { ProjectTasksComponent } from './tasks/project-tasks/project-tasks.compo
 import { FormsModule } from '@angular/forms';
 import {TaskAssignmentComponent} from "./tasks/task-assignment/task-assignment.component";
 import {ProjectInvitationsComponent} from "./project-invitations/project-invitations.component";
-import {TaskSubtabsComponent} from './tasks/project-tasks/task-subtabs/task-subtabs.component';
+import {TaskSubtabsComponent} from './tasks/my-tasks/task-subtabs/task-subtabs.component';
 import {TaskTabsService} from '../../services/task-tabs-service';
 import {ProjectTasksService} from '../../services/project-tasks/project-tasks.service';
 import {InvitationsService} from '../../services/project-tasks/invitations.service';
 import {TaskAssignmentService} from '../../services/project-tasks/task-assignment.service';
 import {MyTasksComponent} from './tasks/my-tasks/my-tasks.component';
+import {ProjectContextService} from '../../services/project-context.service';
 
 @Component({
     selector: 'app-project',
@@ -40,36 +41,34 @@ export class ProjectComponent implements OnInit {
         private taskTabsService: TaskTabsService,
         private projectTasksService: ProjectTasksService,
         private invitationsService: InvitationsService,
-        private taskAssignmentService: TaskAssignmentService
+        private taskAssignmentService: TaskAssignmentService,
+        private projectContextService: ProjectContextService
     ) {}
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.paramMap.get('id');
+    this.route.queryParams.subscribe(params => {
+      this.activeTab = params['tab'] || 'dashboard';
+      this.activeTaskTab = params['taskTab'] || 'my-tasks';
+      this.taskTabsService.setActiveTab(this.activeTaskTab);
+      this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
+    });
+
     if (this.projectId) {
+      this.projectContextService.setCurrentProjectId(this.projectId);
       this.projectTasksService.setProjectId(this.projectId);
       this.invitationsService.setProjectId(this.projectId);
-      this.invitationsService.setCurrentUserRole(this.currentUserRole);
       this.projectTasksService.setCurrentUserRole(this.currentUserRole);
+      this.taskAssignmentService.setProjectId(this.projectId);
       this.fetchProjectDetails(this.projectId);
       this.fetchDashboardData(this.projectId);
       this.fetchCurrentUserRole(this.projectId);
-      this.taskAssignmentService.setProjectId(this.projectId);
       this.fetchCollaborators(this.projectId);
       this.fetchTasks(this.projectId);
       this.fetchUserId();
-      this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
-      this.taskTabsService.setActiveTab(this.activeTaskTab);
     } else {
       console.error('Project ID is missing');
     }
-
-    this.taskTabsService.activeTab$.subscribe(tab => {
-      this.activeTaskTab = tab;
-      this.router.navigate([], {
-        queryParams: { taskTab: tab },
-        queryParamsHandling: 'merge'
-      });
-    });
   }
 
 
@@ -183,14 +182,12 @@ export class ProjectComponent implements OnInit {
 
 
   setActiveTab(tab: string): void {
-    if (!this.projectId) return;
     this.activeTab = tab;
-
-    const route = tab === 'dashboard'
-      ? [`/project-details/${this.projectId}`]
-      : [`/project-details/${this.projectId}/${tab}`];
-
-    this.router.navigate(route);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge'
+    });
   }
 
 }

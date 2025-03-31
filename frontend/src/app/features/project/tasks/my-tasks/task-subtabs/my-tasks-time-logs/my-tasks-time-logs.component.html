@@ -1,0 +1,89 @@
+<div class="time-logs-container">
+  <h2>Project Time Logs</h2>
+  <p class="subtitle">Track and manage your time spent on this project</p>
+
+  <div class="time-sections">
+    <!-- Real-time Tracking Section -->
+    <div class="time-tracking-section">
+      <h3>
+        <mat-icon>timer</mat-icon>
+        Real-time Tracking
+      </h3>
+      <p>Start and stop the timer as you work on this project to automatically record your time.</p>
+
+      <div class="stopwatch">
+        <div class="timer-display">{{ formatTime(elapsedTime) }}</div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon> {{ errorMessage }}
+        </div>
+
+        <mat-form-field class="work-description" appearance="outline">
+          <mat-label>Work Description</mat-label>
+          <input matInput [(ngModel)]="description" placeholder="What are you working on?">
+          <mat-hint>Briefly describe your current activity</mat-hint>
+        </mat-form-field>
+
+        <div class="controls">
+          <button mat-raised-button color="primary"
+                  (click)="startTimer()"
+                  [disabled]="isRunning">
+            <mat-icon>play_arrow</mat-icon> Start
+          </button>
+          <button mat-raised-button color="warn"
+                  (click)="stopTimer()"
+                  [disabled]="!isRunning">
+            <mat-icon>stop</mat-icon> Stop
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual Time Entry Section -->
+    <div class="manual-entry-section">
+      <h3>
+        <mat-icon>schedule</mat-icon>
+        Manual Time Entry
+      </h3>
+      <p>Add time entries for work already completed or when you forget to start the timer.</p>
+
+      <form (ngSubmit)="createManualTimeLog()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Start Time</mat-label>
+            <input matInput type="datetime-local" [(ngModel)]="manualStartTime" name="manualStartTime" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>End Time</mat-label>
+            <input matInput type="datetime-local" [(ngModel)]="manualEndTime" name="manualEndTime" required>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field class="work-description" appearance="outline">
+          <mat-label>Work Description</mat-label>
+          <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"></textarea>
+        </mat-form-field>
+
+        <div *ngIf="manualTimeError" class="error-message">
+          <mat-icon>error</mat-icon> {{ manualTimeError }}
+        </div>
+
+        <button mat-raised-button color="primary" type="submit">
+          <mat-icon>add</mat-icon> Add Time Entry
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Time Logs List Section -->
+  <div class="time-logs-list-section">
+    <h3>
+      <mat-icon>list</mat-icon>
+      Time Log History
+    </h3>
+    <p>Review your previously recorded time entries for this project.</p>
+
+    <app-project-time-log-list></app-project-time-log-list>
+  </div>
+</div>

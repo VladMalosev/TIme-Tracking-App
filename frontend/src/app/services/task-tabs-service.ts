@@ -7,12 +7,12 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class TaskTabsService {
   private activeTabSubject = new BehaviorSubject<string>('my-tasks');
-  activeTab$ = this.activeTabSubject.asObservable();
   private showInviteFormSubject = new BehaviorSubject<boolean>(false);
-
-
-
   private canAssignTasksSubject = new BehaviorSubject<boolean>(false);
+  private nestedActiveTabSubject = new BehaviorSubject<string>('assigned-tasks');
+
+  nestedActiveTab$ = this.nestedActiveTabSubject.asObservable();
+  activeTab$ = this.activeTabSubject.asObservable();
   canAssignTasks$ = this.canAssignTasksSubject.asObservable();
 
   setActiveTab(tab: string): void {
@@ -26,7 +26,17 @@ export class TaskTabsService {
   getCurrentCanAssignTasks(): boolean {
     return this.canAssignTasksSubject.value;
   }
+
   toggleInviteForm(): void {
     this.showInviteFormSubject.next(!this.showInviteFormSubject.value);
+  }
+
+  setNestedActiveTab(tab: string): void {
+    this.nestedActiveTabSubject.next(tab);
+  }
+
+
+  getNestedActiveTab(): string {
+    return this.nestedActiveTabSubject.value;
   }
 }

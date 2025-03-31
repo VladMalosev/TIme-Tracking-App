@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {BehaviorSubject, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, Observable, switchMap, take, tap} from 'rxjs';
 import {environment} from '../../../environments/environment';
 
 @Injectable({
@@ -115,21 +115,43 @@ export class TaskAssignmentService {
       {withCredentials: true});
   }
 
-  startTimeLog(taskId: string, description: string): Observable<any> {
+  startTimeLog(projectId: string, taskId: string, description: string): Observable<any> {
     return this.userId$.pipe(
       take(1),
       switchMap(userId => {
         if (!userId) {
+          console.error('User ID not available');
           throw new Error('User ID not available');
         }
+        if (!projectId) {
+          console.error('Project ID is required');
+          throw new Error('Project ID is required');
+        }
+
+        const body = {
+          userId: userId,
+          projectId: projectId,
+          taskId: taskId || null,
+          description: description || ""
+        };
+
+        console.log('Sending time log start request to server:', body);
+
         return this.http.post(
           `${environment.apiBaseUrl}/timelogs/start`,
+          body,
           {
-            userId,
-            taskId,
-            description
-          },
-          {withCredentials: true}
+            withCredentials: true,
+            observe: 'response'
+          }
+        ).pipe(
+          tap(response => {
+            console.log('Server response:', {
+              status: response.status,
+              body: response.body,
+              headers: response.headers
+            });
+          })
         );
       })
     );
@@ -161,13 +183,17 @@ export class TaskAssignmentService {
         if (!userId) {
           throw new Error('User ID not available');
         }
+        if (!this.projectIdSubject.value) {
+          throw new Error('Project ID is required');
+        }
         return this.http.post(
           `${environment.apiBaseUrl}/timelogs/manual`,
           {
             userId,
+            projectId: this.projectIdSubject.value,
             taskId,
-            startTime,
-            endTime,
+            startTime: this.formatForBackend(startTime),
+            endTime: this.formatForBackend(endTime),
             description
           },
           { withCredentials: true }
@@ -175,6 +201,17 @@ export class TaskAssignmentService {
       })
     );
   }
+
+  private formatForBackend(datetime: string): string {
+    if (!datetime) return datetime;
+
+    if (datetime.length === 16) {
+      return `${datetime}:00.000`;
+    }
+    return datetime;
+  }
+
+
 
   reopenTask(taskId: string): Observable<any> {
     return this.http.put(

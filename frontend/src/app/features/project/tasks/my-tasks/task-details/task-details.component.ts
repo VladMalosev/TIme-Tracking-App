@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {TimeLogListComponent} from './time-log-list/time-log-list.component';
+import {ProjectContextService} from '../../../../../services/project-context.service';
 
 @Component({
   selector: 'app-task-details',
@@ -35,7 +36,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   task: any;
   loading = true;
   private taskSubscription?: Subscription;
-
+  projectId: string | null = null;
   manualStartTime: string = '';
   manualEndTime: string = '';
   manualDescription: string = '';
@@ -45,6 +46,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   timerInterval: any;
   description: string = '';
   errorMessage: string | null = null;
+  private projectIdSubscription?: Subscription;
 
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
@@ -56,10 +58,15 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
   constructor(
     private taskAssignmentService: TaskAssignmentService,
-    private taskSelectionService: TaskSelectionService
+    private taskSelectionService: TaskSelectionService,
+    private projectContextService: ProjectContextService
   ) {}
 
   ngOnInit(): void {
+    this.projectIdSubscription = this.projectContextService.currentProjectId$.subscribe(
+      projectId => this.projectId = projectId
+    );
+
     this.taskSubscription = this.taskSelectionService.selectedTaskId$.subscribe(taskId => {
       if (taskId) {
         this.loadTaskDetails(taskId);
@@ -69,8 +76,10 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+
   ngOnDestroy(): void {
     this.taskSubscription?.unsubscribe();
+    this.projectIdSubscription?.unsubscribe();
     this.stopTimer();
   }
 
@@ -96,26 +105,34 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       next: (task) => {
         this.task = task;
         this.loading = false;
+        console.log('Task details loaded:', task);
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading task details:', error);
         this.loading = false;
       }
     });
   }
 
+
   startTimer(): void {
-    if (!this.isRunning && this.task) {
+
+    if (!this.isRunning && this.task && this.projectId) {
       this.isRunning = true;
       const startTime = new Date();
       this.timerInterval = setInterval(() => {
         this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
       }, 1000);
 
-      this.taskAssignmentService.startTimeLog(this.task.id, this.description).subscribe({
-        next: () => console.log('Timer started'),
+      this.taskAssignmentService.startTimeLog(
+        this.projectId,
+        this.task.id,
+        this.description
+      ).subscribe({
+        next: () => console.log('Timer started successfully'),
         error: (error) => {
           console.error('Error starting timer:', error);
-          this.errorMessage = error.message || 'Failed to start timer';
+          this.errorMessage = error.error?.message || error.message || 'Failed to start timer';
           this.isRunning = false;
           clearInterval(this.timerInterval);
           this.elapsedTime = 0;
@@ -131,7 +148,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
       this.taskAssignmentService.stopTimeLog(this.task.id).subscribe({
         next: () => {
-          console.log('Timer stopped');
+          console.log('Timer stopped successfully');
           this.elapsedTime = 0;
           this.taskSelectionService.triggerTimeLogsRefresh();
         },
@@ -141,6 +158,10 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  closeDetails(): void {
+    this.taskSelectionService.clearSelectedTaskId();
   }
 
   formatTime(seconds: number): string {
@@ -170,13 +191,15 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   }
 
   createManualTimeLog(): void {
-    if (!this.manualStartTime || !this.manualEndTime) {
-      this.manualTimeError = 'Start time and end time are required';
+    if (!this.projectId) {
+      this.manualTimeError = 'Project context is missing';
+      console.error(this.manualTimeError);
       return;
     }
 
     if (this.task.status === this.TASK_STATUS.COMPLETED) {
       this.manualTimeError = 'Cannot add time logs to completed tasks. Please reopen the task first.';
+      console.error(this.manualTimeError);
       return;
     }
 
@@ -185,6 +208,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
     if (new Date(startTime) >= new Date(endTime)) {
       this.manualTimeError = 'End time must be after start time';
+      console.error(this.manualTimeError);
       return;
     }
 
@@ -195,7 +219,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       this.manualDescription
     ).subscribe({
       next: () => {
-        console.log('Manual time log created');
+        console.log('Manual time log created successfully');
         this.manualTimeError = null;
         this.manualStartTime = '';
         this.manualEndTime = '';

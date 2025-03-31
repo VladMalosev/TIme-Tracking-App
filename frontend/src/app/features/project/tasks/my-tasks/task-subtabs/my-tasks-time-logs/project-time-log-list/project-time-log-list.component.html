@@ -1,0 +1,134 @@
+<div class="time-logs-container">
+  <div class="controls">
+    <button mat-button (click)="toggleDisplayMode()">
+      {{ displayMode === 'flat' ? 'Group by Task' : 'Show Flat List' }}
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+    <div class="loading-text">Loading time logs...</div>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Grouped View -->
+    <div *ngIf="displayMode === 'grouped'">
+      <div *ngFor="let taskId of Object.keys(groupedLogs)" class="task-group">
+        <div class="task-header">
+          <h3>{{ getTaskName(groupedLogs[taskId][0]) }}</h3>
+          <span class="total-duration">Total: {{ getTotalDuration(groupedLogs[taskId]) }}</span>
+        </div>
+
+        <table mat-table [dataSource]="groupedLogs[taskId]" class="mat-elevation-z1">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let log">
+              {{ formatDate(log.startTime) }} - {{ formatDate(log.endTime) }}
+            </td>
+          </ng-container>
+
+          <!-- Duration Column -->
+          <ng-container matColumnDef="duration">
+            <th mat-header-cell *matHeaderCellDef>Duration</th>
+            <td mat-cell *matCellDef="let log">
+              {{ formatDuration(log.startTime, log.endTime) }}
+            </td>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let log">
+              {{ log.description || 'No description' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let log">
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item>Edit</button>
+                <button mat-menu-item>Delete</button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsGrouped"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumnsGrouped;"></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Flat View -->
+    <div *ngIf="displayMode === 'flat'">
+      <table mat-table [dataSource]="timeLogs" class="mat-elevation-z1">
+        <!-- Task Column -->
+        <ng-container matColumnDef="task">
+          <th mat-header-cell *matHeaderCellDef>Task</th>
+          <td mat-cell *matCellDef="let log">
+            {{ getTaskName(log) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="startedAt">
+          <th mat-header-cell *matHeaderCellDef>Started At</th>
+          <td mat-cell *matCellDef="let log">
+            {{ formatDate(log.startTime) }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="endedAt">
+          <th mat-header-cell *matHeaderCellDef>Ended At</th>
+          <td mat-cell *matCellDef="let log">
+            {{ formatDate(log.endTime) }}
+          </td>
+        </ng-container>
+
+        <!-- Duration Column -->
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef>Duration</th>
+          <td mat-cell *matCellDef="let log">
+            {{ formatDuration(log.startTime, log.endTime) }}
+          </td>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let log">
+            {{ log.description || 'No description' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let log">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item>Edit</button>
+              <button mat-menu-item>Delete</button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsFlat"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsFlat;"></tr>
+      </table>
+    </div>
+
+    <mat-paginator [length]="totalItems"
+                   [pageSize]="pageSize"
+                   [pageIndex]="currentPage"
+                   [pageSizeOptions]="[5, 10, 25]"
+                   (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</div>

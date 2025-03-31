@@ -1,5 +1,6 @@
 <div class="subtab-container">
   <nav class="subtab-nav">
+    <!-- Your main tab buttons remain the same -->
     <button class="subtab-button"
             (click)="setActiveTab('my-tasks')"
             [class.active]="activeTab === 'my-tasks'">
@@ -25,13 +26,12 @@
   </nav>
 
   <div class="subtab-content">
-    <!-- Main content area -->
     <ng-content *ngIf="activeTab !== 'my-tasks'"></ng-content>
 
-    <!-- Nested tabs for My Tasks -->
     <div class="nested-tabs-container" *ngIf="activeTab === 'my-tasks'">
       <nav class="nested-subtab-nav">
         <div class="nested-tab-group">
+
           <button class="nested-subtab-button"
                   (click)="setNestedActiveTab('assigned-tasks')"
                   [class.active]="nestedActiveTab === 'assigned-tasks'">
@@ -41,7 +41,6 @@
               <span class="nested-indicator"></span>
             </span>
           </button>
-
           <button class="nested-subtab-button"
                   (click)="setNestedActiveTab('time-logs')"
                   [class.active]="nestedActiveTab === 'time-logs'">
@@ -75,21 +74,20 @@
       </nav>
 
       <div class="nested-subtab-content">
-        <!-- Content for each nested tab -->
         <div class="tab-panel" *ngIf="nestedActiveTab === 'assigned-tasks'">
           <app-my-tasks></app-my-tasks>
         </div>
 
         <div class="tab-panel" *ngIf="nestedActiveTab === 'time-logs'">
-          <!-- <app-time-logs></app-time-logs> -->
+          <app-my-tasks-time-logs></app-my-tasks-time-logs>
         </div>
 
         <div class="tab-panel" *ngIf="nestedActiveTab === 'create-task'">
-          <!-- <app-create-task></app-create-task> -->
+          <app-my-tasks-create-task></app-my-tasks-create-task>
         </div>
 
         <div class="tab-panel" *ngIf="nestedActiveTab === 'statistics'">
-          <!-- <app-task-statistics></app-task-statistics> -->
+          <app-my-tasks-statistics></app-my-tasks-statistics>
         </div>
       </div>
     </div>

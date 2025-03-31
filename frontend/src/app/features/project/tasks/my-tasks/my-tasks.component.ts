@@ -148,6 +148,8 @@ export class MyTasksComponent implements OnInit {
     return filtered;
   }
 
+
+
   getSortableValue(task: any, column: string): any {
     switch(column) {
       case 'name': return task.name;

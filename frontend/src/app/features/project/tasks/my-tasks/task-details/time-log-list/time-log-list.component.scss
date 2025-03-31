@@ -78,14 +78,3 @@
   }
 }
 
-@media (max-width: 768px) {
-  .time-log-container {
-    padding: 1rem;
-
-    table {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-  }
-}

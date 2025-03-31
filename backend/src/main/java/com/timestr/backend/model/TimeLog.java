@@ -24,6 +24,10 @@ public class TimeLog {
     @JoinColumn(name = "task_id", nullable = true)
     private Task task;
 
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
+
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
@@ -129,5 +133,13 @@ public class TimeLog {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 }

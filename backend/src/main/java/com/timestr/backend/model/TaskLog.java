@@ -18,6 +18,8 @@ public class TaskLog {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
+
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

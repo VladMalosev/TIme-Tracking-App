@@ -213,10 +213,10 @@ public class TaskService {
             UUID assignedUserId = task.getAssignedTo().getId();
 
             if (taskStatus == TaskStatus.IN_PROGRESS) {
-                timeLogService.startTimer(assignedUserId, taskId, "Task started: " + task.getName());
+                timeLogService.startTimer(assignedUserId, task.getProject().getId(), taskId, "Task started: " + task.getName());
             } else if (taskStatus == TaskStatus.COMPLETED) {
-                if (timeLogService.hasActiveTimer(assignedUserId, taskId)) {
-                    timeLogService.stopTimer(assignedUserId, taskId);
+                if (timeLogService.hasActiveTimer(assignedUserId)) {
+                    timeLogService.stopTimer(assignedUserId);
                 } else {
                     logger.warn("No active timer found for taskId: {}", taskId);
                 }
