@@ -28,6 +28,9 @@ public class TimeLogController {
     @Autowired
     private TimeLogService timeLogService;
 
+    @Autowired
+    private TaskService taskService;
+
     @Operation(summary = "Start a timer", description = "Starts a timer for a specific user and task.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Timer started successfully"),
@@ -141,4 +144,7 @@ public class TimeLogController {
         List<TimeLog> timeLogs = timeLogService.getTimeLogsByProjectAndUser(projectId, userId);
         return ResponseEntity.ok(timeLogs);
     }
+
+
+
 }

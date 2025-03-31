@@ -1,6 +1,6 @@
 <div class="time-logs-container">
   <h2>Project Time Logs</h2>
-  <p class="subtitle">Track and manage your time spent on this project</p>
+  <p class="subtitle">Track and manage all your time entries for this project in one centralized location. Monitor your productivity, analyze time allocation, and ensure accurate billing with our comprehensive time tracking system.</p>
 
   <div class="time-sections">
     <!-- Real-time Tracking Section -->
@@ -9,9 +9,25 @@
         <mat-icon>timer</mat-icon>
         Real-time Tracking
       </h3>
-      <p>Start and stop the timer as you work on this project to automatically record your time.</p>
+      <p>Use the live timer to automatically record your working sessions. Perfect for active work periods when you want precise, minute-by-minute tracking without manual entry. The timer runs continuously even if you navigate away from this page.</p>
 
       <div class="stopwatch">
+        <mat-form-field appearance="outline">
+          <mat-label>Connect to Task (optional)</mat-label>
+          <mat-select [(ngModel)]="selectedTaskId" name="selectedTask">
+            <mat-option [value]="null">Track at project level (no specific task)</mat-option>
+            <mat-option *ngFor="let task of incompleteTasks" [value]="task.id">
+              {{ task.name }} ({{ task.status | titlecase }})
+            </mat-option>
+          </mat-select>
+          <mat-hint>Associate this time with a specific task or track at the project level</mat-hint>
+        </mat-form-field>
+
+        <div *ngIf="tasksLoading" class="loading-tasks">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Loading available tasks...</span>
+        </div>
+
         <div class="timer-display">{{ formatTime(elapsedTime) }}</div>
 
         <div *ngIf="errorMessage" class="error-message">
@@ -20,20 +36,21 @@
 
         <mat-form-field class="work-description" appearance="outline">
           <mat-label>Work Description</mat-label>
-          <input matInput [(ngModel)]="description" placeholder="What are you working on?">
-          <mat-hint>Briefly describe your current activity</mat-hint>
+          <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"
+                    placeholder="Detail the work performed during this period"></textarea>
+          <mat-hint>Be specific (e.g., "Debugging API integration", "Client meeting")</mat-hint>
         </mat-form-field>
 
         <div class="controls">
           <button mat-raised-button color="primary"
                   (click)="startTimer()"
                   [disabled]="isRunning">
-            <mat-icon>play_arrow</mat-icon> Start
+            <mat-icon>play_arrow</mat-icon> Start Timer
           </button>
           <button mat-raised-button color="warn"
                   (click)="stopTimer()"
                   [disabled]="!isRunning">
-            <mat-icon>stop</mat-icon> Stop
+            <mat-icon>stop</mat-icon> Stop & Save
           </button>
         </div>
       </div>
@@ -45,24 +62,44 @@
         <mat-icon>schedule</mat-icon>
         Manual Time Entry
       </h3>
-      <p>Add time entries for work already completed or when you forget to start the timer.</p>
+      <p>Add time entries for work completed without the timer or to correct previous records. Ideal for meetings, phone calls, or when you forget to start the timer. All entries are logged against your project timeline.</p>
 
       <form (ngSubmit)="createManualTimeLog()">
+        <mat-form-field appearance="outline">
+          <mat-label>Connect to Task (optional)</mat-label>
+          <mat-select [(ngModel)]="selectedTaskId" name="selectedTask">
+            <mat-option [value]="null">General project work (no task)</mat-option>
+            <mat-option *ngFor="let task of incompleteTasks" [value]="task.id">
+              {{ task.name }} ({{ task.status | titlecase }})
+            </mat-option>
+          </mat-select>
+          <mat-hint>You can assign this time to a task now or update it later</mat-hint>
+        </mat-form-field>
+
+        <div *ngIf="tasksLoading" class="loading-tasks">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Loading available tasks...</span>
+        </div>
+
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Start Time</mat-label>
             <input matInput type="datetime-local" [(ngModel)]="manualStartTime" name="manualStartTime" required>
+            <mat-hint>When you began working</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>End Time</mat-label>
             <input matInput type="datetime-local" [(ngModel)]="manualEndTime" name="manualEndTime" required>
+            <mat-hint>When you finished working</mat-hint>
           </mat-form-field>
         </div>
 
         <mat-form-field class="work-description" appearance="outline">
           <mat-label>Work Description</mat-label>
-          <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"></textarea>
+          <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"
+                    placeholder="Detail the work performed during this period"></textarea>
+          <mat-hint>Example: "Client requirements analysis", "Code review session"</mat-hint>
         </mat-form-field>
 
         <div *ngIf="manualTimeError" class="error-message">
@@ -70,7 +107,7 @@
         </div>
 
         <button mat-raised-button color="primary" type="submit">
-          <mat-icon>add</mat-icon> Add Time Entry
+          <mat-icon>add</mat-icon> Create Time Entry
         </button>
       </form>
     </div>
@@ -82,7 +119,19 @@
       <mat-icon>list</mat-icon>
       Time Log History
     </h3>
-    <p>Review your previously recorded time entries for this project.</p>
+    <p>Review, filter, and export all recorded time entries for this project. Click any entry for detailed information or to make corrections. Time is automatically categorized by task association.</p>
+
+    <div class="time-log-actions">
+      <button mat-stroked-button>
+        <mat-icon>filter_alt</mat-icon> Filter Logs
+      </button>
+      <button mat-stroked-button>
+        <mat-icon>download</mat-icon> Export to CSV
+      </button>
+      <button mat-stroked-button>
+        <mat-icon>summarize</mat-icon> Generate Report
+      </button>
+    </div>
 
     <app-project-time-log-list></app-project-time-log-list>
   </div>

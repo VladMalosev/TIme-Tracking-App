@@ -25,4 +25,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     void deleteByProjectId(UUID projectId);
 
     List<Task> findByProjectIdAndStatusAndAssignedToIsNull(UUID projectId, TaskStatus taskStatus);
+
+    List<Task> findByProjectIdAndStatusNot(UUID projectId, TaskStatus status);
 }

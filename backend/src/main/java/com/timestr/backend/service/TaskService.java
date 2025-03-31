@@ -294,4 +294,8 @@ public class TaskService {
                     "Status reverted to PENDING (no time logs exist)");
         }
     }
+
+    public List<Task> getIncompleteTasksByProject(UUID projectId) {
+        return taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.COMPLETED);
+    }
 }

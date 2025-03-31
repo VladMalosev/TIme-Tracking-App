@@ -8,13 +8,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import {MatNativeDateModule, MatOption} from '@angular/material/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {TimeLogService} from '../../../../../../services/my-tasks/time-log.service';
 import {ProjectTimeLogListComponent} from './project-time-log-list/project-time-log-list.component';
 import {AuthService} from '../../../../../../core/auth/auth.service';
 import {ProjectContextService} from '../../../../../../services/project-context.service';
+import {MatSelect} from '@angular/material/select';
 
 @Component({
   selector: 'app-my-tasks-time-logs',
@@ -30,6 +31,8 @@ import {ProjectContextService} from '../../../../../../services/project-context.
     MatDatepickerModule,
     MatNativeDateModule,
     ProjectTimeLogListComponent,
+    MatSelect,
+    MatOption,
   ],
   templateUrl: './my-tasks-time-logs.component.html',
   styleUrls: ['./my-tasks-time-logs.component.scss']
@@ -50,8 +53,12 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
   manualEndTime: string = '';
   manualDescription: string = '';
   manualTimeError: string | null = null;
+  selectedTaskId: string | null = null;
+  incompleteTasks: any[] = [];
+  tasksLoading = false;
 
   userId: string | null = null;
+
   constructor(
     private timeLogService: TimeLogService,
     private route: ActivatedRoute,
@@ -64,17 +71,19 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       this.projectId = params.get('id');
       if (this.projectId) {
         this.projectContextService.setCurrentProjectId(this.projectId);
+
+        this.userSub = this.authService.userId$.subscribe(userId => {
+          if (userId) {
+            this.userId = userId;
+            this.loadIncompleteTasks();
+          }
+        });
+
+        this.authService.getUserId();
       }
     });
-
-    this.userSub = this.authService.userId$.subscribe(userId => {
-      if (userId) {
-        this.userId = userId;
-      }
-    });
-
-    this.authService.getUserId();
   }
+
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
     this.stopTimer();
@@ -84,7 +93,11 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     if (!this.isRunning && this.projectId) {
       const startTime = new Date();
 
-      this.timeLogService.startProjectTimer(this.projectId, this.description).subscribe({
+      this.timeLogService.startProjectTimer(
+        this.projectId,
+        this.description,
+        this.selectedTaskId || undefined
+      ).subscribe({
         next: () => {
           console.log('Project timer started');
 
@@ -145,7 +158,8 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       this.projectId,
       startTime,
       endTime,
-      this.manualDescription
+      this.manualDescription,
+      this.selectedTaskId || undefined
     ).subscribe({
       next: () => {
         console.log('Manual project time log created');
@@ -153,6 +167,7 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
         this.manualStartTime = '';
         this.manualEndTime = '';
         this.manualDescription = '';
+        this.selectedTaskId = null;
       },
       error: (error) => {
         console.error('Error creating manual project time log:', error);
@@ -174,4 +189,26 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     }
     return datetime;
   }
+
+  loadIncompleteTasks(): void {
+    if (!this.projectId || !this.userId) {
+      console.warn('Cannot load tasks - missing projectId or userId');
+      return;
+    }
+
+    this.tasksLoading = true;
+    this.timeLogService.getIncompleteTasks(this.projectId).subscribe({
+      next: (tasks) => {
+        console.log('Loaded tasks:', tasks);
+        this.incompleteTasks = tasks;
+        this.tasksLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading tasks:', error);
+        this.tasksLoading = false;
+      }
+    });
+  }
+
+
 }

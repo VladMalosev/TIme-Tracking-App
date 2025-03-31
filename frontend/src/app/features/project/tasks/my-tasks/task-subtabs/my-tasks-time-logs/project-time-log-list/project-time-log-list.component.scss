@@ -1,69 +1,175 @@
 .time-logs-container {
-  padding: 20px;
-  width: 100%;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+  color: #333;
 
   .controls {
-    margin-bottom: 20px;
     display: flex;
     justify-content: flex-end;
-  }
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
 
-  .task-group {
-    margin-bottom: 30px;
-
-    .task-header {
+    .refresh-button {
+      width: 40px;
+      height: 40px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
-      padding: 0 10px;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: #f5f5f5;
+      border: 1px solid #767676;
+      transition: all 0.3s ease;
 
-      h3 {
-        margin: 0;
-        font-weight: 500;
+      &:hover {
+        background-color: #e0e0e0;
       }
 
-      .total-duration {
-        font-weight: bold;
+      &:active {
+        transform: scale(0.95);
+      }
+
+      &.mat-button-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      mat-icon {
+        color: #3f51b5;
+        transition: transform 0.3s ease;
+      }
+
+      &.refreshing mat-icon {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .toggle-mode-button {
+      border-radius: 8px;
+      border: 1px solid #767676;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      background-color: #f5f5f5;
+      height: 40px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: #e0e0e0;
+      }
+
+      mat-icon {
+        margin-right: 8px;
         color: #3f51b5;
       }
     }
   }
+}
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
 
-  .loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-
-    .loading-text {
-      margin-top: 16px;
-      color: #666;
-    }
-  }
-
-  table {
-    width: 100%;
-    margin-bottom: 20px;
+  .loading-text {
+    margin-top: 16px;
+    color: #666;
+    font-size: 16px;
   }
 }
-.task-group {
-  margin-bottom: 10px;
-  .mat-expansion-panel-header {
+
+.grouped-view {
+  .mat-accordion {
+    .mat-expansion-panel {
+      margin-bottom: 12px;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+      .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        .task-name {
+          font-weight: 500;
+          color: #3f51b5;
+        }
+
+        .total-duration {
+          color: #666;
+          font-size: 14px;
+          margin-right: 16px;
+        }
+      }
+
+      .mat-expansion-panel-header {
+        padding: 0 24px;
+        height: 60px;
+      }
+
+      .mat-expansion-panel-content {
+        padding: 0 12px 12px;
+      }
+    }
+  }
+}
+
+.flat-view, .grouped-view {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+
+    th.mat-header-cell {
+      background-color: #f5f5f5;
+      color: #3f51b5;
+      font-weight: 500;
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    td.mat-cell {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      vertical-align: middle;
+    }
+
+    tr.mat-row:hover {
+      background-color: #f9f9f9;
+    }
+
+    .mat-column-actions {
+      width: 60px;
+      text-align: center;
+    }
+  }
+}
+
+mat-paginator {
+  background-color: transparent;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.mat-menu-content {
+  padding: 8px 0;
+
+  .mat-menu-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 0 10px;
-  }
+    height: 40px;
+    padding: 0 16px;
 
-  .mat-expansion-panel-header h3 {
-    margin: 0;
-    font-weight: 500;
-  }
-
-  .mat-expansion-panel-header .mat-panel-description {
-    font-weight: bold;
-    color: #3f51b5;
+    mat-icon {
+      margin-right: 8px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   }
 }

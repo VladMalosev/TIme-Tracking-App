@@ -33,7 +33,7 @@ export class TimeLogService {
     );
   }
 
-  startProjectTimer(projectId: string, description: string): Observable<any> {
+  startProjectTimer(projectId: string, description: string, taskId?: string): Observable<any> {
     return this.userId$.pipe(
       take(1),
       switchMap(userId => {
@@ -42,7 +42,12 @@ export class TimeLogService {
         }
         return this.http.post(
           `${environment.apiBaseUrl}/timelogs/start`,
-          { userId, projectId, description },
+          {
+            userId,
+            projectId,
+            description,
+            taskId: taskId || null
+          },
           { withCredentials: true }
         );
       })
@@ -69,7 +74,8 @@ export class TimeLogService {
     projectId: string,
     startTime: string,
     endTime: string,
-    description: string
+    description: string,
+    taskId?: string
   ): Observable<any> {
     return this.userId$.pipe(
       take(1),
@@ -79,7 +85,14 @@ export class TimeLogService {
         }
         return this.http.post(
           `${environment.apiBaseUrl}/timelogs/manual`,
-          { userId, projectId, startTime, endTime, description },
+          {
+            userId,
+            projectId,
+            startTime,
+            endTime,
+            description,
+            taskId: taskId || null
+          },
           { withCredentials: true }
         );
       })
@@ -101,5 +114,19 @@ export class TimeLogService {
     );
   }
 
+  getIncompleteTasks(projectId: string): Observable<any[]> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.get<any[]>(
+          `${environment.apiBaseUrl}/tasks/project/${projectId}/incomplete`,
+          { withCredentials: true }
+        );
+      })
+    );
+  }
 
 }

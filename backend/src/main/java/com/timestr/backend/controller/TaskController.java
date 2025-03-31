@@ -259,4 +259,20 @@ public class TaskController {
         return ResponseEntity.ok(task);
     }
 
+    @Operation(summary = "Get incomplete tasks for project",
+            description = "Retrieves all incomplete tasks for a specific project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/project/{projectId}/incomplete")
+    public ResponseEntity<List<Task>> getIncompleteTasksByProject(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId) {
+
+        List<Task> tasks = taskService.getIncompleteTasksByProject(projectId);
+        return ResponseEntity.ok(tasks);
+    }
+
 }
