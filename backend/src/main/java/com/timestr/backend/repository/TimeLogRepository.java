@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,4 +63,64 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
     List<TimeLog> findByUserIdAndProjectIsNull(UUID userId);
 
     List<TimeLog> findByProjectIdAndUserIdOrderByStartTimeDesc(UUID projectId, UUID userId);
+
+
+    @Query("SELECT COALESCE(SUM(t.minutes), 0) FROM TimeLog t " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId)")
+    Long sumMinutesByUserAndProject(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+    @Query("SELECT MIN(t.startTime) FROM TimeLog t WHERE t.user.id = :userId")
+    LocalDateTime findFirstLogDateByUser(@Param("userId") UUID userId);
+
+    @Query("SELECT t.task.name as taskName, SUM(t.minutes) as minutes " +
+            "FROM TimeLog t " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "AND t.task IS NOT NULL " +
+            "GROUP BY t.task.name " +
+            "ORDER BY minutes DESC")
+    List<Map<String, Object>> getTaskTimeDistribution(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+    @Query("SELECT COALESCE(SUM(t.minutes), 0) / 60.0 " +
+            "FROM TimeLog t " +
+            "JOIN t.task task " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "AND task.status = 'COMPLETED'")
+    Double sumHoursOnCompletedTasks(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+    @Query("SELECT HOUR(t.startTime) as hour, " +
+            "CASE WHEN SUM(t.minutes) = 0 THEN NULL ELSE " +
+            "   CAST(SUM(CASE WHEN t.task.status = 'COMPLETED' THEN t.minutes ELSE 0 END) AS double) / " +
+            "   SUM(t.minutes) " +
+            "END as efficiency " +
+            "FROM TimeLog t " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "AND t.startTime IS NOT NULL " +
+            "GROUP BY HOUR(t.startTime) " +
+            "ORDER BY CASE WHEN SUM(t.minutes) = 0 THEN 0 ELSE " +
+            "   CAST(SUM(CASE WHEN t.task.status = 'COMPLETED' THEN t.minutes ELSE 0 END) AS double) / " +
+            "   SUM(t.minutes) END DESC NULLS LAST")
+    List<Map<String, Object>> findPeakProductivityHours(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+
+    @Query("SELECT HOUR(t.loggedAt) as hour, COUNT(t) as count " +
+            "FROM TimeLog t " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "GROUP BY HOUR(t.loggedAt) " +
+            "ORDER BY HOUR(t.loggedAt)")
+    List<Map<String, Object>> findLogCreationHourlyDistribution(@Param("userId") UUID userId,
+                                                                @Param("projectId") UUID projectId);
+
+    @Query("SELECT FUNCTION('date_part', 'dow', t.loggedAt) as day_of_week, COUNT(t) as count " +
+            "FROM TimeLog t " +
+            "WHERE t.user.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "GROUP BY FUNCTION('date_part', 'dow', t.loggedAt) " +
+            "ORDER BY FUNCTION('date_part', 'dow', t.loggedAt)")
+    List<Map<String, Object>> findLogCreationDailyDistribution(@Param("userId") UUID userId,
+                                                               @Param("projectId") UUID projectId);
 }

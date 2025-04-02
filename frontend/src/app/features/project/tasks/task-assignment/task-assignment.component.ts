@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import {EMPTY, map, Observable, switchMap, take, withLatestFrom} from 'rxjs';
+import {EMPTY, map, Observable, switchMap, take, tap, withLatestFrom} from 'rxjs';
 import { TaskAssignmentService } from '../../../../services/project-tasks/task-assignment.service';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -111,6 +111,7 @@ export class TaskAssignmentComponent implements OnInit {
     this.taskAssignmentService.setSelectedUser(user);
   }
 
+
   assignTask(): void {
     this.taskAssignmentService.selectedTask$.pipe(
       take(1),
@@ -128,6 +129,10 @@ export class TaskAssignmentComponent implements OnInit {
           task.id,
           user.user.id,
           userId
+        ).pipe(
+          tap(() => {
+            this.taskAssignmentService.removeTask(task.id);
+          })
         );
       }),
       switchMap(() => this.taskAssignmentService.projectId$),
@@ -147,6 +152,14 @@ export class TaskAssignmentComponent implements OnInit {
     });
   }
 
+  private resetForm(): void {
+    this.errorMessage = null;
+    this.taskAssignmentService.setSelectedTask(null);
+    this.taskAssignmentService.setSelectedUser(null);
+
+    this.taskAssignmentService.refreshTasks();
+  }
+
   private showSuccessMessage(): void {
     this.snackBar.open('Task assigned successfully!', 'Close', {
       duration: 3000,
@@ -154,9 +167,4 @@ export class TaskAssignmentComponent implements OnInit {
     });
   }
 
-  private resetForm(): void {
-    this.errorMessage = null;
-    this.taskAssignmentService.setSelectedTask(null);
-    this.taskAssignmentService.setSelectedUser(null);
-  }
 }

@@ -51,7 +51,6 @@ export class MyTasksCreateTaskComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to userId changes
     this.authService.userId$
       .pipe(takeUntil(this.destroy$))
       .subscribe(userId => {
@@ -63,7 +62,6 @@ export class MyTasksCreateTaskComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Trigger initial userId fetch
     this.authService.getUserId();
   }
 

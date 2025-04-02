@@ -19,28 +19,30 @@
         </p>
       </div>
 
-      <form (ngSubmit)="assignTask()" class="assignment-form">
+      <form #assignmentForm="ngForm" (ngSubmit)="assignTask()" class="assignment-form">
         <!-- Task Select -->
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Select Task</mat-label>
-          <mat-select (selectionChange)="onTaskSelected($event.value)" [disabled]="!(tasks$ | async)?.length">
+          <mat-select
+            (selectionChange)="onTaskSelected($event.value)"
+            [disabled]="!(tasks$ | async)?.length"
+            [value]="selectedTask$ | async">
             <mat-option *ngFor="let task of tasks$ | async" [value]="task">
               {{ task?.name }} ({{ task?.status }})
             </mat-option>
           </mat-select>
-          <mat-hint *ngIf="!(tasks$ | async)?.length">No unassigned tasks available</mat-hint>
-          <mat-hint *ngIf="(tasks$ | async)?.length">Choose the task to assign</mat-hint>
         </mat-form-field>
 
         <!-- User Select -->
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Select Collaborator</mat-label>
-          <mat-select (selectionChange)="onUserSelected($event.value)">
+          <mat-select
+            (selectionChange)="onUserSelected($event.value)"
+            [value]="selectedUser$ | async">
             <mat-option *ngFor="let user of collaborators$ | async" [value]="user">
               {{ user?.user?.name }}
             </mat-option>
           </mat-select>
-          <mat-hint>Select who will be responsible</mat-hint>
         </mat-form-field>
 
         <!-- Submit Button -->
@@ -56,7 +58,6 @@
           </button>
         </div>
       </form>
-
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="error-message mat-elevation-z1">
         <mat-icon>error_outline</mat-icon>

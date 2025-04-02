@@ -25,6 +25,7 @@ export const routes: Routes = [
   {
     path: 'project-details/:id',
     component: ProjectComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: ProjectComponent },
       { path: 'members', component: ProjectMembersComponent },

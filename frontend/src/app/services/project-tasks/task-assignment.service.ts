@@ -26,6 +26,17 @@ export class TaskAssignmentService {
   constructor(private http: HttpClient) {
   }
 
+  public removeTask(taskId: string): void {
+    const currentTasks = this.tasksSubject.value;
+    const updatedTasks = currentTasks.filter(t => t.id !== taskId);
+    this.tasksSubject.next(updatedTasks);
+  }
+
+  public refreshTasks(): void {
+    this.tasksSubject.next([...this.tasksSubject.value]);
+  }
+
+
   setProjectId(projectId: string): void {
     this.projectIdSubject.next(projectId);
   }

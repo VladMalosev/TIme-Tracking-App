@@ -1,1 +1,205 @@
-<p>my-tasks-statistics works!</p>
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="mat-headline-4">
+        <mat-icon>dashboard</mat-icon>
+        My Productivity Dashboard
+      </h1>
+      <p class="header-description">
+        Track your work patterns, task completion, and time allocation across all projects
+      </p>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <!-- Time Tracking Card -->
+    <mat-card class="stats-card time-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="card-icon">schedule</mat-icon>
+          Time Allocation
+        </mat-card-title>
+        <mat-card-subtitle>How you've spent your time</mat-card-subtitle>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div class="stat-item main-stat">
+          <div class="stat-value">{{ formatMinutes(timeStats.totalLogged) }}</div>
+          <div class="stat-label">Total Time Logged</div>
+          <div class="stat-description">
+            All tracked time across all tasks and projects
+          </div>
+        </div>
+        <div class="secondary-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ formatMinutes(timeStats.weeklyAverage) }}</div>
+            <div class="stat-label">Weekly Average</div>
+            <div class="stat-description">
+              Your typical weekly workload
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ timeStats.taskDistribution.length }}</div>
+            <div class="stat-label">Active Tasks</div>
+            <div class="stat-description">
+              Tasks you've logged time against
+            </div>
+          </div>
+        </div>
+        <div class="top-tasks" *ngIf="timeStats.taskDistribution.length > 0">
+          <h3 class="section-title">
+            <mat-icon>star</mat-icon>
+            Top Time Investments
+          </h3>
+          <div class="task-list">
+            <div class="task-item" *ngFor="let task of timeStats.taskDistribution | slice:0:3">
+              <span class="task-name">{{ task.taskName }}</span>
+              <span class="task-time">{{ formatMinutes(task.minutes) }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Task Completion Card -->
+    <mat-card class="stats-card completion-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="card-icon">task_alt</mat-icon>
+          Task Progress
+        </mat-card-title>
+        <mat-card-subtitle>Your completion metrics</mat-card-subtitle>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div class="completion-summary">
+          <div class="total-tasks">
+            <div class="number">{{ taskStats.totalTasks }}</div>
+            <div class="label">Total Tasks</div>
+          </div>
+          <div class="completion-rate">
+            <div class="percentage">
+              {{ taskStats.totalTasks > 0 ? (taskStats.completed / taskStats.totalTasks * 100).toFixed(0) : 0 }}%
+            </div>
+            <div class="label">Completion Rate</div>
+          </div>
+        </div>
+
+        <div class="completion-grid">
+          <div class="completion-item completed">
+            <div class="completion-number">{{ taskStats.completed }}</div>
+            <div class="completion-label">Completed</div>
+            <div class="completion-description">
+              Tasks marked as done
+            </div>
+          </div>
+          <div class="completion-item in-progress">
+            <div class="completion-number">{{ taskStats.inProgress }}</div>
+            <div class="completion-label">In Progress</div>
+            <div class="completion-description">
+              Actively being worked on
+            </div>
+          </div>
+          <div class="completion-item pending">
+            <div class="completion-number">{{ taskStats.pending }}</div>
+            <div class="completion-label">Pending</div>
+            <div class="completion-description">
+              Waiting to be started
+            </div>
+          </div>
+        </div>
+
+        <div class="completion-chart">
+          <canvas #completionChart></canvas>
+          <div class="chart-description">
+            Visual breakdown of your task status distribution
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Work Patterns Card -->
+    <mat-card class="stats-card patterns-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="card-icon">insights</mat-icon>
+          Weekly Work Patterns
+        </mat-card-title>
+        <mat-card-subtitle>Your time logging habits by day</mat-card-subtitle>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div class="log-patterns" *ngIf="productivityStats.logPatterns">
+          <div class="chart-container">
+            <canvas #logPatternsChart></canvas>
+          </div>
+          <div class="insight-text">
+            <p *ngIf="getMostProductiveDay()">
+              <mat-icon>stars</mat-icon>
+              <strong>Your most active day:</strong> {{getMostProductiveDay()}}
+            </p>
+            <p *ngIf="getLeastProductiveDay()">
+              <mat-icon>info</mat-icon>
+              <strong>Your quietest day:</strong> {{getLeastProductiveDay()}}
+            </p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Time Logs Section -->
+  <mat-card class="time-logs-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="card-icon">list_alt</mat-icon>
+        Recent Time Entries
+      </mat-card-title>
+      <div class="header-actions">
+        <button mat-stroked-button color="primary" class="export-button">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
+        <button mat-button color="primary" class="view-all-button">
+          View All Entries
+        </button>
+      </div>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <div class="time-logs-intro">
+        <p>
+          Your most recent time entries. Track where your time goes and identify patterns in your work habits.
+        </p>
+      </div>
+      <table mat-table [dataSource]="timeLogsDataSource" class="mat-elevation-z1 time-logs-table">
+        <!-- Columns -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+          <td mat-cell *matCellDef="let log">{{ log.date | date:'medium' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="taskName">
+          <th mat-header-cell *matHeaderCellDef>Task</th>
+          <td mat-cell *matCellDef="let log">{{ log.taskName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef>Duration</th>
+          <td mat-cell *matCellDef="let log">{{ formatMinutes(log.duration) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Notes</th>
+          <td mat-cell *matCellDef="let log">{{ log.description || '-' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="timeLogsDisplayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: timeLogsDisplayedColumns;"></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

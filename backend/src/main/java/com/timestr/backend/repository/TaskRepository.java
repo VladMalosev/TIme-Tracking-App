@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository
@@ -29,4 +30,29 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findByProjectIdAndStatusNot(UUID projectId, TaskStatus status);
 
     List<Task> findByProjectIdAndAssignedToIdAndStatusNot(UUID projectId, UUID assignedToId, TaskStatus status);
+
+    @Query("SELECT COUNT(t) FROM Task t " +
+            "WHERE t.assignedTo.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId)")
+    long countByUserAndProject(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+    @Query("SELECT COUNT(t) FROM Task t " +
+            "WHERE t.assignedTo.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "AND t.status = :status")
+    long countByUserAndProjectAndStatus(
+            @Param("userId") UUID userId,
+            @Param("projectId") UUID projectId,
+            @Param("status") TaskStatus status);
+
+    @Query("SELECT t.name as name, COUNT(t) as count " +
+            "FROM Task t " +
+            "WHERE t.assignedTo.id = :userId " +
+            "AND (:projectId IS NULL OR t.project.id = :projectId) " +
+            "GROUP BY t.name " +
+            "ORDER BY count DESC " +
+            "LIMIT 5")
+    List<Map<String, Object>> findFrequentTasks(
+            @Param("userId") UUID userId,
+            @Param("projectId") UUID projectId);
 }

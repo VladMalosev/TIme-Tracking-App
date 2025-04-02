@@ -4,6 +4,7 @@ import com.timestr.backend.dto.TaskCompletionDetails;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.ActivityRepository;
 import com.timestr.backend.repository.TaskLogRepository;
+import com.timestr.backend.repository.TaskRepository;
 import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +20,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -36,6 +39,8 @@ public class TaskController {
     private UserRepository userRepository;
     @Autowired
     private TaskLogRepository taskLogRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Operation(summary = "Update a task", description = "Updates an existing task with the provided details.")
     @ApiResponses(value = {
@@ -291,6 +296,26 @@ public class TaskController {
 
         List<Task> tasks = taskService.getIncompleteTasksByProjectAndUser(projectId, userId);
         return ResponseEntity.ok(tasks);
+    }
+
+
+    @GetMapping("/user/{userId}/stats")
+    public ResponseEntity<Map<String, Object>> getUserTaskStats(
+            @PathVariable UUID userId,
+            @RequestParam(required = false) UUID projectId) {
+
+        long totalTasks = taskRepository.countByUserAndProject(userId, projectId);
+        long completed = taskRepository.countByUserAndProjectAndStatus(userId, projectId, TaskStatus.COMPLETED);
+        long inProgress = taskRepository.countByUserAndProjectAndStatus(userId, projectId, TaskStatus.IN_PROGRESS);
+        long pending = taskRepository.countByUserAndProjectAndStatus(userId, projectId, TaskStatus.PENDING);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalTasks", totalTasks);
+        response.put("completed", completed);
+        response.put("inProgress", inProgress);
+        response.put("pending", pending);
+
+        return ResponseEntity.ok(response);
     }
 
 }

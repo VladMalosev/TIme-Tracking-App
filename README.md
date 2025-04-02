@@ -15,7 +15,9 @@ CREATE TYPE activity_type AS ENUM (
     'TASK_CREATED',
     'TASK_UPDATED',
     'COLLABORATOR_INVITED',
-    'PROJECT_UPDATED'
+    'PROJECT_UPDATED',
+    'TASK_DELETED',
+    'TIME_LOG_LINKED'
 );
 
 CREATE TYPE invitation_status AS ENUM (
@@ -33,8 +35,20 @@ CREATE TYPE role AS ENUM (
 
 CREATE TYPE task_status AS ENUM (
     'PENDING',
+    'ASSIGNED',
     'IN_PROGRESS',
-    'COMPLETED'
+    'COMPLETED',
+    'REOPENED'
+);
+
+CREATE TYPE task_action AS ENUM (
+    'CREATED',
+    'UPDATED',
+    'ASSIGNED',
+    'COMPLETED',
+    'STATUS_CHANGED',
+    'REOPENED',
+    'DELETED'
 );
 
 -- Users Table
@@ -131,12 +145,16 @@ CREATE TABLE tasks (
     id UUID PRIMARY KEY,
     project_id UUID NOT NULL REFERENCES projects(id),
     name VARCHAR(150) NOT NULL,
-    assigned_user_id UUID REFERENCES users(id),
+    assigned_to_user_id UUID REFERENCES users(id),
+    assigned_by_user_id UUID REFERENCES users(id),
+    assigned_at TIMESTAMP,
     description VARCHAR(500),
     status task_status NOT NULL DEFAULT 'PENDING',
     deadline TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES users(id),
+    last_modified_by UUID REFERENCES users(id)
 );
 
 -- Task Assignments Table
@@ -148,11 +166,22 @@ CREATE TABLE task_assignments (
     assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Task Logs Table
+CREATE TABLE task_logs (
+    id UUID PRIMARY KEY,
+    task_id UUID NOT NULL REFERENCES tasks(id),
+    user_id UUID REFERENCES users(id),
+    action task_action NOT NULL,
+    details VARCHAR(500),
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Time Logs Table
 CREATE TABLE time_logs (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id),
     task_id UUID REFERENCES tasks(id),
+    project_id UUID NOT NULL REFERENCES projects(id),
     start_time TIMESTAMP,
     end_time TIMESTAMP,
     minutes INTEGER,
@@ -166,6 +195,7 @@ CREATE TABLE time_logs (
 CREATE TABLE activities (
     id UUID PRIMARY KEY,
     project_id UUID NOT NULL REFERENCES projects(id),
+    user_id UUID NOT NULL REFERENCES users(id),
     type activity_type NOT NULL,
     description VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

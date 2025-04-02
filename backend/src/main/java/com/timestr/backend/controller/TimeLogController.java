@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -238,5 +240,51 @@ public class TimeLogController {
         timeLogRepository.delete(timeLog);
         return ResponseEntity.noContent().build();
     }
+
+
+    @GetMapping("/user/{userId}/stats")
+    public ResponseEntity<Map<String, Object>> getUserTimeStats(
+            @PathVariable UUID userId,
+            @RequestParam(required = false) UUID projectId) {
+
+        Long totalMinutes = timeLogRepository.sumMinutesByUserAndProject(userId, projectId);
+        Long weeklyAverage = calculateWeeklyAverage(totalMinutes);
+
+        List<Map<String, Object>> taskDistribution = timeLogRepository.getTaskTimeDistribution(userId, projectId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalLogged", totalMinutes != null ? totalMinutes : 0);
+        response.put("weeklyAverage", weeklyAverage != null ? weeklyAverage : 0);
+        response.put("taskDistribution", taskDistribution);
+
+        return ResponseEntity.ok(response);
+    }
+
+    private Long calculateWeeklyAverage(Long totalMinutes) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UUID userId = user.getId();
+
+
+        if (totalMinutes == null || totalMinutes == 0) {
+            return 0L;
+        }
+
+        LocalDateTime firstLogDate = timeLogRepository.findFirstLogDateByUser(userId);
+        if (firstLogDate == null) {
+            return 0L;
+        }
+
+        long weeksBetween = ChronoUnit.WEEKS.between(firstLogDate, LocalDateTime.now());
+        if (weeksBetween == 0) {
+            weeksBetween = 1;
+        }
+
+        return totalMinutes / weeksBetween;
+    }
+
 
 }
