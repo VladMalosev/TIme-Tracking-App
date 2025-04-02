@@ -29,6 +29,7 @@
         <th (click)="sortData('task')">
           Task <span class="sort-indicator">{{getSortIndicator('task')}}</span>
         </th>
+        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -38,10 +39,18 @@
         <td>{{ log.duration }}</td>
         <td>{{ log.description || 'No description' }}</td>
         <td>
-            <span *ngIf="log.task">
-              {{ log.task.name }}
-            </span>
+          <span *ngIf="log.task">
+            {{ log.task.name }}
+          </span>
           <span *ngIf="!log.task">No Task</span>
+        </td>
+        <td class="actions-cell">
+          <button mat-icon-button class="edit-button" (click)="openEditDialog(log)" matTooltip="Edit description">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button class="delete-button" (click)="deleteTimeLog(log)" matTooltip="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
         </td>
       </tr>
       </tbody>
@@ -50,6 +59,27 @@
     <div *ngIf="timeLogs.length === 0" class="no-logs">
       <mat-icon>timer_off</mat-icon>
       <span>No time logs recorded for this task</span>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Description Dialog -->
+<div *ngIf="showEditDialog" class="dialog-overlay" (click)="showEditDialog = false">
+  <div class="edit-dialog" (click)="$event.stopPropagation()">
+    <h3>Edit Time Log Description</h3>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput [(ngModel)]="editDescriptionText" rows="3"></textarea>
+    </mat-form-field>
+
+    <div class="dialog-actions">
+      <button mat-button (click)="showEditDialog = false">Cancel</button>
+      <button mat-raised-button color="primary"
+              (click)="saveDescription()"
+              [disabled]="!editDescriptionText">
+        Save Changes
+      </button>
     </div>
   </div>
 </div>

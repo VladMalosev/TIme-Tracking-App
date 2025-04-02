@@ -32,7 +32,9 @@
           <table mat-table [dataSource]="groupedLogs[taskId].logs" class="mat-elevation-z1">
             <!-- Started At Column -->
             <ng-container matColumnDef="startedAt">
-              <th mat-header-cell *matHeaderCellDef>Started At</th>
+              <th mat-header-cell *matHeaderCellDef (click)="sortData('startedAt')">
+                Started At <span class="sort-indicator">{{getSortIndicator('startedAt')}}</span>
+              </th>
               <td mat-cell *matCellDef="let log">
                 {{ formatDateTime(log.startTime) }}
               </td>
@@ -40,7 +42,9 @@
 
             <!-- Ended At Column -->
             <ng-container matColumnDef="endedAt">
-              <th mat-header-cell *matHeaderCellDef>Ended At</th>
+              <th mat-header-cell *matHeaderCellDef (click)="sortData('endedAt')">
+                Ended At <span class="sort-indicator">{{getSortIndicator('endedAt')}}</span>
+              </th>
               <td mat-cell *matCellDef="let log">
                 {{ formatDateTime(log.endTime) }}
               </td>
@@ -48,7 +52,9 @@
 
             <!-- Duration Column -->
             <ng-container matColumnDef="duration">
-              <th mat-header-cell *matHeaderCellDef>Duration</th>
+              <th mat-header-cell *matHeaderCellDef (click)="sortData('duration')">
+                Duration <span class="sort-indicator">{{getSortIndicator('duration')}}</span>
+              </th>
               <td mat-cell *matCellDef="let log">
                 {{ formatDuration(log.startTime, log.endTime) }}
               </td>
@@ -56,7 +62,9 @@
 
             <!-- Description Column -->
             <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
+              <th mat-header-cell *matHeaderCellDef (click)="sortData('description')">
+                Description <span class="sort-indicator">{{getSortIndicator('description')}}</span>
+              </th>
               <td mat-cell *matCellDef="let log">
                 {{ log.description || 'No description' }}
               </td>
@@ -70,8 +78,18 @@
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                  <button mat-menu-item>Edit</button>
-                  <button mat-menu-item>Delete</button>
+                  <button mat-menu-item (click)="openEditDialog(log)" class="edit-menu-item">
+                    <mat-icon>edit</mat-icon>
+                    <span>Edit Description</span>
+                  </button>
+                  <button mat-menu-item (click)="openLinkDialog(log)" *ngIf="!log.task" class="link-menu-item">
+                    <mat-icon>link</mat-icon>
+                    <span>Link to Task</span>
+                  </button>
+                  <button mat-menu-item (click)="deleteTimeLog(log)" class="delete-menu-item">
+                    <mat-icon>delete</mat-icon>
+                    <span>Delete</span>
+                  </button>
                 </mat-menu>
               </td>
             </ng-container>
@@ -88,7 +106,9 @@
       <table mat-table [dataSource]="paginatedTimeLogs" class="mat-elevation-z1">
         <!-- Task Column -->
         <ng-container matColumnDef="task">
-          <th mat-header-cell *matHeaderCellDef>Task</th>
+          <th mat-header-cell *matHeaderCellDef (click)="sortData('task')">
+            Task <span class="sort-indicator">{{getSortIndicator('task')}}</span>
+          </th>
           <td mat-cell *matCellDef="let log">
             {{ getTaskName(log) }}
           </td>
@@ -96,7 +116,9 @@
 
         <!-- Started At Column -->
         <ng-container matColumnDef="startedAt">
-          <th mat-header-cell *matHeaderCellDef>Started At</th>
+          <th mat-header-cell *matHeaderCellDef (click)="sortData('startedAt')">
+            Started At <span class="sort-indicator">{{getSortIndicator('startedAt')}}</span>
+          </th>
           <td mat-cell *matCellDef="let log">
             {{ formatDateTime(log.startTime) }}
           </td>
@@ -104,7 +126,9 @@
 
         <!-- Ended At Column -->
         <ng-container matColumnDef="endedAt">
-          <th mat-header-cell *matHeaderCellDef>Ended At</th>
+          <th mat-header-cell *matHeaderCellDef (click)="sortData('endedAt')">
+            Ended At <span class="sort-indicator">{{getSortIndicator('endedAt')}}</span>
+          </th>
           <td mat-cell *matCellDef="let log">
             {{ formatDateTime(log.endTime) }}
           </td>
@@ -112,7 +136,9 @@
 
         <!-- Duration Column -->
         <ng-container matColumnDef="duration">
-          <th mat-header-cell *matHeaderCellDef>Duration</th>
+          <th mat-header-cell *matHeaderCellDef (click)="sortData('duration')">
+            Duration <span class="sort-indicator">{{getSortIndicator('duration')}}</span>
+          </th>
           <td mat-cell *matCellDef="let log">
             {{ formatDuration(log.startTime, log.endTime) }}
           </td>
@@ -120,13 +146,15 @@
 
         <!-- Description Column -->
         <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <th mat-header-cell *matHeaderCellDef (click)="sortData('description')">
+            Description <span class="sort-indicator">{{getSortIndicator('description')}}</span>
+          </th>
           <td mat-cell *matCellDef="let log">
             {{ log.description || 'No description' }}
           </td>
         </ng-container>
 
-        <!-- Actions Column -->
+        <!-- Actions Column (no sorting) -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let log">
@@ -134,8 +162,18 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu">
-              <button mat-menu-item>Edit</button>
-              <button mat-menu-item>Delete</button>
+              <button mat-menu-item (click)="openEditDialog(log)" class="edit-menu-item">
+                <mat-icon>edit</mat-icon>
+                <span>Edit Description</span>
+              </button>
+              <button mat-menu-item (click)="openLinkDialog(log)" *ngIf="!log.task" class="link-menu-item">
+                <mat-icon>link</mat-icon>
+                <span>Link to Task</span>
+              </button>
+              <button mat-menu-item (click)="deleteTimeLog(log)" class="delete-menu-item">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
             </mat-menu>
           </td>
         </ng-container>
@@ -152,4 +190,53 @@
                    (page)="onPageChange($event)">
     </mat-paginator>
   </div>
+
+  <!-- Link to Task Dialog -->
+  <div *ngIf="showLinkDialog" class="dialog-overlay" (click)="showLinkDialog = false">
+    <div class="link-dialog" (click)="$event.stopPropagation()">
+      <h3>Link Time Log to Task</h3>
+      <p>Select a task to link this time log to:</p>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Select Task</mat-label>
+        <mat-select [(ngModel)]="selectedTaskId">
+          <mat-option [value]="null">No task (project level only)</mat-option>
+          <mat-option *ngFor="let task of assignedTasks" [value]="task.id">
+            {{ task.name }} ({{ task.status }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="showLinkDialog = false">Cancel</button>
+        <button mat-raised-button color="primary"
+                (click)="linkToTask(selectedTaskId)"
+                [disabled]="!selectedTaskId">
+          Link to Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Description Dialog -->
+  <div *ngIf="showEditDialog" class="dialog-overlay" (click)="showEditDialog = false">
+    <div class="edit-dialog" (click)="$event.stopPropagation()">
+      <h3>Edit Time Log Description</h3>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="editDescriptionText" rows="3"></textarea>
+      </mat-form-field>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="showEditDialog = false">Cancel</button>
+        <button mat-raised-button color="primary"
+                (click)="saveDescription()"
+                [disabled]="!editDescriptionText">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

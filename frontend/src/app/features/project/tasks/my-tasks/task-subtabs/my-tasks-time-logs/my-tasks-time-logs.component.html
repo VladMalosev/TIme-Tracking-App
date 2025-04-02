@@ -122,8 +122,8 @@
     <p>Review, filter, and export all recorded time entries for this project. Click any entry for detailed information or to make corrections. Time is automatically categorized by task association.</p>
 
     <div class="time-log-actions">
-      <button mat-stroked-button>
-        <mat-icon>filter_alt</mat-icon> Filter Logs
+      <button mat-stroked-button (click)="toggleFilters()">
+        <mat-icon>filter_alt</mat-icon> {{ showFilters ? 'Hide Filters' : 'Filter Logs' }}
       </button>
       <button mat-stroked-button>
         <mat-icon>download</mat-icon> Export to CSV
@@ -131,6 +131,43 @@
       <button mat-stroked-button>
         <mat-icon>summarize</mat-icon> Generate Report
       </button>
+    </div>
+
+    <div *ngIf="showFilters" class="filter-section">
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Description</mat-label>
+          <input matInput [(ngModel)]="descriptionFilter" placeholder="Work description">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Task</mat-label>
+          <mat-select [(ngModel)]="taskFilter">
+            <mat-option value="">All Tasks</mat-option>
+            <mat-option *ngFor="let task of incompleteTasks" [value]="task.id">
+              {{ task.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>From Date</mat-label>
+          <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom">
+          <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>To Date</mat-label>
+          <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo">
+          <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-raised-button color="warn" (click)="resetFilters()" class="reset-btn">
+          Reset Filters
+        </button>
+      </div>
     </div>
 
     <app-project-time-log-list></app-project-time-log-list>

@@ -142,9 +142,19 @@
     gap: 16px;
     align-items: center;
 
-    .reset-btn {
-    }
+
   }
+  .reset-btn {
+    background: var(--blue-button-color) !important;
+    color: white !important;
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
 }
 
 

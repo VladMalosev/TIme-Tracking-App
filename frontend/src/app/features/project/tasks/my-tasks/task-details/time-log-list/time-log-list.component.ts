@@ -6,6 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { TimeLogService } from '../../../../../../services/my-tasks/time-log.service';
 import { TaskSelectionService } from '../../../../../../services/my-tasks/task-selection.service';
 
@@ -18,7 +21,10 @@ import { TaskSelectionService } from '../../../../../../services/my-tasks/task-s
     MatIconModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule
   ],
   templateUrl: './time-log-list.component.html',
   styleUrls: ['./time-log-list.component.scss']
@@ -31,6 +37,10 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
   private taskSubscription!: Subscription;
   private refreshSubscription!: Subscription;
+  showEditDialog = false;
+  editDescriptionText = '';
+  selectedTimeLog: any = null;
+
 
   constructor(
     private timeLogService: TimeLogService,
@@ -153,5 +163,41 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
   refreshLogs(): void {
     console.log('Manual refresh triggered');
     this.taskSelectionService.triggerTimeLogsRefresh();
+  }
+  openEditDialog(log: any): void {
+    this.selectedTimeLog = log;
+    this.editDescriptionText = log.description || '';
+    this.showEditDialog = true;
+  }
+
+  saveDescription(): void {
+    if (!this.selectedTimeLog || !this.editDescriptionText) return;
+
+    this.loading = true;
+    this.timeLogService.updateTimeLogDescription(this.selectedTimeLog.id, this.editDescriptionText).subscribe({
+      next: (updatedLog) => {
+        this.selectedTimeLog.description = updatedLog.description;
+        this.showEditDialog = false;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  deleteTimeLog(log: any): void {
+    if (confirm('Are you sure you want to delete this time log?')) {
+      this.loading = true;
+      this.timeLogService.deleteTimeLog(log.id).subscribe({
+        next: () => {
+          this.timeLogs = this.timeLogs.filter(l => l.id !== log.id);
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        }
+      });
+    }
   }
 }

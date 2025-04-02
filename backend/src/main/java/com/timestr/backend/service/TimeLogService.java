@@ -5,6 +5,8 @@
     import com.timestr.backend.repository.TaskRepository;
     import com.timestr.backend.repository.TimeLogRepository;
     import com.timestr.backend.repository.UserRepository;
+    import jakarta.persistence.EntityNotFoundException;
+    import jakarta.transaction.Transactional;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
     import org.springframework.beans.factory.annotation.Autowired;
@@ -134,5 +136,23 @@
 
         public List<TimeLog> getTimeLogsByProjectAndUser(UUID projectId, UUID userId) {
             return timeLogRepository.findByProjectIdAndUserIdOrderByStartTimeDesc(projectId, userId);
+        }
+
+        @Transactional
+        public TimeLog linkTimeLogToTask(UUID timeLogId, UUID taskId) {
+            TimeLog timeLog = timeLogRepository.findById(timeLogId)
+                    .orElseThrow(() -> new EntityNotFoundException("Time log not found"));
+
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new EntityNotFoundException("Task not found"));
+
+            timeLog.setTask(task);
+
+            return timeLogRepository.save(timeLog);
+        }
+
+        public TimeLog getTimeLogById(UUID timeLogId) {
+            return timeLogRepository.findById(timeLogId)
+                    .orElseThrow(() -> new EntityNotFoundException("Time log not found"));
         }
     }

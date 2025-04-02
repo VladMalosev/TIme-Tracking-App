@@ -275,4 +275,22 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    @Operation(summary = "Get incomplete tasks for project assigned to user",
+            description = "Retrieves all incomplete tasks for a specific project assigned to specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project or user not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/project/{projectId}/user/{userId}/incomplete")
+    public ResponseEntity<List<Task>> getIncompleteTasksByProjectAndUser(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId,
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID userId) {
+
+        List<Task> tasks = taskService.getIncompleteTasksByProjectAndUser(projectId, userId);
+        return ResponseEntity.ok(tasks);
+    }
+
 }

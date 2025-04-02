@@ -8,14 +8,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import {MatNativeDateModule, MatOption} from '@angular/material/core';
+import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import {TimeLogService} from '../../../../../../services/my-tasks/time-log.service';
-import {ProjectTimeLogListComponent} from './project-time-log-list/project-time-log-list.component';
-import {AuthService} from '../../../../../../core/auth/auth.service';
-import {ProjectContextService} from '../../../../../../services/project-context.service';
-import {MatSelect} from '@angular/material/select';
+import { TimeLogService } from '../../../../../../services/my-tasks/time-log.service';
+import { ProjectTimeLogListComponent } from './project-time-log-list/project-time-log-list.component';
+import { AuthService } from '../../../../../../core/auth/auth.service';
+import { ProjectContextService } from '../../../../../../services/project-context.service';
+import { MatSelect } from '@angular/material/select';
+import {TimeLogFilterService} from '../../../../../../services/my-tasks/time-log-filter.service';
 
 @Component({
   selector: 'app-my-tasks-time-logs',
@@ -30,9 +31,9 @@ import {MatSelect} from '@angular/material/select';
     MatCardModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    ProjectTimeLogListComponent,
     MatSelect,
     MatOption,
+    ProjectTimeLogListComponent,
   ],
   templateUrl: './my-tasks-time-logs.component.html',
   styleUrls: ['./my-tasks-time-logs.component.scss']
@@ -57,13 +58,56 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
   incompleteTasks: any[] = [];
   tasksLoading = false;
 
+  showFilters = false;
+  timeLogs: any[] = [];
+  filteredLogs: any[] = [];
+
   userId: string | null = null;
+
+  private _descriptionFilter = '';
+  private _taskFilter = '';
+  private _dateFrom: Date | null = null;
+  private _dateTo: Date | null = null;
+
+  set descriptionFilter(value: string) {
+    this._descriptionFilter = value;
+    this.applyFilters();
+  }
+  get descriptionFilter(): string {
+    return this._descriptionFilter;
+  }
+
+  set taskFilter(value: string) {
+    this._taskFilter = value;
+    this.applyFilters();
+  }
+  get taskFilter(): string {
+    return this._taskFilter;
+  }
+
+  set dateFrom(value: Date | null) {
+    this._dateFrom = value;
+    this.applyFilters();
+  }
+  get dateFrom(): Date | null {
+    return this._dateFrom;
+  }
+
+  set dateTo(value: Date | null) {
+    this._dateTo = value;
+    this.applyFilters();
+  }
+  get dateTo(): Date | null {
+    return this._dateTo;
+  }
+
 
   constructor(
     private timeLogService: TimeLogService,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private projectContextService: ProjectContextService
+    private projectContextService: ProjectContextService,
+    private timeLogFilterService: TimeLogFilterService
   ) {}
 
   ngOnInit(): void {
@@ -76,6 +120,7 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
           if (userId) {
             this.userId = userId;
             this.loadIncompleteTasks();
+            this.loadTimeLogs();
           }
         });
 
@@ -87,6 +132,72 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
     this.stopTimer();
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+    if (!this.showFilters) {
+      this.resetFilters();
+    }
+  }
+
+  resetFilters(): void {
+    this.descriptionFilter = '';
+    this.taskFilter = '';
+    this.dateFrom = null;
+    this.dateTo = null;
+    this.applyFilters();
+
+    this.timeLogFilterService.notifyFiltersReset();
+  }
+
+  applyFilters(): void {
+    this.filteredLogs = this.timeLogs.filter(log => {
+      if (this.descriptionFilter &&
+        !log.description.toLowerCase().includes(this.descriptionFilter.toLowerCase())) {
+        return false;
+      }
+
+      if (this.taskFilter && (!log.task || log.task.id !== this.taskFilter)) {
+        return false;
+      }
+
+      const logDate = new Date(log.startTime);
+
+      if (this.dateFrom && logDate < this.dateFrom) {
+        return false;
+      }
+
+      if (this.dateTo) {
+        const toDate = new Date(this.dateTo);
+        toDate.setDate(toDate.getDate() + 1);
+        if (logDate > toDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    this.timeLogFilterService.updateFilteredLogs(this.filteredLogs);
+  }
+
+  loadTimeLogs(): void {
+    if (!this.projectId) return;
+
+    this.loading = true;
+    this.timeLogService.getProjectTimeLogs(this.projectId).subscribe({
+      next: (logs) => {
+        this.timeLogs = logs;
+        this.applyFilters();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading time logs:', error);
+        this.errorMessage = 'Failed to load time logs';
+        this.loading = false;
+      }
+    });
   }
 
   startTimer(): void {

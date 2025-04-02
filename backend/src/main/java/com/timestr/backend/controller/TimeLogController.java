@@ -1,7 +1,10 @@
 package com.timestr.backend.controller;
 
-import com.timestr.backend.model.Task;
-import com.timestr.backend.model.TimeLog;
+import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.timestr.backend.model.*;
+import com.timestr.backend.repository.ActivityRepository;
+import com.timestr.backend.repository.TimeLogRepository;
+import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.TaskService;
 import com.timestr.backend.service.TimeLogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
@@ -30,6 +35,15 @@ public class TimeLogController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TimeLogRepository timeLogRepository;
 
     @Operation(summary = "Start a timer", description = "Starts a timer for a specific user and task.")
     @ApiResponses(value = {
@@ -145,6 +159,84 @@ public class TimeLogController {
         return ResponseEntity.ok(timeLogs);
     }
 
+    @PutMapping("/{timeLogId}/link-task")
+    public ResponseEntity<TimeLog> linkTimeLogToTask(
+            @Parameter(description = "ID of the time log to link", required = true)
+            @PathVariable UUID timeLogId,
+            @Parameter(description = "ID of the task to link to", required = true)
+            @RequestParam UUID taskId) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UUID userId = user.getId();
+
+        Task task = taskService.getTaskById(taskId);
+        if (!task.getAssignedTo().getId().equals(userId)) {
+            throw new SecurityException("User is not assigned to this task");
+        }
+
+        TimeLog timeLog = timeLogService.getTimeLogById(timeLogId);
+        if (!timeLog.getProject().getId().equals(task.getProject().getId())) {
+            throw new IllegalArgumentException("Time log and task must belong to the same project");
+        }
+
+        if (timeLog.getTask() != null) {
+            throw new IllegalStateException("Time log is already linked to a task");
+        }
+
+        TimeLog updatedTimeLog = timeLogService.linkTimeLogToTask(timeLogId, taskId);
+
+        Activity activity = new Activity();
+        activity.setProject(task.getProject());
+        activity.setType(ActivityType.TIME_LOG_LINKED);
+        activity.setDescription(String.format(
+                "Time log from %s linked to task '%s'",
+                timeLog.getStartTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                task.getName()
+        ));
+        activity.setCreatedAt(LocalDateTime.now());
+        activity.setUser(user);
+        activityRepository.save(activity);
+
+        return ResponseEntity.ok(updatedTimeLog);
+    }
+
+    @Operation(summary = "Update time log description", description = "Updates the description of a time log")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Description updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Time log not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/{timeLogId}/description")
+    public ResponseEntity<TimeLog> updateTimeLogDescription(
+            @PathVariable UUID timeLogId,
+            @RequestBody Map<String, String> request) {
+
+        String description = request.get("description");
+        if (description == null) {
+            throw new IllegalArgumentException("Description is required");
+        }
+
+        TimeLog timeLog = timeLogService.getTimeLogById(timeLogId);
+        timeLog.setDescription(description);
+        TimeLog updatedTimeLog = timeLogRepository.save(timeLog);
+
+        return ResponseEntity.ok(updatedTimeLog);
+    }
+
+    @Operation(summary = "Delete a time log", description = "Deletes a time log by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Time log deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Time log not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @DeleteMapping("/{timeLogId}")
+    public ResponseEntity<Void> deleteTimeLog(@PathVariable UUID timeLogId) {
+        TimeLog timeLog = timeLogService.getTimeLogById(timeLogId);
+        timeLogRepository.delete(timeLog);
+        return ResponseEntity.noContent().build();
+    }
 
 }

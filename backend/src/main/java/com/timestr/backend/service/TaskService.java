@@ -298,4 +298,12 @@ public class TaskService {
     public List<Task> getIncompleteTasksByProject(UUID projectId) {
         return taskRepository.findByProjectIdAndStatusNot(projectId, TaskStatus.COMPLETED);
     }
+
+    public List<Task> getIncompleteTasksByProjectAndUser(UUID projectId, UUID userId) {
+        return taskRepository.findByProjectIdAndAssignedToIdAndStatusNot(
+                projectId,
+                userId,
+                TaskStatus.COMPLETED
+        );
+    }
 }

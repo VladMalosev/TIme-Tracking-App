@@ -83,11 +83,17 @@
 }
 
 .grouped-view {
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+
   .mat-accordion {
     .mat-expansion-panel {
       margin-bottom: 12px;
       border-radius: 8px !important;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: none;
+      background: none;
+      border: 1px solid #e0e0e0;
 
       .group-header {
         display: flex;
@@ -122,29 +128,23 @@
 .flat-view, .grouped-view {
   table {
     width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
+    margin-top: 10px;
+    border-radius: 10px;
 
-    th.mat-header-cell {
-      background-color: #f5f5f5;
-      color: #3f51b5;
+    th {
+      color: rgba(0, 0, 0, 0.87);
+      color: #4A3AFF;
+      background-color: #fbfbff;
       font-weight: 500;
-      padding: 12px 16px;
-      text-align: left;
+      white-space: nowrap;
     }
 
-    td.mat-cell {
+    td {
       padding: 12px 16px;
-      border-bottom: 1px solid #e0e0e0;
-      vertical-align: middle;
-    }
-
-    tr.mat-row:hover {
-      background-color: #f9f9f9;
     }
 
     .mat-column-actions {
-      width: 60px;
+      width: 80px;
       text-align: center;
     }
   }
@@ -173,3 +173,55 @@ mat-paginator {
     }
   }
 }
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.link-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 24px;
+  border-radius: 4px;
+  z-index: 1001;
+  width: 400px;
+  max-width: 90vw;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+
+.edit-dialog {
+  @extend .link-dialog;
+
+  h3 {
+    margin-top: 0;
+    color: #3f51b5;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+}
+
+
+
+

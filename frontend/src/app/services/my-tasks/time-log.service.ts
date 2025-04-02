@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { BehaviorSubject, Observable, switchMap, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
@@ -122,11 +122,59 @@ export class TimeLogService {
           throw new Error('User ID not available');
         }
         return this.http.get<any[]>(
-          `${environment.apiBaseUrl}/tasks/project/${projectId}/incomplete`,
+          `${environment.apiBaseUrl}/tasks/project/${projectId}/user/${userId}/incomplete`,
           { withCredentials: true }
         );
       })
     );
   }
+
+  linkTimeLogToTask(timeLogId: string, taskId: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.put(
+          `${environment.apiBaseUrl}/timelogs/${timeLogId}/link-task?taskId=${taskId}&userId=${userId}`,
+          {},
+          { withCredentials: true }
+        );
+      })
+    );
+  }
+
+  updateTimeLogDescription(timeLogId: string, description: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.put(
+          `${environment.apiBaseUrl}/timelogs/${timeLogId}/description`,
+          { description },
+          { withCredentials: true }
+        );
+      })
+    );
+  }
+
+  deleteTimeLog(timeLogId: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.delete(
+          `${environment.apiBaseUrl}/timelogs/${timeLogId}`,
+          { withCredentials: true }
+        );
+      })
+    );
+  }
+
 
 }

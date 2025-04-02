@@ -1,1 +1,88 @@
-<p>my-tasks-create-task works!</p>
+<mat-card class="task-card">
+  <mat-card-header>
+    <div mat-card-avatar>
+      <mat-icon>post_add</mat-icon>
+    </div>
+    <mat-card-title>Create Personal Task</mat-card-title>
+    <mat-card-subtitle>Organize your work by creating a new task that will be automatically assigned to you</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+    <form (ngSubmit)="createTask()" class="task-form">
+      <!-- Information Banner -->
+      <div class="info-banner mat-elevation-z1">
+        <mat-icon>info</mat-icon>
+        <span>This task will be immediately assigned to you and visible in your "My Tasks" dashboard</span>
+      </div>
+
+      <!-- Task Name -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Task Name *</mat-label>
+        <input matInput [(ngModel)]="taskName" name="taskName" type="text" required
+               placeholder="e.g., Complete project documentation">
+        <mat-hint>Choose a concise, action-oriented title that clearly describes the task</mat-hint>
+      </mat-form-field>
+
+      <!-- Task Description -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Task Description *</mat-label>
+        <textarea matInput [(ngModel)]="taskDescription" name="taskDescription" required
+                  placeholder="Describe the task objectives, requirements, and expected outcomes"></textarea>
+        <mat-hint>Provide sufficient detail to understand the scope and expectations</mat-hint>
+      </mat-form-field>
+
+      <!-- Task Deadline -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Target Completion Date</mat-label>
+        <input matInput [(ngModel)]="taskDeadline" name="taskDeadline" type="datetime-local"
+               placeholder="yyyy-MM-ddTHH:mm"
+               (change)="validateDeadlineTime(taskDeadline)">
+        <mat-hint>Setting a deadline helps prioritize your work (optional but recommended)</mat-hint>
+        <mat-error *ngIf="timeNotSelectedError">
+          <mat-icon>warning</mat-icon> Please select both date and specific time for the deadline
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Status Information -->
+      <div class="status-notice">
+        <mat-icon class="status-icon">hourglass_top</mat-icon>
+        <div class="status-content">
+          <h4>Initial Status: <strong>PENDING</strong></h4>
+          <p>You can update the status to IN PROGRESS when you start working on it</p>
+        </div>
+      </div>
+
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message mat-elevation-z1">
+        <mat-icon>error_outline</mat-icon>
+        <div class="error-content">
+          <strong>Unable to create task:</strong> {{ errorMessage }}
+        </div>
+      </div>
+      <div class="assignment-notice">
+        <div class="assignment-badge">
+          <mat-icon>verified_user</mat-icon>
+          <span>Automatic Assignment</span>
+        </div>
+        <ul class="notice-points">
+          <li>You will be recorded as the task creator</li>
+          <li>You will be designated as the responsible party</li>
+          <li>All task updates will be attributed to you</li>
+        </ul>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="button-container">
+        <button mat-raised-button type="submit" color="primary" class="submit-button" [disabled]="isLoading">
+          <mat-icon *ngIf="!isLoading">add_task</mat-icon>
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+          {{ isLoading ? 'Creating Task...' : 'Create Task' }}
+        </button>
+
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
