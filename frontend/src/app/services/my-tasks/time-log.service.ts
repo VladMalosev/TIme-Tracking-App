@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { BehaviorSubject, Observable, switchMap, take } from 'rxjs';
+import {BehaviorSubject, map, Observable, of, switchMap, take} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -176,5 +176,39 @@ export class TimeLogService {
     );
   }
 
+  getActiveProjectTimer(projectId: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.get<any>(
+          `${environment.apiBaseUrl}/timelogs/active/project/${projectId}?userId=${userId}`,
+          { withCredentials: true }
+        );
+      })
+    );
+  }
+
+  checkAndCleanActiveProjectTimer(userId: string, projectId: string): Observable<void> {
+    return this.getActiveProjectTimer(projectId).pipe(
+      switchMap(activeLog => {
+        if (!activeLog) {
+          return of(undefined);
+        }
+
+        const startTime = new Date(activeLog.startTime);
+        const hoursRunning = (new Date().getTime() - startTime.getTime()) / (1000 * 60 * 60);
+
+        if (hoursRunning > 24) {
+          return this.deleteTimeLog(activeLog.id).pipe(
+            map(() => undefined)
+          );
+        }
+        return of(undefined);
+      })
+    );
+  }
 
 }

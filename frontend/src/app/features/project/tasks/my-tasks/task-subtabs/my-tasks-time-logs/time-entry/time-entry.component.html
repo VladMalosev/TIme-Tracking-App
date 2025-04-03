@@ -1,0 +1,110 @@
+<div class="time-sections">
+  <!-- Real-time Tracking Section -->
+  <div class="time-tracking-section">
+    <h3>
+      <mat-icon>timer</mat-icon>
+      Real-time Tracking
+    </h3>
+    <p>Use the live timer to automatically record your working sessions. Perfect for active work periods when you want precise, minute-by-minute tracking without manual entry. The timer runs continuously even if you navigate away from this page.</p>
+
+    <div class="stopwatch">
+      <mat-form-field appearance="outline">
+        <mat-label>Connect to Task (optional)</mat-label>
+        <mat-select [(ngModel)]="selectedTaskId" name="selectedTask">
+          <mat-option [value]="null">Track at project level (no specific task)</mat-option>
+          <mat-option *ngFor="let task of incompleteTasks" [value]="task.id">
+            {{ task.name }} ({{ task.status | titlecase }})
+          </mat-option>
+        </mat-select>
+        <mat-hint>Associate this time with a specific task or track at the project level</mat-hint>
+      </mat-form-field>
+
+      <div *ngIf="tasksLoading" class="loading-tasks">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Loading available tasks...</span>
+      </div>
+
+      <div class="timer-display">{{ formatTime(elapsedTime) }}</div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon> {{ errorMessage }}
+      </div>
+
+      <mat-form-field class="work-description" appearance="outline">
+        <mat-label>Work Description</mat-label>
+        <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"
+                  placeholder="Detail the work performed during this period"></textarea>
+        <mat-hint>Be specific (e.g., "Debugging API integration", "Client meeting")</mat-hint>
+      </mat-form-field>
+
+      <div class="controls">
+        <button mat-raised-button color="primary"
+                (click)="startTimer()"
+                [disabled]="isRunning">
+          <mat-icon>play_arrow</mat-icon> Start Timer
+        </button>
+        <button mat-raised-button color="warn"
+                (click)="stopTimer()"
+                [disabled]="!isRunning">
+          <mat-icon>stop</mat-icon> Stop & Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Time Entry Section -->
+  <div class="manual-entry-section">
+    <h3>
+      <mat-icon>schedule</mat-icon>
+      Manual Time Entry
+    </h3>
+    <p>Add time entries for work completed without the timer or to correct previous records. Ideal for meetings, phone calls, or when you forget to start the timer. All entries are logged against your project timeline.</p>
+
+    <form (ngSubmit)="createManualTimeLog()">
+      <mat-form-field appearance="outline">
+        <mat-label>Connect to Task (optional)</mat-label>
+        <mat-select [(ngModel)]="selectedTaskId" name="selectedTask">
+          <mat-option [value]="null">General project work (no task)</mat-option>
+          <mat-option *ngFor="let task of incompleteTasks" [value]="task.id">
+            {{ task.name }} ({{ task.status | titlecase }})
+          </mat-option>
+        </mat-select>
+        <mat-hint>You can assign this time to a task now or update it later</mat-hint>
+      </mat-form-field>
+
+      <div *ngIf="tasksLoading" class="loading-tasks">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Loading available tasks...</span>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Start Time</mat-label>
+          <input matInput type="datetime-local" [(ngModel)]="manualStartTime" name="manualStartTime" required>
+          <mat-hint>When you began working</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>End Time</mat-label>
+          <input matInput type="datetime-local" [(ngModel)]="manualEndTime" name="manualEndTime" required>
+          <mat-hint>When you finished working</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field class="work-description" appearance="outline">
+        <mat-label>Work Description</mat-label>
+        <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"
+                  placeholder="Detail the work performed during this period"></textarea>
+        <mat-hint>Example: "Client requirements analysis", "Code review session"</mat-hint>
+      </mat-form-field>
+
+      <div *ngIf="manualTimeError" class="error-message">
+        <mat-icon>error</mat-icon> {{ manualTimeError }}
+      </div>
+
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>add</mat-icon> Create Time Entry
+      </button>
+    </form>
+  </div>
+</div>

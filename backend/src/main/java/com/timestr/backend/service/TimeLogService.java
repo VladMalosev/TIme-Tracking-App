@@ -56,19 +56,31 @@
                 Task task = taskRepository.findById(taskId)
                         .orElseThrow(() -> new RuntimeException("Task not found"));
                 timeLog.setTask(task);
+
+                if (task.getStatus() == TaskStatus.PENDING || task.getStatus() == TaskStatus.ASSIGNED) {
+                    task.setStatus(TaskStatus.IN_PROGRESS);
+                    taskRepository.save(task);
+                }
             }
+
 
             timeLog.setStartTime(LocalDateTime.now());
             timeLog.setDescription(description != null ? description : "");
             return timeLogRepository.save(timeLog);
         }
 
+        @Transactional
         public TimeLog stopTimer(UUID userId) {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             TimeLog timeLog = timeLogRepository.findFirstByUserAndEndTimeIsNullOrderByStartTimeDesc(user)
                     .orElseThrow(() -> new RuntimeException("No active timer found"));
+
+            if (Duration.between(timeLog.getStartTime(), LocalDateTime.now()).toHours() > 24) {
+                timeLogRepository.delete(timeLog);
+                throw new IllegalStateException("Old active timer was cleaned up");
+            }
 
             timeLog.setEndTime(LocalDateTime.now());
             long minutes = Duration.between(timeLog.getStartTime(), timeLog.getEndTime()).toMinutes();
@@ -100,6 +112,11 @@
                 Task task = taskRepository.findById(taskId)
                         .orElseThrow(() -> new RuntimeException("Task not found"));
                 timeLog.setTask(task);
+
+                if (task.getStatus() == TaskStatus.PENDING || task.getStatus() == TaskStatus.ASSIGNED) {
+                    task.setStatus(TaskStatus.IN_PROGRESS);
+                    taskRepository.save(task);
+                }
             }
 
             timeLog.setStartTime(startTime);
@@ -154,5 +171,23 @@
         public TimeLog getTimeLogById(UUID timeLogId) {
             return timeLogRepository.findById(timeLogId)
                     .orElseThrow(() -> new EntityNotFoundException("Time log not found"));
+        }
+
+        public TimeLog getActiveTimeLog(UUID userId, UUID taskId) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (taskId != null) {
+                return timeLogRepository.findByUserAndTaskIdAndEndTimeIsNull(user, taskId)
+                        .orElse(null);
+            } else {
+                return timeLogRepository.findFirstByUserAndEndTimeIsNullOrderByStartTimeDesc(user)
+                        .orElse(null);
+            }
+        }
+
+        public TimeLog getActiveProjectTimeLog(UUID userId, UUID projectId) {
+            return timeLogRepository.findByUserIdAndProjectIdAndEndTimeIsNull(userId, projectId)
+                    .orElse(null);
         }
     }

@@ -123,4 +123,9 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
             "ORDER BY FUNCTION('date_part', 'dow', t.loggedAt)")
     List<Map<String, Object>> findLogCreationDailyDistribution(@Param("userId") UUID userId,
                                                                @Param("projectId") UUID projectId);
+
+    Optional<TimeLog> findByUserAndTaskIdAndEndTimeIsNull(User user, UUID taskId);
+
+    @Query("SELECT t FROM TimeLog t WHERE t.user.id = :userId AND t.project.id = :projectId AND t.endTime IS NULL")
+    Optional<TimeLog> findByUserIdAndProjectIdAndEndTimeIsNull(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
 }

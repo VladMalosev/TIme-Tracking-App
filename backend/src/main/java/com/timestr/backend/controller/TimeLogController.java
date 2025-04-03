@@ -228,15 +228,24 @@ public class TimeLogController {
         return ResponseEntity.ok(updatedTimeLog);
     }
 
-    @Operation(summary = "Delete a time log", description = "Deletes a time log by its ID")
+    @Operation(summary = "Delete stale time log", description = "Deletes a stale time log")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Time log deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Time log not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Time log not found")
     })
     @DeleteMapping("/{timeLogId}")
     public ResponseEntity<Void> deleteTimeLog(@PathVariable UUID timeLogId) {
         TimeLog timeLog = timeLogService.getTimeLogById(timeLogId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!timeLog.getUser().getId().equals(user.getId())) {
+            throw new SecurityException("Cannot delete another user's time log");
+        }
+
         timeLogRepository.delete(timeLog);
         return ResponseEntity.noContent().build();
     }
@@ -284,6 +293,41 @@ public class TimeLogController {
         }
 
         return totalMinutes / weeksBetween;
+    }
+
+    @Operation(summary = "Get active time log", description = "Retrieves the active time log for a specific user and task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Active time log retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No active time log found")
+    })
+    @GetMapping("/active")
+    public ResponseEntity<?> getActiveTimeLog(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID taskId) {
+
+        TimeLog activeTimeLog = timeLogService.getActiveTimeLog(userId, taskId);
+        if (activeTimeLog == null) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok(activeTimeLog);
+    }
+
+    @Operation(summary = "Get active time log for project",
+            description = "Retrieves the active time log for a specific user and project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Active time log retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No active time log found")
+    })
+    @GetMapping("/active/project/{projectId}")
+    public ResponseEntity<?> getActiveProjectTimeLog(
+            @PathVariable UUID projectId,
+            @RequestParam UUID userId) {
+
+        TimeLog activeTimeLog = timeLogService.getActiveProjectTimeLog(userId, projectId);
+        if (activeTimeLog == null) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok(activeTimeLog);
     }
 
 

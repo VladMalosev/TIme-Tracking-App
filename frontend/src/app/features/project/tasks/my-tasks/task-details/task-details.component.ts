@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import {Observable, of, Subscription, switchMap, take} from 'rxjs';
 import { TaskAssignmentService } from '../../../../../services/project-tasks/task-assignment.service';
 import { TaskSelectionService } from '../../../../../services/my-tasks/task-selection.service';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {TimeLogListComponent} from './time-log-list/time-log-list.component';
 import {ProjectContextService} from '../../../../../services/project-context.service';
+import {TimeTrackingService} from '../../../../../services/time-tracking.service';
 
 @Component({
   selector: 'app-task-details',
@@ -59,7 +60,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   constructor(
     private taskAssignmentService: TaskAssignmentService,
     private taskSelectionService: TaskSelectionService,
-    private projectContextService: ProjectContextService
+    private projectContextService: ProjectContextService,
+    private timeTrackingService: TimeTrackingService
   ) {}
 
   ngOnInit(): void {
@@ -69,10 +71,49 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
     this.taskSubscription = this.taskSelectionService.selectedTaskId$.subscribe(taskId => {
       if (taskId) {
-        this.loadTaskDetails(taskId);
+        this.taskAssignmentService.userId$.pipe(
+          take(1),
+          switchMap(userId => {
+            if (!userId) return of(null);
+            return this.timeTrackingService.checkAndCleanActiveTimer(userId);
+          }),
+          switchMap(() => {
+            this.loadTaskDetails(taskId);
+            return this.checkActiveTimer(taskId);
+          })
+        ).subscribe();
       } else {
         this.task = null;
+        this.stopTimer();
       }
+    });
+  }
+
+  private checkActiveTimer(taskId: string): Observable<void> {
+    return new Observable<void>(subscriber => {
+      this.timeTrackingService.getActiveTimeLog(taskId).subscribe({
+        next: (timeLog) => {
+          if (timeLog) {
+            const startTime = new Date(timeLog.startTime);
+            this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+            this.isRunning = true;
+            this.timerInterval = setInterval(() => {
+              this.elapsedTime++;
+            }, 1000);
+          }
+          subscriber.next();
+          subscriber.complete();
+        },
+        error: (error) => {
+          console.error('Error checking active timer:', error);
+          if (error.status !== 404) {
+            subscriber.error(error);
+          } else {
+            subscriber.next();
+            subscriber.complete();
+          }
+        }
+      });
     });
   }
 
@@ -116,7 +157,6 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
 
   startTimer(): void {
-
     if (!this.isRunning && this.task && this.projectId) {
       this.isRunning = true;
       const startTime = new Date();
@@ -124,12 +164,19 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
         this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
       }, 1000);
 
-      this.taskAssignmentService.startTimeLog(
+      this.timeTrackingService.startTimeLog(
         this.projectId,
         this.task.id,
         this.description
       ).subscribe({
-        next: () => console.log('Timer started successfully'),
+        next: (response) => {
+          console.log('Timer started successfully');
+
+          if (this.task.status === this.TASK_STATUS.PENDING ||
+            this.task.status === this.TASK_STATUS.ASSIGNED) {
+            this.task.status = this.TASK_STATUS.IN_PROGRESS;
+          }
+        },
         error: (error) => {
           console.error('Error starting timer:', error);
           this.errorMessage = error.error?.message || error.message || 'Failed to start timer';
@@ -141,12 +188,13 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+
   stopTimer(): void {
-    if (this.isRunning && this.task) {
+    if (this.isRunning) {
       this.isRunning = false;
       clearInterval(this.timerInterval);
 
-      this.taskAssignmentService.stopTimeLog(this.task.id).subscribe({
+      this.timeTrackingService.stopTimeLog(this.task.id).subscribe({
         next: () => {
           console.log('Timer stopped successfully');
           this.elapsedTime = 0;
@@ -155,6 +203,11 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error stopping timer:', error);
           this.errorMessage = 'Failed to stop timer';
+          this.isRunning = true;
+          const startTime = new Date(new Date().getTime() - this.elapsedTime * 1000);
+          this.timerInterval = setInterval(() => {
+            this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+          }, 1000);
         }
       });
     }
@@ -212,7 +265,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.taskAssignmentService.createManualTimeLog(
+    this.timeTrackingService.createManualTimeLog(
       this.task.id,
       startTime,
       endTime,
@@ -224,6 +277,12 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
         this.manualStartTime = '';
         this.manualEndTime = '';
         this.manualDescription = '';
+
+        if (this.task.status === this.TASK_STATUS.PENDING ||
+          this.task.status === this.TASK_STATUS.ASSIGNED) {
+          this.task.status = this.TASK_STATUS.IN_PROGRESS;
+        }
+
         this.taskSelectionService.triggerTimeLogsRefresh();
       },
       error: (error) => {

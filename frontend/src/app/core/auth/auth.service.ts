@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {Observable, map, tap, catchError, BehaviorSubject} from 'rxjs';
+import {Observable, map, tap, catchError, BehaviorSubject, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -8,10 +8,12 @@ import {Observable, map, tap, catchError, BehaviorSubject} from 'rxjs';
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
-  isLoggedIn$ = this.isLoggedInSubject.asObservable();
-  constructor(private http: HttpClient) {}
   private userIdSubject = new BehaviorSubject<string | null>(null);
+
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
   userId$ = this.userIdSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
 
 
   isAuthenticated(): Observable<boolean> {
@@ -23,9 +25,18 @@ export class AuthService {
 
   checkAuthentication(): void {
     this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).pipe(
-      map(response => !!response.email),
-      catchError(() => [false])
-    ).subscribe(isLoggedIn => this.isLoggedInSubject.next(isLoggedIn));
+      tap(response => {
+        this.isLoggedInSubject.next(!!response.email);
+        if (response.userId) {
+          this.userIdSubject.next(response.userId);
+        }
+      }),
+      catchError(() => {
+        this.isLoggedInSubject.next(false);
+        this.userIdSubject.next(null);
+        return of(false);
+      })
+    ).subscribe();
   }
 
   register(userData: any): Observable<any> {
@@ -34,7 +45,12 @@ export class AuthService {
 
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials, { withCredentials: true }).pipe(
-      tap(() => this.checkAuthentication())
+      tap((response: any) => {
+        this.isLoggedInSubject.next(true);
+        if (response.userId) {
+          this.userIdSubject.next(response.userId);
+        }
+      })
     );
   }
 

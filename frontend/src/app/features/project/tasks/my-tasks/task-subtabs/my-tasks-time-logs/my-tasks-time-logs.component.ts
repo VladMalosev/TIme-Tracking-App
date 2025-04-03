@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import {of, Subscription, switchMap, take} from 'rxjs';
 import { TimeLogService } from '../../../../../../services/my-tasks/time-log.service';
 import { ProjectTimeLogListComponent } from './project-time-log-list/project-time-log-list.component';
 import { AuthService } from '../../../../../../core/auth/auth.service';
@@ -116,11 +116,21 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       if (this.projectId) {
         this.projectContextService.setCurrentProjectId(this.projectId);
 
-        this.userSub = this.authService.userId$.subscribe(userId => {
-          if (userId) {
+        this.userSub = this.authService.userId$.pipe(
+          take(1),
+          switchMap(userId => {
+            if (!userId) return of(null);
             this.userId = userId;
+            return this.timeLogService.checkAndCleanActiveProjectTimer(userId, this.projectId!);
+          })
+        ).subscribe({
+          next: () => {
             this.loadIncompleteTasks();
             this.loadTimeLogs();
+            this.checkActiveTimer();
+          },
+          error: (error) => {
+            console.error('Error initializing time logs:', error);
           }
         });
 
@@ -133,6 +143,27 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     this.routeSub?.unsubscribe();
     this.stopTimer();
   }
+
+  private checkActiveTimer(): void {
+    if (!this.projectId || !this.userId) return;
+
+    this.timeLogService.getActiveProjectTimer(this.projectId).subscribe({
+      next: (timeLog) => {
+        if (timeLog) {
+          const startTime = new Date(timeLog.startTime);
+          this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+          this.isRunning = true;
+          this.timerInterval = setInterval(() => {
+            this.elapsedTime++;
+          }, 1000);
+        }
+      },
+      error: (error) => {
+        console.error('Error checking active timer:', error);
+      }
+    });
+  }
+
 
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
@@ -203,6 +234,10 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
   startTimer(): void {
     if (!this.isRunning && this.projectId) {
       const startTime = new Date();
+      this.isRunning = true;
+      this.timerInterval = setInterval(() => {
+        this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+      }, 1000);
 
       this.timeLogService.startProjectTimer(
         this.projectId,
@@ -211,22 +246,17 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       ).subscribe({
         next: () => {
           console.log('Project timer started');
-
-          this.isRunning = true;
-          this.timerInterval = setInterval(() => {
-            this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-          }, 1000);
-
         },
         error: (error) => {
           console.error('Error starting project timer:', error);
           this.errorMessage = error.message || 'Failed to start timer';
+          this.isRunning = false;
+          clearInterval(this.timerInterval);
           this.elapsedTime = 0;
         }
       });
     }
   }
-
 
   stopTimer(): void {
     if (this.isRunning && this.projectId) {
@@ -237,10 +267,16 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
         next: () => {
           console.log('Project timer stopped');
           this.elapsedTime = 0;
+          this.loadTimeLogs();
         },
         error: (error) => {
           console.error('Error stopping project timer:', error);
           this.errorMessage = 'Failed to stop timer';
+          this.isRunning = true;
+          const startTime = new Date(new Date().getTime() - this.elapsedTime * 1000);
+          this.timerInterval = setInterval(() => {
+            this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+          }, 1000);
         }
       });
     }
