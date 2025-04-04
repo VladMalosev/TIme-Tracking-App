@@ -23,7 +23,7 @@ public enum Role {
             "TIME_LOG_DELETE",
             "TIME_LOG_VIEW_ALL",
             "REPORT_GENERATE"
-    )),
+    ), 4),
     ADMIN(Set.of(
             "WORKSPACE_UPDATE",
             "WORKSPACE_ADD_USER",
@@ -40,7 +40,7 @@ public enum Role {
             "TIME_LOG_DELETE",
             "TIME_LOG_VIEW_ALL",
             "REPORT_GENERATE"
-    )),
+    ), 3),
     MANAGER(Set.of(
             "PROJECT_CREATE",
             "PROJECT_UPDATE",
@@ -53,21 +53,23 @@ public enum Role {
             "TIME_LOG_DELETE",
             "TIME_LOG_VIEW_ALL",
             "REPORT_GENERATE"
-    )),
+    ), 2),
     USER(Set.of(
             "PROJECT_VIEW",
             "TASK_VIEW",
             "TIME_LOG_CREATE"
-    ));
+    ), 1);
 
     private final Set<String> permissions;
+    private final int hierarchy;
 
-    Role(Set<String> permissions) {
+    Role(Set<String> permissions, int hierarchy) {
         this.permissions = permissions;
+        this.hierarchy = hierarchy;
     }
 
     public Set<String> getPermissions() {
-        return permissions;
+        return Collections.unmodifiableSet(permissions);
     }
 
     public boolean hasPermission(String permission) {
@@ -76,5 +78,21 @@ public enum Role {
 
     public Set<SimpleGrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + this.name()));
+    }
+
+    public int getHierarchy() {
+        return hierarchy;
+    }
+
+    public boolean isHigherThan(Role other) {
+        return this.hierarchy > other.hierarchy;
+    }
+
+    public boolean isAtLeast(Role other) {
+        return this.hierarchy >= other.hierarchy;
+    }
+
+    public String getDisplayName() {
+        return this.name().charAt(0) + this.name().substring(1).toLowerCase();
     }
 }

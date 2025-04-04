@@ -9,9 +9,9 @@ public class RoleUtils {
             case OWNER:
                 return true;
             case ADMIN:
-                return newRole == Role.MANAGER || newRole == Role.USER;
+                return newRole == Role.ADMIN || newRole == Role.MANAGER || newRole == Role.USER;
             case MANAGER:
-                return newRole == Role.USER;
+                return newRole == Role.MANAGER || newRole == Role.USER;
             default:
                 return false;
         }
@@ -28,5 +28,21 @@ public class RoleUtils {
             default:
                 return false;
         }
+    }
+
+    public static boolean canChangeRole(Role currentRole, Role targetCurrentRole, Role newRole) {
+        if (currentRole == targetCurrentRole) {
+            return false;
+        }
+
+        if (currentRole == Role.OWNER) {
+            return true;
+        }
+
+        if (currentRole.getHierarchy() <= targetCurrentRole.getHierarchy()) {
+            return false;
+        }
+
+        return canAssignRole(currentRole, newRole);
     }
 }

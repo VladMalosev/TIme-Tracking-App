@@ -56,6 +56,9 @@ public class ProjectController {
     @Autowired
     private WorkspaceUserRepository workspaceUserRepository;
 
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+
     @Operation(summary = "Create a new project", description = "Creates a new project in the user's workspace.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Project created successfully"),
@@ -287,8 +290,8 @@ public class ProjectController {
             @PathVariable UUID collaboratorId) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-        User currentUser = userRepository.findByEmail(userEmail)
+        String currentUserEmail = authentication.getName();
+        User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Project project = projectRepository.findById(projectId)
@@ -307,6 +310,19 @@ public class ProjectController {
         if (!RoleUtils.canRemoveCollaborator(currentProjectUser.getRole(), collaboratorToRemove.getRole())) {
             throw new RuntimeException("You do not have permission to remove this collaborator");
         }
+
+        Activity activity = new Activity();
+        activity.setProject(project);
+        activity.setUser(currentUser);
+        activity.setType(ActivityType.USER_REMOVED);
+        activity.setDescription(String.format(
+                "User %s removed %s from project %s",
+                currentUser.getName(),
+                collaboratorToRemove.getUser().getName(),
+                project.getName()
+        ));
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
 
         projectUserRepository.deleteById(collaboratorId);
 
@@ -548,4 +564,118 @@ public class ProjectController {
 
         return ResponseEntity.ok(projects);
     }
+
+
+    @Operation(summary = "Change collaborator role",
+            description = "Changes a collaborator's role in a project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Role changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid role change request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User doesn't have permission to change roles"),
+            @ApiResponse(responseCode = "404", description = "Project or user not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/{projectId}/collaborators/{collaboratorId}/role")
+    public ResponseEntity<ProjectUser> changeCollaboratorRole(
+            @PathVariable UUID projectId,
+            @PathVariable UUID collaboratorId,
+            @RequestParam Role newRole) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        ProjectUser currentProjectUser = projectUserRepository.findByUserIdAndProjectId(currentUser.getId(), projectId)
+                .orElseThrow(() -> new RuntimeException("Current user is not a member of this project"));
+
+        ProjectUser collaboratorToUpdate = projectUserRepository.findById(collaboratorId)
+                .orElseThrow(() -> new RuntimeException("Collaborator not found"));
+
+        if (!collaboratorToUpdate.getProject().getId().equals(projectId)) {
+            throw new RuntimeException("Collaborator does not belong to this project");
+        }
+
+        if (!RoleUtils.canChangeRole(currentProjectUser.getRole(), collaboratorToUpdate.getRole(), newRole)) {
+            throw new RuntimeException("You don't have permission to perform this role change");
+        }
+
+        if (!RoleUtils.canAssignRole(currentProjectUser.getRole(), newRole)) {
+            throw new RuntimeException("You don't have permission to assign this role");
+        }
+
+        if (collaboratorToUpdate.getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("You cannot change your own role");
+        }
+
+        Role oldRole = collaboratorToUpdate.getRole();
+        collaboratorToUpdate.setRole(newRole);
+        collaboratorToUpdate.setUpdatedAt(LocalDateTime.now());
+        projectUserRepository.save(collaboratorToUpdate);
+
+        Activity activity = new Activity();
+        activity.setProject(project);
+        activity.setUser(currentUser);
+        activity.setType(ActivityType.ROLE_CHANGED);
+        activity.setDescription(String.format(
+                "User %s changed role of %s from %s to %s in project %s",
+                currentUser.getName(),
+                collaboratorToUpdate.getUser().getName(),
+                oldRole,
+                newRole,
+                project.getName()
+        ));
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.ROLE_CHANGED);
+        auditLog.setPerformedBy(currentUser);
+        auditLog.setTargetUser(collaboratorToUpdate.getUser());
+        auditLog.setProject(project);
+        auditLog.setOldValue(oldRole.name());
+        auditLog.setNewValue(newRole.name());
+        auditLog.setDescription(activity.getDescription());
+        auditLogRepository.save(auditLog);
+
+        return ResponseEntity.ok(collaboratorToUpdate);
+    }
+
+
+    @Operation(summary = "Get role change history for project",
+            description = "Retrieves history of role changes for a specific project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "History retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User doesn't have permission to view history"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{projectId}/role-changes")
+    public ResponseEntity<List<Activity>> getRoleChangeHistory(
+            @PathVariable UUID projectId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        ProjectUser currentProjectUser = projectUserRepository.findByUserIdAndProjectId(currentUser.getId(), projectId)
+                .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
+
+        if (currentProjectUser.getRole() != Role.OWNER && currentProjectUser.getRole() != Role.ADMIN) {
+            throw new RuntimeException("You don't have permission to view this history");
+        }
+
+        List<Activity> roleChanges = activityRepository.findByProjectIdAndTypeOrderByCreatedAtDesc(
+                projectId, ActivityType.ROLE_CHANGED);
+
+        return ResponseEntity.ok(roleChanges);
+    }
+
 }

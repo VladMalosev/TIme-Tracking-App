@@ -1,0 +1,23 @@
+<div class="change-role-dialog">
+  <h2 mat-dialog-title>Change Role for {{ memberName }}</h2>
+
+  <mat-dialog-content>
+    <div class="current-role">
+      <p><strong>Current Role:</strong> {{ currentRole }}</p>
+    </div>
+
+    <mat-form-field appearance="outline" class="role-select">
+      <mat-label>Select New Role</mat-label>
+      <mat-select [(value)]="selectedRole" (selectionChange)="onRoleChange($event)">
+        <mat-option *ngFor="let role of getAvailableRoles()" [value]="role">
+          {{ role }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()">Save Changes</button>
+  </mat-dialog-actions>
+</div>
