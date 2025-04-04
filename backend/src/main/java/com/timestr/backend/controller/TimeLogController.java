@@ -330,5 +330,38 @@ public class TimeLogController {
         return ResponseEntity.ok(activeTimeLog);
     }
 
+    @Operation(summary = "Update timer heartbeat",
+            description = "Updates the last active time for a running timer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Heartbeat updated"),
+            @ApiResponse(responseCode = "404", description = "No active timer found")
+    })
+    @PostMapping("/heartbeat")
+    public ResponseEntity<Void> updateTimerHeartbeat(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID projectId) {
+
+        timeLogService.updateTimerHeartbeat(userId, projectId);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @Operation(summary = "Get timer duration",
+            description = "Gets the current duration of an active timer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Duration retrieved"),
+            @ApiResponse(responseCode = "404", description = "No active timer found")
+    })
+    @GetMapping("/duration")
+    public ResponseEntity<Long> getTimerDuration(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) UUID projectId) {
+
+        TimeLog activeTimer = timeLogService.getActiveProjectTimeLog(userId, projectId);
+        if (activeTimer == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(timeLogService.calculateCurrentDuration(activeTimer));
+    }
 
 }

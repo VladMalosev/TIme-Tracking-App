@@ -34,6 +34,9 @@ public class TimeLog {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "last_heartbeat")
+    private LocalDateTime lastHeartbeat;
+
     @Column
     private Integer minutes;
 
@@ -52,6 +55,11 @@ public class TimeLog {
 
     @PreUpdate
     public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateHeartbeat() {
+        this.lastHeartbeat = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -141,5 +149,15 @@ public class TimeLog {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public LocalDateTime getLastHeartbeat() {
+        return lastHeartbeat;
+    }
+
+    public void setLastHeartbeat(LocalDateTime now) {
+
+
+
     }
 }

@@ -128,4 +128,6 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
 
     @Query("SELECT t FROM TimeLog t WHERE t.user.id = :userId AND t.project.id = :projectId AND t.endTime IS NULL")
     Optional<TimeLog> findByUserIdAndProjectIdAndEndTimeIsNull(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
+
+
 }

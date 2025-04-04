@@ -17,6 +17,8 @@ import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ProjectContextService } from '../../../../../../services/project-context.service';
 import { MatSelect } from '@angular/material/select';
 import {TimeLogFilterService} from '../../../../../../services/my-tasks/time-log-filter.service';
+import {TimeEntryComponent} from './time-entry/time-entry.component';
+import {TimeEntryStateService} from '../../../../../../services/my-tasks/time-entry-state.service';
 
 @Component({
   selector: 'app-my-tasks-time-logs',
@@ -34,6 +36,7 @@ import {TimeLogFilterService} from '../../../../../../services/my-tasks/time-log
     MatSelect,
     MatOption,
     ProjectTimeLogListComponent,
+    TimeEntryComponent,
   ],
   templateUrl: './my-tasks-time-logs.component.html',
   styleUrls: ['./my-tasks-time-logs.component.scss']
@@ -107,6 +110,7 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private projectContextService: ProjectContextService,
+    private timeEntryState: TimeEntryStateService,
     private timeLogFilterService: TimeLogFilterService
   ) {}
 
@@ -114,6 +118,7 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     this.routeSub = this.route.paramMap.subscribe(params => {
       this.projectId = params.get('id');
       if (this.projectId) {
+        this.timeEntryState.setProjectId(this.projectId);
         this.projectContextService.setCurrentProjectId(this.projectId);
 
         this.userSub = this.authService.userId$.pipe(
@@ -121,13 +126,13 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
           switchMap(userId => {
             if (!userId) return of(null);
             this.userId = userId;
-            return this.timeLogService.checkAndCleanActiveProjectTimer(userId, this.projectId!);
+            this.timeEntryState.setUserId(userId);
+            return of(undefined);
           })
         ).subscribe({
           next: () => {
             this.loadIncompleteTasks();
             this.loadTimeLogs();
-            this.checkActiveTimer();
           },
           error: (error) => {
             console.error('Error initializing time logs:', error);
@@ -138,7 +143,6 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
     this.stopTimer();
@@ -231,32 +235,6 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
     });
   }
 
-  startTimer(): void {
-    if (!this.isRunning && this.projectId) {
-      const startTime = new Date();
-      this.isRunning = true;
-      this.timerInterval = setInterval(() => {
-        this.elapsedTime = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-      }, 1000);
-
-      this.timeLogService.startProjectTimer(
-        this.projectId,
-        this.description,
-        this.selectedTaskId || undefined
-      ).subscribe({
-        next: () => {
-          console.log('Project timer started');
-        },
-        error: (error) => {
-          console.error('Error starting project timer:', error);
-          this.errorMessage = error.message || 'Failed to start timer';
-          this.isRunning = false;
-          clearInterval(this.timerInterval);
-          this.elapsedTime = 0;
-        }
-      });
-    }
-  }
 
   stopTimer(): void {
     if (this.isRunning && this.projectId) {
@@ -343,16 +321,17 @@ export class MyTasksTimeLogsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.tasksLoading = true;
+    this.timeEntryState.setTasksLoading(true);
     this.timeLogService.getIncompleteTasks(this.projectId).subscribe({
       next: (tasks) => {
         console.log('Loaded tasks:', tasks);
         this.incompleteTasks = tasks;
-        this.tasksLoading = false;
+        this.timeEntryState.setIncompleteTasks(tasks);
+        this.timeEntryState.setTasksLoading(false);
       },
       error: (error) => {
         console.error('Error loading tasks:', error);
-        this.tasksLoading = false;
+        this.timeEntryState.setTasksLoading(false);
       }
     });
   }

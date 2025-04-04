@@ -1,3 +1,4 @@
+<!-- time-entry.component.html -->
 <div class="time-sections">
   <!-- Real-time Tracking Section -->
   <div class="time-tracking-section">
@@ -26,6 +27,7 @@
 
       <div class="timer-display">{{ formatTime(elapsedTime) }}</div>
 
+
       <div *ngIf="errorMessage" class="error-message">
         <mat-icon>error</mat-icon> {{ errorMessage }}
       </div>
@@ -37,10 +39,11 @@
         <mat-hint>Be specific (e.g., "Debugging API integration", "Client meeting")</mat-hint>
       </mat-form-field>
 
+
       <div class="controls">
         <button mat-raised-button color="primary"
                 (click)="startTimer()"
-                [disabled]="isRunning">
+                [disabled]="isRunning || tasksLoading">
           <mat-icon>play_arrow</mat-icon> Start Timer
         </button>
         <button mat-raised-button color="warn"
@@ -49,6 +52,7 @@
           <mat-icon>stop</mat-icon> Stop & Save
         </button>
       </div>
+
     </div>
   </div>
 

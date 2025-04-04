@@ -191,24 +191,43 @@ export class TimeLogService {
     );
   }
 
-  checkAndCleanActiveProjectTimer(userId: string, projectId: string): Observable<void> {
-    return this.getActiveProjectTimer(projectId).pipe(
-      switchMap(activeLog => {
-        if (!activeLog) {
-          return of(undefined);
-        }
 
-        const startTime = new Date(activeLog.startTime);
-        const hoursRunning = (new Date().getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
-        if (hoursRunning > 24) {
-          return this.deleteTimeLog(activeLog.id).pipe(
-            map(() => undefined)
-          );
+  updateTimerHeartbeat(userId: string, projectId: string): Observable<any> {
+    return this.http.post(
+      `${environment.apiBaseUrl}/timelogs/heartbeat`,
+      null,
+      {
+        params: {
+          userId,
+          projectId
+        },
+        withCredentials: true
+      }
+    );
+  }
+
+
+
+  getTimerDuration(userId: string, projectId: string): Observable<number> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
         }
-        return of(undefined);
+        return this.http.get<number>(
+          `${environment.apiBaseUrl}/timelogs/duration`,
+          {
+            params: { userId, projectId },
+            withCredentials: true
+          }
+        );
       })
     );
   }
+
+
+
 
 }
