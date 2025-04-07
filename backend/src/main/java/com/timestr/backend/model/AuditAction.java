@@ -5,5 +5,7 @@ public enum AuditAction {
     USER_REMOVED,
     USER_INVITED,
     USER_JOINED,
-    USER_LEFT
+    USER_LEFT,
+    USER_REJECTED_INVITATION,
+    INVITATION_REVOKED
 }

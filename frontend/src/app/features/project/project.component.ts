@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 import { ProjectMembersComponent } from './project-members/project-members.component';
 import { ProjectTasksComponent } from './tasks/project-tasks/project-tasks.component';
 import { FormsModule } from '@angular/forms';
@@ -14,13 +14,41 @@ import {InvitationsService} from '../../services/project-tasks/invitations.servi
 import {TaskAssignmentService} from '../../services/project-tasks/task-assignment.service';
 import {MyTasksComponent} from './tasks/my-tasks/my-tasks.component';
 import {ProjectContextService} from '../../services/project-context.service';
+import {ProjectDashboardComponent} from './project-dashboard/project-dashboard.component';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCardModule} from '@angular/material/card';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatOptionModule} from '@angular/material/core';
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatIconModule} from '@angular/material/icon';
 
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
-  imports: [CommonModule, FormsModule, ProjectMembersComponent, ProjectTasksComponent, TaskAssignmentComponent, ProjectInvitationsComponent, TaskSubtabsComponent, MyTasksComponent],
-    styleUrls: ['./project.component.css']
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatTabsModule,
+    MatIconModule,
+    ProjectDashboardComponent,
+    ProjectMembersComponent,
+    TaskSubtabsComponent,
+    ProjectTasksComponent,
+    TaskAssignmentComponent,
+    MyTasksComponent,
+    ProjectInvitationsComponent
+  ],
+  styleUrls: ['./project.component.css']
 })
+
 export class ProjectComponent implements OnInit {
     projectId: string | null = null;
     project: any = null;
@@ -188,6 +216,15 @@ export class ProjectComponent implements OnInit {
       queryParams: { tab },
       queryParamsHandling: 'merge'
     });
+  }
+
+
+  canAccessInvitations(): boolean {
+    return ['ADMIN', 'OWNER', 'MANAGER'].includes(this.currentUserRole);
+  }
+
+  canAccessLogs(): boolean {
+    return ['ADMIN', 'OWNER'].includes(this.currentUserRole);
   }
 
 }

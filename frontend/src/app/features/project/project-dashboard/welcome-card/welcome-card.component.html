@@ -1,0 +1,36 @@
+<div class="welcome-card">
+  <div class="welcome-content">
+    <div class="project-badge">{{ projectInitial }}</div>
+    <div>
+      <h1>Welcome to {{ isLoading ? 'Loading...' : projectName }}</h1>
+      <p class="subtitle">{{ projectDescription || 'No description available' }}</p>
+      <div class="project-meta">
+        <span class="meta-item" *ngIf="projectDeadline">
+          <mat-icon>event</mat-icon>
+          Due {{ projectDeadline | date:'mediumDate' }}
+        </span>
+        <span class="meta-item">
+          <mat-icon>people</mat-icon> {{ isLoading ? '...' : (totalMembers || 0) }} members
+        </span>
+        <span class="meta-item">
+          <mat-icon>timer</mat-icon> {{ isLoading ? '...' : (totalHoursLogged || 0) }}h logged
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="welcome-actions">
+    <button mat-raised-button
+            color="accent"
+            class="action-btn primary"
+            (click)="logTime()"
+            [disabled]="isLoading">
+      <mat-icon>add</mat-icon> Log Time
+    </button>
+    <button mat-stroked-button
+            class="action-btn secondary"
+            (click)="viewReports()"
+            [disabled]="isLoading">
+      <mat-icon>insights</mat-icon> Reports
+    </button>
+  </div>
+</div>

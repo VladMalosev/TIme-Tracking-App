@@ -1,0 +1,20 @@
+<div class="card time-card">
+  <h2>Time Tracking</h2>
+  <div class="time-progress">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+    </div>
+    <div class="time-meta">
+      <span>{{ progressPercentage }}% of weekly goal</span>
+      <span>{{ remainingHours }}h remaining</span>
+    </div>
+  </div>
+  <div class="time-actions">
+    <button mat-stroked-button (click)="logTime.emit()">
+      <mat-icon>add</mat-icon> Add Time
+    </button>
+    <button mat-stroked-button (click)="viewTrends.emit()">
+      <mat-icon>show_chart</mat-icon> View Trends
+    </button>
+  </div>
+</div>

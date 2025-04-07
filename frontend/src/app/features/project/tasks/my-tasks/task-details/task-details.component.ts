@@ -265,6 +265,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.timeTrackingService.setProjectId(this.projectId);
+
     this.timeTrackingService.createManualTimeLog(
       this.task.id,
       startTime,

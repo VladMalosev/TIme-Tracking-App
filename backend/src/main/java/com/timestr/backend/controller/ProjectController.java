@@ -235,6 +235,21 @@ public class ProjectController {
         activity.setCreatedAt(LocalDateTime.now());
         activityRepository.save(activity);
 
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.USER_INVITED);
+        auditLog.setPerformedBy(currentUser);
+        auditLog.setTargetUser(invitedUser);
+        auditLog.setProject(project);
+        auditLog.setNewValue(role.name());
+        auditLog.setDescription(String.format(
+                "%s invited %s to project %s with role %s",
+                currentUser.getName(),
+                invitedUser.getName(),
+                project.getName(),
+                role
+        ));
+        auditLogRepository.save(auditLog);
+
         return ResponseEntity.ok(invitation);
     }
 
@@ -323,6 +338,20 @@ public class ProjectController {
         ));
         activity.setCreatedAt(LocalDateTime.now());
         activityRepository.save(activity);
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.USER_REMOVED);
+        auditLog.setPerformedBy(currentUser);
+        auditLog.setTargetUser(collaboratorToRemove.getUser());
+        auditLog.setProject(project);
+        auditLog.setDescription(String.format(
+                "%s removed %s from project %s",
+                currentUser.getName(),
+                collaboratorToRemove.getUser().getName(),
+                project.getName()
+        ));
+        auditLogRepository.save(auditLog);
+
 
         projectUserRepository.deleteById(collaboratorId);
 
@@ -638,7 +667,14 @@ public class ProjectController {
         auditLog.setProject(project);
         auditLog.setOldValue(oldRole.name());
         auditLog.setNewValue(newRole.name());
-        auditLog.setDescription(activity.getDescription());
+        auditLog.setDescription(String.format(
+                "%s changed %s's role from %s to %s in project %s",
+                currentUser.getName(),
+                collaboratorToUpdate.getUser().getName(),
+                oldRole,
+                newRole,
+                project.getName()
+        ));
         auditLogRepository.save(auditLog);
 
         return ResponseEntity.ok(collaboratorToUpdate);
@@ -677,5 +713,63 @@ public class ProjectController {
 
         return ResponseEntity.ok(roleChanges);
     }
+
+    @Operation(summary = "Get member activity logs",
+            description = "Retrieves audit logs for member-related activities in a project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logs retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden: User doesn't have permission to view logs"),
+            @ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{projectId}/member-logs")
+    public ResponseEntity<List<Map<String, Object>>> getMemberActivityLogs(
+            @PathVariable UUID projectId,
+            @RequestParam(required = false) AuditAction action,
+            @RequestParam(defaultValue = "30") int days) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        ProjectUser currentProjectUser = projectUserRepository.findByUserIdAndProjectId(currentUser.getId(), projectId)
+                .orElseThrow(() -> new RuntimeException("User is not part of this project"));
+
+        if (!Arrays.asList(Role.OWNER, Role.ADMIN, Role.MANAGER).contains(currentProjectUser.getRole())) {
+            throw new RuntimeException("You don't have permission to view these logs");
+        }
+
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
+        List<AuditLog> logs;
+
+        if (action != null) {
+            logs = auditLogRepository.findByProjectIdAndActionAndCreatedAtAfterOrderByCreatedAtDesc(
+                    projectId, action, cutoffDate);
+        } else {
+            logs = auditLogRepository.findByProjectIdAndCreatedAtAfterOrderByCreatedAtDesc(
+                    projectId, cutoffDate);
+        }
+
+        List<Map<String, Object>> response = logs.stream().map(log -> {
+            Map<String, Object> logEntry = new HashMap<>();
+            logEntry.put("id", log.getId());
+            logEntry.put("action", log.getAction());
+            logEntry.put("timestamp", log.getCreatedAt());
+            logEntry.put("initiator", log.getPerformedBy() != null ?
+                    Map.of("id", log.getPerformedBy().getId(), "name", log.getPerformedBy().getName()) : null);
+            logEntry.put("targetUser", log.getTargetUser() != null ?
+                    Map.of("id", log.getTargetUser().getId(), "name", log.getTargetUser().getName()) : null);
+            logEntry.put("oldValue", log.getOldValue());
+            logEntry.put("newValue", log.getNewValue());
+            logEntry.put("description", log.getDescription());
+            return logEntry;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }

@@ -1,0 +1,40 @@
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <app-welcome-card></app-welcome-card>
+
+  <!-- Quick Actions -->
+  <app-quick-actions></app-quick-actions>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid">
+    <!-- Tasks Section -->
+    <app-task-list class="task-list"></app-task-list>
+
+    <!-- Project Overview -->
+    <div class="project-overview">
+      <app-stats-card class="stats-card"></app-stats-card>
+    </div>
+  </div>
+  <div class="dashboard-grid2">
+    <!-- Recent Activity -->
+    <app-activity-list class="activity-list"></app-activity-list>
+
+    <!-- Time Tracking -->
+    <app-time-tracking class="time-tracking"></app-time-tracking>
+  </div>
+
+  <!-- Quick Log Modal (keep this in the main component) -->
+  <div class="modal-overlay" *ngIf="showQuickTimeLogModal" (click)="closeQuickTimeLogModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Log Time</h2>
+        <button mat-icon-button (click)="closeQuickTimeLogModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Modal content remains similar but with improved styling -->
+      </div>
+    </div>
+  </div>
+</div>

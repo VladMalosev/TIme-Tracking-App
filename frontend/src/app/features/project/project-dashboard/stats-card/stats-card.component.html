@@ -1,0 +1,25 @@
+<div class="card stats-card">
+  <h2>Project Overview</h2>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-value">{{ totalTasks || 0 }}</div>
+      <div class="stat-label">Total Tasks</div>
+      <mat-icon class="stat-icon">checklist</mat-icon>
+    </div>
+    <div class="stat-item completed">
+      <div class="stat-value">{{ completedTasks || 0 }}</div>
+      <div class="stat-label">Completed</div>
+      <mat-icon class="stat-icon">done_all</mat-icon>
+    </div>
+    <div class="stat-item time">
+      <div class="stat-value">{{ totalHoursLogged || 0 }}h</div>
+      <div class="stat-label">Time Logged</div>
+      <mat-icon class="stat-icon">av_timer</mat-icon>
+    </div>
+    <div class="stat-item deadlines">
+      <div class="stat-value">{{ upcomingDeadlines || 0 }}</div>
+      <div class="stat-label">Deadlines</div>
+      <mat-icon class="stat-icon">notification_important</mat-icon>
+    </div>
+  </div>
+</div>

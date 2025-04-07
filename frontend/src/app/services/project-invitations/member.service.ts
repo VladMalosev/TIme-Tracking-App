@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {BehaviorSubject, Observable, interval, throwError} from 'rxjs';
+import {BehaviorSubject, Observable, interval, throwError, map} from 'rxjs';
 import { tap, switchMap, takeWhile } from 'rxjs/operators';
 import {environment} from '../../../environments/environment';
 
@@ -105,4 +105,9 @@ export class MemberService {
       { withCredentials: true }
     );
   }
+
+  getMemberActivityLogs(projectId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiBaseUrl}/projects/${projectId}/member-logs`, { withCredentials: true });
+  }
+
 }

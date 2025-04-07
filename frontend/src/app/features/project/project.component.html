@@ -13,10 +13,10 @@
           <li>
             <a (click)="setActiveTab('tasks')" [class.active]="activeTab === 'tasks'">Tasks</a>
           </li>
-          <li>
+          <li *ngIf="canAccessInvitations()">
             <a (click)="setActiveTab('invitations')" [class.active]="activeTab === 'invitations'">Invitations</a>
           </li>
-          <li>
+          <li *ngIf="canAccessLogs()">
             <a (click)="setActiveTab('time-logs')" [class.active]="activeTab === 'time-logs'">Time Logs</a>
           </li>
         </ul>
@@ -26,53 +26,7 @@
         <div class="content-container">
             <!-- Dashboard Tab -->
             <div *ngIf="activeTab === 'dashboard'">
-                <!-- Welcome Message -->
-                <div class="welcome-message">
-                    <h1>Welcome to <strong>{{ project?.name }}</strong></h1>
-                    <p>Here's what's happening in your project today.</p>
-                </div>
-
-                <!-- Project Statistics -->
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <h3>Total Tasks</h3>
-                        <p>{{ projectStats?.totalTasks || 0 }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Completed Tasks</h3>
-                        <p>{{ projectStats?.completedTasks || 0 }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Members</h3>
-                        <p>{{ projectStats?.totalMembers || 0 }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Upcoming Deadlines</h3>
-                        <p>{{ projectStats?.upcomingDeadlines || 0 }}</p>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="recent-activity">
-                    <h2>Recent Activity</h2>
-                    <ul>
-                        <li *ngFor="let activity of recentActivities">
-                            <span class="activity-icon">📢</span>
-                            <span class="activity-text">{{ activity }}</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Upcoming Deadlines -->
-                <div class="upcoming-deadlines">
-                    <h2>Upcoming Deadlines</h2>
-                    <ul>
-                        <li *ngFor="let deadline of upcomingDeadlines">
-                            <span class="deadline-icon">⏰</span>
-                            <span class="deadline-text">{{ deadline.task }} - Due {{ deadline.date | date:'mediumDate' }}</span>
-                        </li>
-                    </ul>
-                </div>
+               <app-project-dashboard></app-project-dashboard>
             </div>
 
             <!-- Members Tab -->

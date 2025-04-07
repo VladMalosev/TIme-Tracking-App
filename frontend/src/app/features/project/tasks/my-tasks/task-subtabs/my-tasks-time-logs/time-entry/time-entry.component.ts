@@ -87,11 +87,21 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
   private initializeComponent(): void {
     this.subs.add(
       this.timeEntryState.projectId$.pipe(
-        switchMap(projectId => {
+        tap(projectId => {
           this.projectId = projectId;
+          console.log('Current Project ID in TimeEntryComponent:', projectId);
+          if (!projectId) {
+            console.error('No projectId available in TimeEntryComponent');
+          }
+        }),
+        switchMap(projectId => {
+          if (!projectId) return of(null);
           return this.timeEntryState.userId$;
         }),
-        tap(userId => (this.userId = userId)),
+        tap(userId => {
+          this.userId = userId;
+          console.log('Current User ID:', userId);
+        }),
         switchMap(() => this.checkActiveTimer()),
         tap(() => this.loadIncompleteTasks()),
         takeUntilDestroyed(this.destroyRef)
@@ -242,13 +252,19 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
 
   loadIncompleteTasks(): void {
     if (!this.projectId || !this.userId) {
-      console.warn('Cannot load tasks - missing projectId or userId');
+      console.warn('Cannot load tasks - missing projectId or userId', {
+        projectId: this.projectId,
+        userId: this.userId
+      });
       return;
     }
 
+    console.log('Loading tasks for project:', this.projectId);
     this.tasksLoading = true;
+
     this.timeLogService.getIncompleteTasks(this.projectId).subscribe({
       next: (tasks) => {
+        console.log('Received tasks:', tasks);
         this.incompleteTasks = tasks;
         this.tasksLoading = false;
       },
@@ -260,6 +276,8 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
   }
 
   createManualTimeLog(): void {
+    console.log('Creating manual log with projectId:', this.projectId);
+
     if (!this.manualStartTime || !this.manualEndTime) {
       this.manualTimeError = 'Start time and end time are required';
       return;
@@ -274,7 +292,8 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
     }
 
     if (!this.projectId) {
-      this.manualTimeError = 'Project ID is missing';
+      this.manualTimeError = 'Project ID is missing - please refresh the page';
+      console.error('Project ID is null when trying to create manual log');
       return;
     }
 
@@ -294,8 +313,8 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
         this.timeEntryState.notifyTimeLogCreated();
       },
       error: (error) => {
-        console.error('Error creating manual project time log:', error);
-        this.manualTimeError = 'Failed to create manual time log';
+        console.error('Detailed error creating manual time log:', error);
+        this.manualTimeError = error.error?.message || 'Failed to create manual time log';
       }
     });
   }

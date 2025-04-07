@@ -31,6 +31,8 @@ public class ProjectInvitationController {
     private ProjectUserRepository projectUserRepository;
     @Autowired
     private ActivityRepository activityRepository;
+    @Autowired
+    private AuditLogRepository auditLogRepository;
 
     @Operation(summary = "Accept an invitation", description = "Accepts a project invitation and adds the user to the workspace.")
     @ApiResponses(value = {
@@ -77,6 +79,19 @@ public class ProjectInvitationController {
         activity.setCreatedAt(LocalDateTime.now());
         activityRepository.save(activity);
 
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.USER_JOINED);
+        auditLog.setTargetUser(user);
+        auditLog.setProject(invitation.getProject());
+        auditLog.setNewValue(invitation.getRole().name());
+        auditLog.setDescription(String.format(
+                "%s accepted invitation and joined project %s as %s",
+                user.getName(),
+                invitation.getProject().getName(),
+                invitation.getRole()
+        ));
+        auditLogRepository.save(auditLog);
+
         return ResponseEntity.ok(projectUser);
     }
 
@@ -111,6 +126,17 @@ public class ProjectInvitationController {
         invitation.setStatus(InvitationStatus.REJECTED);
         invitation.setUpdatedAt(LocalDateTime.now());
         projectInvitationRepository.save(invitation);
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.USER_REJECTED_INVITATION);
+        auditLog.setTargetUser(user);
+        auditLog.setProject(invitation.getProject());
+        auditLog.setDescription(String.format(
+                "%s rejected invitation to project %s",
+                user.getName(),
+                invitation.getProject().getName()
+        ));
+        auditLogRepository.save(auditLog);
 
         return ResponseEntity.noContent().build();
     }
@@ -187,6 +213,21 @@ public class ProjectInvitationController {
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new RuntimeException("Invitation is not pending and cannot be deleted");
         }
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(AuditAction.INVITATION_REVOKED);
+        auditLog.setPerformedBy(user);
+        auditLog.setTargetUser(invitation.getInvitedUser());
+        auditLog.setProject(invitation.getProject());
+        auditLog.setDescription(String.format(
+                "%s revoked invitation for %s to project %s",
+                user.getName(),
+                invitation.getInvitedUser().getName(),
+                invitation.getProject().getName()
+        ));
+        auditLogRepository.save(auditLog);
+
+        projectInvitationRepository.delete(invitation);
 
         projectInvitationRepository.delete(invitation);
 

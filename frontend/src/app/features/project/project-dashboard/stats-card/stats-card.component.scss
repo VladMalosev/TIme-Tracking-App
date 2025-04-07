@@ -1,0 +1,86 @@
+$primary: #4361ee;
+$primary-light: #4895ef;
+$secondary: #3f37c9;
+$accent: #f72585;
+$success: #4cc9f0;
+$warning: #f8961e;
+$error: #f94144;
+$dark: #212529;
+$light: #f8f9fa;
+$gray: #6c757d;
+$light-gray: #e9ecef;
+
+$font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+@mixin card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .stat-item {
+    padding: 16px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: $gray;
+    }
+
+    .stat-icon {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 32px;
+      opacity: 0.2;
+    }
+
+    &.completed {
+      background: rgba($success, 0.1);
+      .stat-value, .stat-icon {
+        color: $success;
+      }
+    }
+
+    &.time {
+      background: rgba($primary, 0.1);
+      .stat-value, .stat-icon {
+        color: $primary;
+      }
+    }
+
+    &.deadlines {
+      background: rgba($accent, 0.1);
+      .stat-value, .stat-icon {
+        color: $accent;
+      }
+    }
+  }
+}

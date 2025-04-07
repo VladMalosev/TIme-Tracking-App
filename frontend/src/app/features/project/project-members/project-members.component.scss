@@ -83,7 +83,6 @@
     }
   }
 
-  /* Search and Filter Section */
   .search-filter-section {
     display: flex;
     gap: 16px;
@@ -256,6 +255,107 @@
   }
   mat-paginator {
     border-top: 1px solid #e0e0e0;
-    background-color: #f5f5f5;
+    background-color: white;
   }
+}
+
+
+
+:host {
+  --subtab-bg: #ffffff;
+  --subtab-text: #4a4a4a;
+  --subtab-active-bg: #f8f9fa;
+  --subtab-active-text: #4A3AFF;
+  --subtab-border: #e0e0e0;
+  --subtab-indicator: #4A3AFF;
+  --subtab-hover: #f1f3f5;
+  --subtab-spacing: 1rem;
+  --subtab-radius: 8px;
+
+  --nested-tab-bg: #f8f9fa;
+  --nested-tab-text: #5f6368;
+  --nested-tab-active-bg: #ffffff;
+  --nested-tab-active-text: #4A3AFF;
+  --nested-tab-hover: #edf0f2;
+  --nested-tab-padding: 0.75rem 1.25rem;
+  --nested-tab-radius: 6px;
+  --nested-tab-gap: 0.5rem;
+}
+
+.subtab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.subtab-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 var(--subtab-spacing);
+  border-bottom: 1px solid var(--subtab-border);
+}
+
+.subtab-button {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--subtab-text);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--subtab-radius) var(--subtab-radius) 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:hover {
+    background: var(--subtab-hover);
+    color: var(--subtab-active-text);
+  }
+
+  &.active {
+    color: var(--subtab-active-text);
+
+    .subtab-indicator {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+}
+
+.subtab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--subtab-indicator);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  border-radius: 2px 2px 0 0;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0.6; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-header, .tab-description{
+  margin-left: 30px;
+}
+
+.tab-description{
+  margin-top: -2px;
+}
+
+.logs-header {
+  margin: 2rem 0;
+  padding: 0 1.5rem 0 1.5rem;
+  background: white;
+  border-radius: 8px;
 }

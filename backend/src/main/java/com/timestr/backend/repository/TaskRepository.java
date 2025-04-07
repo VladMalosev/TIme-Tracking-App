@@ -55,4 +55,10 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Map<String, Object>> findFrequentTasks(
             @Param("userId") UUID userId,
             @Param("projectId") UUID projectId);
+
+    @Query("SELECT t FROM Task t WHERE t.project.id = :projectId AND t.assignedTo.id = :userId")
+    List<Task> findByProjectIdAndAssignedToId(
+            @Param("projectId") UUID projectId,
+            @Param("userId") UUID userId);
+
 }

@@ -1,0 +1,108 @@
+<div class="task-card">
+  <div class="task-card-header">
+    <h2 class="task-card-title">My Tasks</h2>
+    <button mat-stroked-button color="primary" (click)="onViewAllTasks()" class="view-all-btn">
+      View All
+      <mat-icon class="view-all-icon">arrow_forward</mat-icon>
+    </button>
+  </div>
+
+  <div class="task-card-body">
+    <!-- Loading state -->
+    <div *ngIf="taskListService.loading$ | async" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p class="loading-text">Loading your tasks...</p>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!(taskListService.loading$ | async) && (taskListService.tasks$ | async)?.length === 0" class="empty-state">
+      <div class="empty-state-content">
+        <mat-icon class="empty-icon">task_alt</mat-icon>
+        <h3 class="empty-title">No tasks assigned</h3>
+        <p class="empty-message">You're all caught up! Enjoy your free time.</p>
+      </div>
+    </div>
+
+    <!-- Task list -->
+    <div class="task-list">
+      <div class="task-item" *ngFor="let task of paginatedTasks"
+           [class.urgent]="isTaskUrgent(task)"
+           [class.completed]="task.status === 'COMPLETED'">
+
+        <div class="task-content">
+          <div class="task-header">
+            <h3 class="task-name">{{ task.name }}</h3>
+            <div class="task-meta">
+              <span class="task-status" [class]="task.status?.toLowerCase()">
+                {{ task.status | titlecase }}
+              </span>
+              <span class="task-priority" [class]="task.priority?.toLowerCase()" *ngIf="task.priority">
+                {{ task.priority }}
+              </span>
+            </div>
+          </div>
+
+          <ng-container *ngIf="task.description && task.description.trim(); else noDescription">
+            <p
+              class="task-description"
+              [class.collapsed]="!task.expanded"
+              (click)="task.expanded = !task.expanded"
+              [matTooltip]="!task.expanded ? 'Click to expand' : 'Click to collapse'">
+              {{ task.description }}
+              <span *ngIf="!task.expanded" class="read-more"> ... Read more</span>
+            </p>
+          </ng-container>
+
+          <ng-template #noDescription>
+            <p class="task-description muted">No description</p>
+          </ng-template>
+
+          <div class="task-details">
+            <div class="detail-group">
+              <span class="task-due" *ngIf="task.deadline">
+                <mat-icon class="task-icon">event</mat-icon>
+                <span class="task-date">{{ task.deadline | date:'MMM d, yyyy' }}</span>
+              </span>
+
+              <span class="task-time">
+                <mat-icon class="task-icon">timer</mat-icon>
+                <span class="total-duration">Total: {{ getTotalDuration(task.id) }}</span>
+              </span>
+            </div>
+
+            <div class="detail-group">
+              <span class="task-assigned" *ngIf="task.assignedAt">
+                <mat-icon class="task-icon">person</mat-icon>
+                <span class="task-assignment">
+                  <span *ngIf="task.assignedBy">Assigned by {{ task.assignedBy.name || task.assignedBy.email }}</span>
+                </span>
+              </span>
+
+              <span class="task-updated" *ngIf="task.updatedAt">
+                <mat-icon class="task-icon">update</mat-icon>
+                <span class="task-update-time">
+                  {{ task.assignedAt | date:'MMM d, yyyy' }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-actions">
+          <button mat-icon-button (click)="onLogTaskTime(task)" class="task-action" matTooltip="Log time">
+            <mat-icon class="action-icon">play_circle</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <mat-paginator *ngIf="tasks.length"
+                   [length]="tasks.length"
+                   [pageSize]="pageSize"
+                   [pageSizeOptions]="pageSizeOptions"
+                   [pageIndex]="pageIndex"
+                   (page)="handlePageEvent($event)"
+                   aria-label="Select page">
+    </mat-paginator>
+  </div>
+</div>

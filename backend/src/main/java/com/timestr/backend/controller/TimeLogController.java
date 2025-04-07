@@ -3,6 +3,7 @@ package com.timestr.backend.controller;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.ActivityRepository;
+import com.timestr.backend.repository.ProjectRepository;
 import com.timestr.backend.repository.TimeLogRepository;
 import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.TaskService;
@@ -46,6 +47,9 @@ public class TimeLogController {
 
     @Autowired
     private TimeLogRepository timeLogRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Operation(summary = "Start a timer", description = "Starts a timer for a specific user and task.")
     @ApiResponses(value = {
@@ -362,6 +366,40 @@ public class TimeLogController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(timeLogService.calculateCurrentDuration(activeTimer));
+    }
+
+
+    @Operation(summary = "Get time log statistics for user in project",
+            description = "Retrieves time log statistics for a specific user in a specific project")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User or project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/project/{projectId}/user/{userId}/stats")
+    public ResponseEntity<Map<String, Object>> getTimeLogStatsForUserInProject(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId,
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID userId) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        Long totalMinutes = timeLogRepository.sumMinutesByUserAndProject(userId, projectId);
+        Long weeklyAverage = calculateWeeklyAverage(totalMinutes);
+
+        List<Map<String, Object>> taskDistribution = timeLogRepository.getTaskTimeDistribution(userId, projectId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalLogged", totalMinutes != null ? totalMinutes : 0);
+        response.put("weeklyAverage", weeklyAverage != null ? weeklyAverage : 0);
+        response.put("taskDistribution", taskDistribution);
+
+        return ResponseEntity.ok(response);
     }
 
 }

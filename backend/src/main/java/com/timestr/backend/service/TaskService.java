@@ -306,4 +306,8 @@ public class TaskService {
                 TaskStatus.COMPLETED
         );
     }
+
+    public List<Task> getAllTasksByProjectAndUser(UUID projectId, UUID userId) {
+        return taskRepository.findByProjectIdAndAssignedToId(projectId, userId);
+    }
 }

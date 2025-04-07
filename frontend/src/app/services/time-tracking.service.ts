@@ -19,6 +19,10 @@ export class TimeTrackingService {
     return this.authService.userId$;
   }
 
+  setProjectId(projectId: string): void {
+    this.projectIdSubject.next(projectId);
+  }
+
   checkAndCleanActiveTimer(userId: string): Observable<void> {
     if (this.activeTimerCheckInProgress) {
       return of(undefined as void);
@@ -128,14 +132,17 @@ export class TimeTrackingService {
         if (!userId) {
           throw new Error('User ID not available');
         }
-        if (!this.projectIdSubject.value) {
+
+        const projectId = this.projectIdSubject.value;
+        if (!projectId) {
           throw new Error('Project ID is required');
         }
+
         return this.http.post(
           `${environment.apiBaseUrl}/timelogs/manual`,
           {
             userId,
-            projectId: this.projectIdSubject.value,
+            projectId,
             taskId,
             startTime: this.formatForBackend(startTime),
             endTime: this.formatForBackend(endTime),

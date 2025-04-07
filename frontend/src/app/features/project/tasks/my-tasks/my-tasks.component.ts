@@ -75,10 +75,12 @@ export class MyTasksComponent implements OnInit {
 
   loadAssignedTasks(): void {
     this.loading = true;
+    const projectId = this.taskAssignmentService.projectIdSubject.value;
+
     this.assignedTasks$ = this.taskAssignmentService.userId$.pipe(
       switchMap(userId => {
-        if (!userId) return of([]);
-        return this.taskAssignmentService.getAssignedTasks(userId);
+        if (!userId || !projectId) return of([]);
+        return this.taskAssignmentService.getAllTasksForProject(userId, projectId);
       }),
       map(tasks => tasks.map(task => ({
         ...task,

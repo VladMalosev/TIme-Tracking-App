@@ -36,6 +36,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MemberActivityLogsComponent} from './member-activity-logs/member-activity-logs.component';
+import {MyTasksComponent} from '../tasks/my-tasks/my-tasks.component';
+import {
+  MyTasksCreateTaskComponent
+} from '../tasks/my-tasks/task-subtabs/my-tasks-create-task/my-tasks-create-task.component';
+import {
+  MyTasksStatisticsComponent
+} from '../tasks/my-tasks/task-subtabs/my-tasks-statistics/my-tasks-statistics.component';
+import {MyTasksTimeLogsComponent} from '../tasks/my-tasks/task-subtabs/my-tasks-time-logs/my-tasks-time-logs.component';
+import {ProjectRoleService} from '../../../services/project-role.service';
 
 @Component({
   selector: 'app-project-members',
@@ -59,7 +69,9 @@ import {MatProgressSpinner} from '@angular/material/progress-spinner';
     MatTooltipModule,
     MatIcon,
     MatMenuTrigger,
-    MatProgressSpinner
+    MatProgressSpinner,
+    MemberActivityLogsComponent,
+
   ],
   styleUrls: ['./project-members.component.scss']
 })
@@ -71,6 +83,9 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
   isLoading = true;
   selectedRoles: string[] = [];
   currentFilter: string = '';
+  activeTab: 'members' | 'members-logs' = 'members';
+  currentUserRole: string = '';
+  hasAdminAccess: boolean = false;
 
   @ViewChild(MatSort, {static: false}) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -83,13 +98,15 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     private projectContextService: ProjectContextService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private projectRoleService: ProjectRoleService
   ) {}
 
   ngOnInit(): void {
     this.loadData();
     this.setupSubscriptions();
     this.initializeFilterPredicate();
+    this.fetchCurrentUserRole();
   }
 
   ngAfterViewInit(): void {
@@ -114,11 +131,22 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     };
 
     setTimeout(() => {
-      this.sort.active = 'role';
-      this.sort.direction = 'desc';
-      this.sort.sortChange.emit();
-      this.dataSource.sort = this.sort;
+      this.sortData({active: 'role', direction: 'desc'});
     });
+  }
+
+  setActiveTab(tab: 'members' | 'members-logs'): void {
+    this.activeTab = tab;
+  }
+
+  private fetchCurrentUserRole(): void {
+    const projectId = this.projectContextService.getCurrentProjectId();
+    if (projectId) {
+      this.projectRoleService.fetchCurrentUserRole(projectId).subscribe(role => {
+        this.currentUserRole = role;
+        this.hasAdminAccess = ['OWNER', 'ADMIN', 'MANAGER'].includes(role);
+      });
+    }
   }
 
   private getRoleHierarchyValue(role: string): number {
@@ -296,16 +324,22 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     this.subscriptions.unsubscribe();
   }
 
-  sortData(column: string): void {
+  sortData(sortEvent: {active: string, direction: string}): void {
     if (!this.sort) return;
 
-    if (this.sort.active === column) {
-      this.sort.direction = this.sort.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sort.active = column;
-      this.sort.direction = 'asc';
+    if (sortEvent.active) {
+      this.sort.active = sortEvent.active;
+      this.sort.direction = sortEvent.direction as 'asc' | 'desc';
     }
+
     this.dataSource.sort = this.sort;
+  }
+
+  getNextSortDirection(column: string): string {
+    if (!this.sort) return 'asc';
+    return this.sort.active === column
+      ? this.sort.direction === 'asc' ? 'desc' : 'asc'
+      : 'asc';
   }
 
   filterByRole(roles: string[]): void {
@@ -332,8 +366,5 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     }
     return '';
   }
-
-
-
 
 }

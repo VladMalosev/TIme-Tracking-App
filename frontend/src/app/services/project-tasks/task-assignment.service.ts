@@ -7,7 +7,7 @@ import {environment} from '../../../environments/environment';
   providedIn: 'root'
 })
 export class TaskAssignmentService {
-  private projectIdSubject = new BehaviorSubject<string>('');
+  public projectIdSubject = new BehaviorSubject<string>('');
   private tasksSubject = new BehaviorSubject<any[]>([]);
   private collaboratorsSubject = new BehaviorSubject<any[]>([]);
   private currentUserRoleSubject = new BehaviorSubject<string>('');
@@ -89,9 +89,23 @@ export class TaskAssignmentService {
     return allowedRoles.includes(this.currentUserRoleSubject.value);
   }
 
-  getAssignedTasks(userId: string): Observable<any[]> {
+  getAssignedTasksForProject(userId: string, projectId: string): Observable<any[]> {
     return this.http.get<any[]>(
-      `${environment.apiBaseUrl}/tasks/assigned/${userId}`,
+      `${environment.apiBaseUrl}/tasks/project/${projectId}/user/${userId}/incomplete`,
+      {withCredentials: true}
+    );
+  }
+
+  getAllAssignedTasksForProject(userId: string, projectId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/tasks/project/${projectId}/user/${userId}`,
+      {withCredentials: true}
+    );
+  }
+
+  getAllTasksForProject(userId: string, projectId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/tasks/project/${projectId}/user/${userId}/all`,
       {withCredentials: true}
     );
   }

@@ -12,7 +12,6 @@ public enum ActivityType {
     TASK_DELETED,
     TIME_LOG_LINKED,
 
-
     ROLE_CHANGED,
     USER_REMOVED
 }

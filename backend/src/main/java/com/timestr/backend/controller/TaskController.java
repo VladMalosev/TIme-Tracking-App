@@ -318,4 +318,22 @@ public class TaskController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get all tasks for project assigned to user",
+            description = "Retrieves all tasks (including completed) for a specific project assigned to specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project or user not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/project/{projectId}/user/{userId}/all")
+    public ResponseEntity<List<Task>> getAllTasksByProjectAndUser(
+            @Parameter(description = "ID of the project", required = true)
+            @PathVariable UUID projectId,
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID userId) {
+
+        List<Task> tasks = taskService.getAllTasksByProjectAndUser(projectId, userId);
+        return ResponseEntity.ok(tasks);
+    }
+
 }

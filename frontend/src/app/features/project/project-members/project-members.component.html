@@ -1,164 +1,207 @@
-<div class="members-container">
-  <div class="header" *ngIf="!isLoading && dataSource.data.length > 0">
-    <h2>Project Team Members</h2>
-    <button mat-icon-button (click)="refreshMembers()" matTooltip="Refresh">
-      <mat-icon>refresh</mat-icon>
+<div class="subtab-container">
+  <h2 class="tab-header m-lg-5">Members</h2>
+  <p class="tab-description m-lg-5">Here you can see project collaborators.</p>
+
+  <nav class="subtab-nav">
+    <!-- Main tab buttons -->
+    <button class="subtab-button"
+            (click)="setActiveTab('members')"
+            [class.active]="activeTab === 'members'">
+      <span class="subtab-label">Members</span>
+      <span class="subtab-indicator"></span>
     </button>
-  </div>
 
-  <div *ngIf="isLoading" class="loading-spinner">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+    <button class="subtab-button"
+            (click)="setActiveTab('members-logs')"
+            [class.active]="activeTab === 'members-logs'"
+            *ngIf="hasAdminAccess">
+      <span class="subtab-label">Member Logs</span>
+      <span class="subtab-indicator"></span>
+    </button>
+  </nav>
 
-  <div *ngIf="!isLoading">
-    <!-- Stats Section -->
-    <div class="stats-section">
-      <mat-card class="stats-card">
-        <mat-card-content>
-          <div class="stat-item">
-            <mat-icon class="stat-icon">people</mat-icon>
-            <div class="stat-text">
-              <h3>Total Members</h3>
-              <p>{{ stats?.totalMembers || 0 }}</p>
+  <div class="subtab-content">
+    <ng-content *ngIf="activeTab !== 'members'"></ng-content>
+
+    <div class="nested-subtab-content">
+      <!-- Members Tab Content -->
+      <div class="tab-panel" *ngIf="activeTab === 'members'">
+        <div class="members-container">
+          <div class="header" *ngIf="!isLoading && dataSource.data.length > 0">
+            <h2>Project Team Members</h2>
+          </div>
+
+          <div *ngIf="isLoading" class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+
+          <div *ngIf="!isLoading">
+            <!-- Stats Section -->
+            <div class="stats-section">
+              <mat-card class="stats-card">
+                <mat-card-content>
+                  <div class="stat-item">
+                    <mat-icon class="stat-icon">people</mat-icon>
+                    <div class="stat-text">
+                      <h3>Total Members</h3>
+                      <p>{{ stats?.totalMembers || 0 }}</p>
+                    </div>
+                  </div>
+                  <div class="stat-item">
+                    <mat-icon class="stat-icon" [color]="'primary'">online_prediction</mat-icon>
+                    <div class="stat-text">
+                      <h3>Active Now</h3>
+                      <p>{{ stats?.activeMembers || 0 }}</p>
+                    </div>
+                  </div>
+                  <div class="stat-item">
+                    <mat-icon class="stat-icon">history</mat-icon>
+                    <div class="stat-text">
+                      <h3>Your Role</h3>
+                      <p>{{ currentUserRole | titlecase }}</p>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+              <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Search members</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Search by name or email">
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Filter by role</mat-label>
+                <mat-select [(value)]="selectedRoles" (selectionChange)="filterByRole($event.value)" multiple>
+                  <mat-option *ngFor="let role of availableRoles" [value]="role">{{role}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Table Section -->
+            <div class="table-container">
+              <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)">
+                <ng-container matColumnDef="user">
+                  <th mat-header-cell *matHeaderCellDef (click)="sortData({active: 'user', direction: getNextSortDirection('user')})">
+                    User <span class="sort-indicator">{{getSortIndicator('user')}}</span>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <div class="user-cell">
+                      <img [src]="member.user.avatar || 'assets/icons/avatar.png'" class="avatar" alt="User avatar">
+                      <div class="user-info">
+                        <div class="user-name">{{ member.user.name }}</div>
+                        <div class="user-title" *ngIf="member.user.title">{{ member.user.title }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef (click)="sortData({active: 'status', direction: getNextSortDirection('status')})">
+                    Status <span class="sort-indicator">{{getSortIndicator('status')}}</span>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <div class="status-badge" [class.online]="member.status === 'Online'" [class.offline]="member.status !== 'Online'">
+                      <mat-icon>{{ member.status === 'Online' ? 'online_prediction' : 'offline_bolt' }}</mat-icon>
+                      <span>{{ member.status }}</span>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Email Column -->
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef (click)="sortData({active: 'email', direction: getNextSortDirection('email')})">
+                    Email <span class="sort-indicator">{{getSortIndicator('email')}}</span>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <a href="mailto:{{member.user.email}}" class="email-link">{{ member.user.email }}</a>
+                  </td>
+                </ng-container>
+
+                <!-- Last Activity Column -->
+                <ng-container matColumnDef="lastActivity">
+                  <th mat-header-cell *matHeaderCellDef (click)="sortData({active: 'lastActivity', direction: getNextSortDirection('lastActivity')})">
+                    Last Activity <span class="sort-indicator">{{getSortIndicator('lastActivity')}}</span>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <div class="activity-cell">
+                      {{ member.lastActivityDate ? (member.lastActivityDate | date:'medium') : 'N/A' }}
+                      <div *ngIf="member.lastActivity" class="activity-description">
+                        {{ member.lastActivity.description }}
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Role Column -->
+                <ng-container matColumnDef="role">
+                  <th mat-header-cell *matHeaderCellDef (click)="sortData({active: 'role', direction: getNextSortDirection('role')})">
+                    Role <span class="sort-indicator">{{getSortIndicator('role')}}</span>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <div class="role-badge"
+                         [class.owner]="member.role === 'OWNER'"
+                         [class.admin]="member.role === 'ADMIN'"
+                         [class.manager]="member.role === 'MANAGER'"
+                         [class.user]="member.role === 'USER'">
+                      {{ member.role | titlecase }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let member">
+                    <div class="actions-cell">
+                      <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Member actions">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="changeRole(member)">
+                          <mat-icon>swap_horiz</mat-icon> Change Role
+                        </button>
+                        <button mat-menu-item (click)="viewProfile(member.user.id)">
+                          <mat-icon>account_circle</mat-icon> View Profile
+                        </button>
+                        <button mat-menu-item (click)="removeMember(member.id)" class="danger">
+                          <mat-icon color="warn">delete</mat-icon> Remove
+                        </button>
+                      </mat-menu>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Header and Row Definitions -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
+                           [length]="dataSource.data.length"
+                           showFirstLastButtons></mat-paginator>
+
+            <div *ngIf="dataSource.data.length === 0" class="no-members">
+              <mat-icon>people_outline</mat-icon>
+              <span>No team members found</span>
             </div>
           </div>
-          <div class="stat-item">
-            <mat-icon class="stat-icon" [color]="'primary'">online_prediction</mat-icon>
-            <div class="stat-text">
-              <h3>Active Now</h3>
-              <p>{{ stats?.activeMembers || 0 }}</p>
-            </div>
-          </div>
-          <div class="stat-item">
-            <mat-icon class="stat-icon">engineering</mat-icon>
-            <div class="stat-text">
-              <h3>Admins</h3>
-              <p>{{ stats?.adminCount || 0 }}</p>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+        </div>
+      </div>
 
-    <!-- Search and Filter Section -->
-    <div class="search-filter-section">
-      <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Search members</mat-label>
-        <input matInput (keyup)="applyFilter($event)" placeholder="Search by name or email">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Filter by role</mat-label>
-        <mat-select [(value)]="selectedRoles" (selectionChange)="filterByRole($event.value)" multiple>
-          <mat-option *ngFor="let role of availableRoles" [value]="role">{{role}}</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- Table Section -->
-    <table *ngIf="dataSource.data.length > 0" mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event.active)">
-      <!-- User Column -->
-      <ng-container matColumnDef="user">
-        <th mat-header-cell *matHeaderCellDef (click)="sortData('user')">
-          User <span class="sort-indicator">{{getSortIndicator('user')}}</span>
-        </th>
-        <td mat-cell *matCellDef="let member">
-          <div class="user-cell">
-            <img [src]="member.user.avatar || 'assets/icons/avatar.png'" class="avatar" alt="User avatar">
-            <div class="user-info">
-              <div class="user-name">{{ member.user.name }}</div>
-              <div class="user-title" *ngIf="member.user.title">{{ member.user.title }}</div>
-            </div>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef (click)="sortData('status')">
-          Status <span class="sort-indicator">{{getSortIndicator('status')}}</span>
-        </th>
-        <td mat-cell *matCellDef="let member">
-          <div class="status-badge" [class.online]="member.status === 'Online'" [class.offline]="member.status !== 'Online'">
-            <mat-icon>{{ member.status === 'Online' ? 'online_prediction' : 'offline_bolt' }}</mat-icon>
-            <span>{{ member.status }}</span>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Email Column -->
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef (click)="sortData('email')">
-          Email <span class="sort-indicator">{{getSortIndicator('email')}}</span>
-        </th>
-        <td mat-cell *matCellDef="let member">
-          <a href="mailto:{{member.user.email}}" class="email-link">{{ member.user.email }}</a>
-        </td>
-      </ng-container>
-
-      <!-- Last Activity Column -->
-      <ng-container matColumnDef="lastActivity">
-        <th mat-header-cell *matHeaderCellDef (click)="sortData('lastActivity')">
-          Last Activity <span class="sort-indicator">{{getSortIndicator('lastActivity')}}</span>
-        </th>
-        <td mat-cell *matCellDef="let member">
-          <div class="activity-cell">
-            {{ member.lastActivityDate ? (member.lastActivityDate | date:'medium') : 'N/A' }}
-            <div *ngIf="member.lastActivity" class="activity-description">
-              {{ member.lastActivity.description }}
-            </div>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Role Column -->
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef (click)="sortData('role')">
-          Role <span class="sort-indicator">{{getSortIndicator('role')}}</span>
-        </th>
-        <td mat-cell *matCellDef="let member">
-          <div class="role-badge" [class.admin]="member.role === 'Admin'">
-            {{ member.role }}
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let member">
-          <div class="actions-cell">
-            <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Member actions">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="changeRole(member)">
-                <mat-icon>swap_horiz</mat-icon> Change Role
-              </button>
-              <button mat-menu-item (click)="viewProfile(member.user.id)">
-                <mat-icon>account_circle</mat-icon> View Profile
-              </button>
-              <button mat-menu-item (click)="removeMember(member.id)" class="danger">
-                <mat-icon color="warn">delete</mat-icon> Remove
-              </button>
-            </mat-menu>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Header and Row Definitions -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-
-    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"
-                   [length]="dataSource.data.length"
-                   showFirstLastButtons></mat-paginator>
-
-    <div *ngIf="dataSource.data.length === 0" class="no-members">
-      <mat-icon>people_outline</mat-icon>
-      <span>No team members found</span>
+      <!-- Member Logs Tab Content -->
+      <div class="tab-panel" *ngIf="activeTab === 'members-logs' && hasAdminAccess">
+        <div class="logs-header">
+          <h2>Member Activity Logs</h2>
+          <p>Track all member activities within the project</p>
+        </div>
+        <app-member-activity-logs></app-member-activity-logs>
+      </div>
     </div>
   </div>
 </div>

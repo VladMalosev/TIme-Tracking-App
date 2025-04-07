@@ -36,13 +36,16 @@ mat-dialog-actions {
   padding: 20px 0 0 0;
   margin-top: 20px;
   border-top: 1px solid #eee;
-  gap: 10px;
 }
 
-.cancel-button {
-  margin-right: 8px;
-}
 
-.confirm-button {
-  margin-left: 8px;
+
+button {
+  background: var(--blue-button-color) !important;
+  color: white !important;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
 }
