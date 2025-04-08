@@ -1,20 +1,45 @@
-<div class="card time-card">
-  <h2>Time Tracking</h2>
-  <div class="time-progress">
+<div class="time-tracker">
+  <div class="tracker-header">
+    <div class="header-text">
+      <h2>Weekly Time Tracking</h2>
+      <p class="subtitle">Track your progress towards weekly goals</p>
+    </div>
+
+  </div>
+
+  <div class="progress-container">
+    <div class="progress-stats">
+      <div class="logged-hours">
+        <span class="hours">{{ totalHoursLogged | number:'1.0-1' }}</span>
+        <span class="hours-label">hours logged</span>
+      </div>
+      <div class="progress-percent">{{ progressPercentage }}%</div>
+    </div>
+
     <div class="progress-bar">
       <div class="progress-fill" [style.width.%]="progressPercentage"></div>
     </div>
-    <div class="time-meta">
-      <span>{{ progressPercentage }}% of weekly goal</span>
-      <span>{{ remainingHours }}h remaining</span>
+
+    <div class="goal-info">
+      <div class="goal-progress">
+        <span class="goal-text">Weekly goal:</span>
+        <span class="goal-hours">{{ weeklyGoal }}h</span>
+      </div>
+      <div class="remaining">
+        <mat-icon>av_timer</mat-icon>
+        <span>{{ remainingHours | number:'1.0-1' }}h remaining</span>
+      </div>
     </div>
   </div>
-  <div class="time-actions">
-    <button mat-stroked-button (click)="logTime.emit()">
-      <mat-icon>add</mat-icon> Add Time
+
+  <div class="action-buttons">
+    <button mat-stroked-button class="log-button" (click)="logTime()">
+      <mat-icon>add</mat-icon>
+      <span>Log Time</span>
     </button>
-    <button mat-stroked-button (click)="viewTrends.emit()">
-      <mat-icon>show_chart</mat-icon> View Trends
+    <button mat-stroked-button class="trends-button" (click)="viewTrends()">
+      <mat-icon>show_chart</mat-icon>
+      <span>View Trends</span>
     </button>
   </div>
 </div>

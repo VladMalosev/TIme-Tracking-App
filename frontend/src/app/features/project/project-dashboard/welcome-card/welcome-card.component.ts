@@ -5,6 +5,7 @@ import { ProjectContextService } from "../../../../services/project-context.serv
 import { WelcomeCardService } from "../../../../services/dashboard/welcome-card.service";
 import { AuthService } from "../../../../core/auth/auth.service";
 import {CommonModule, DatePipe} from '@angular/common';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-welcome-card',
@@ -26,7 +27,8 @@ export class WelcomeCardComponent implements OnInit, OnDestroy {
   constructor(
     private welcomeCardService: WelcomeCardService,
     private projectContextService: ProjectContextService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -107,8 +109,19 @@ export class WelcomeCardComponent implements OnInit, OnDestroy {
   }
 
   logTime(): void {
+    const projectId = this.projectContextService.getCurrentProjectId();
+    if (projectId) {
+      this.router.navigate(
+        [`/project-details/${projectId}/dashboard`],
+        {
+          queryParams: {
+            tab: 'tasks',
+            subTab: 'time-logs'
+          }
+        }
+      );
+    }
   }
-
   viewReports(): void {
   }
 }

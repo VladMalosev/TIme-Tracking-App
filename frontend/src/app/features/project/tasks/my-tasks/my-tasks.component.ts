@@ -16,6 +16,7 @@ import { Observable, of, switchMap, map } from 'rxjs';
 import { TaskAssignmentService } from '../../../../services/project-tasks/task-assignment.service';
 import { TaskSelectionService } from '../../../../services/my-tasks/task-selection.service';
 import {TaskDetailsComponent} from './task-details/task-details.component';
+import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-my-tasks',
@@ -66,11 +67,21 @@ export class MyTasksComponent implements OnInit {
 
   constructor(
     private taskAssignmentService: TaskAssignmentService,
-    private taskSelectionService: TaskSelectionService
+    private taskSelectionService: TaskSelectionService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadAssignedTasks();
+
+    this.route.queryParams.subscribe(params => {
+      const taskIdFromUrl = params['taskId'];
+      if (taskIdFromUrl) {
+        this.expandedTaskId = taskIdFromUrl;
+        this.taskSelectionService.setSelectedTaskId(taskIdFromUrl);
+      }
+    });
   }
 
   loadAssignedTasks(): void {
@@ -181,14 +192,28 @@ export class MyTasksComponent implements OnInit {
   }
 
   toggleTaskDetails(taskId: string, menuTrigger: any): void {
-    this.expandedTaskId = this.expandedTaskId === taskId ? null : taskId;
-    if (this.expandedTaskId) {
+    const isExpanding = this.expandedTaskId !== taskId;
+    this.expandedTaskId = isExpanding ? taskId : null;
+
+    if (isExpanding) {
       this.taskSelectionService.setSelectedTaskId(taskId);
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { taskId },
+        queryParamsHandling: 'merge'
+      });
     } else {
       this.taskSelectionService.clearSelectedTaskId();
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { taskId: null },
+        queryParamsHandling: 'merge'
+      });
     }
+
     menuTrigger.closeMenu();
   }
+
 
   updateTaskStatus(taskId: string, newStatus: string): void {
     this.taskAssignmentService.updateTaskStatus(taskId, newStatus)

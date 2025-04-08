@@ -238,7 +238,6 @@ export class MyTasksStatisticsComponent implements OnInit, AfterViewInit {
   private initCharts(): void {
     console.log('initCharts called');
 
-    // Destroy existing charts first
     if (this.completionChart) {
       this.completionChart.destroy();
     }
@@ -246,11 +245,10 @@ export class MyTasksStatisticsComponent implements OnInit, AfterViewInit {
       this.peakHoursChart.destroy();
     }
 
-    // Completion Chart (Horizontal Stacked Bar)
     if (this.completionChartRef?.nativeElement) {
       const ctx = this.completionChartRef.nativeElement.getContext('2d');
       if (ctx) {
-        const totalTasks = this.taskStats.totalTasks || 1; // Avoid division by zero
+        const totalTasks = this.taskStats.totalTasks || 1;
 
         this.completionChart = new Chart(ctx, {
           type: 'bar',

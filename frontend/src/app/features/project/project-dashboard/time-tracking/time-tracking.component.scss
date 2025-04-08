@@ -1,83 +1,211 @@
-$primary: #4361ee;
-$primary-light: #4895ef;
-$secondary: #3f37c9;
-$accent: #f72585;
-$success: #4cc9f0;
-$warning: #f8961e;
-$error: #f94144;
-$dark: #212529;
-$light: #f8f9fa;
-$gray: #6c757d;
-$light-gray: #e9ecef;
-
-$font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-@mixin card {
-  background: white;
+.time-tracker {
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
   padding: 24px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   &:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 }
 
-@mixin flex-center {
+.tracker-header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
 
+  .header-text {
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #2b2d42;
+    }
 
-.time-progress {
-  margin-bottom: 20px;
-
-  .progress-bar {
-    height: 8px;
-    background: $light-gray;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    overflow: hidden;
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, $primary, $primary-light);
-      border-radius: 4px;
+    .subtitle {
+      margin: 0;
+      font-size: 14px;
+      color: #6c757d;
+      line-height: 1.4;
     }
   }
 
-  .time-meta {
+  .time-icon {
     display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: $gray;
+    align-items: center;
+    justify-content: center;
+    background: #e0e7ff;
+    color: #4361ee;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+
+    mat-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
+    }
   }
 }
 
-.time-actions {
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  .logged-hours {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+
+    .hours {
+      font-size: 28px;
+      font-weight: 700;
+      color: #3a56d4;
+      line-height: 1;
+    }
+
+    .hours-label {
+      font-size: 14px;
+      color: #6c757d;
+    }
+  }
+
+  .progress-percent {
+    font-size: 20px;
+    font-weight: 600;
+    color: #4361ee;
+    padding: 4px 8px;
+    background: #e0e7ff;
+    border-radius: 8px;
+  }
+}
+
+.progress-bar {
+  height: 12px;
+  background: #f8f9fa;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 4px 0;
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4361ee, #00c851);
+    border-radius: 16px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.2) 0%,
+          rgba(255, 255, 255, 0.5) 50%,
+          rgba(255, 255, 255, 0.2) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.goal-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+
+  .goal-progress {
+    color: #6c757d;
+
+    .goal-text {
+      margin-right: 8px;
+    }
+
+    .goal-hours {
+      font-weight: 600;
+      color: #2b2d42;
+    }
+  }
+
+  .remaining {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #6c757d;
+    font-weight: 500;
+
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      color: #f0ad4e;
+    }
+  }
+}
+
+.action-buttons {
   display: flex;
   gap: 12px;
+  margin-top: 8px;
 
   button {
     flex: 1;
-    padding: 10px;
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-color: $light-gray;
-
-    &:hover {
-      border-color: $primary;
-      background: rgba($primary, 0.05);
-    }
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
 
     mat-icon {
-      color: $primary;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }
+
+    &:hover {
+      background: #e0e7ff;
+      color: #3a56d4;
+    }
+  }
+
+  .log-button {
+    width: 100%;
+    background-color: #4A3AFF !important;
+    color: white !important;
+    border-radius: 10px;
+    border: 1px solid #767676;
+    cursor: pointer;
+  }
+
+  .trends-button {
+    border-color: #4361ee;
+    color: #4361ee;
+    background: white;
+    cursor: pointer;
   }
 }

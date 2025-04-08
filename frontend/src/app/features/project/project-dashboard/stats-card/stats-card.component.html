@@ -1,25 +1,61 @@
 <div class="card stats-card">
   <h2>Project Overview</h2>
-  <div class="stats-grid">
+
+  <!-- Check if stats are available or empty -->
+  <div *ngIf="!isLoading && isStatsEmpty()" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>Start working on this project to see statistics.</p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-grid" *ngIf="!isLoading && !isStatsEmpty()">
     <div class="stat-item">
-      <div class="stat-value">{{ totalTasks || 0 }}</div>
-      <div class="stat-label">Total Tasks</div>
-      <mat-icon class="stat-icon">checklist</mat-icon>
+      <div class="stat-icon">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatMinutes(stats.totalLoggedTime) }}</div>
+        <div class="stat-label">Total Time Logged For Tasks</div>
+      </div>
     </div>
-    <div class="stat-item completed">
-      <div class="stat-value">{{ completedTasks || 0 }}</div>
-      <div class="stat-label">Completed</div>
-      <mat-icon class="stat-icon">done_all</mat-icon>
+
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>timeline</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatMinutes(stats.weeklyAverage) }}</div>
+        <div class="stat-label">Weekly Average</div>
+      </div>
     </div>
-    <div class="stat-item time">
-      <div class="stat-value">{{ totalHoursLogged || 0 }}h</div>
-      <div class="stat-label">Time Logged</div>
-      <mat-icon class="stat-icon">av_timer</mat-icon>
+
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>task_alt</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.completedTasks }}/{{ stats.totalTasks }}</div>
+        <div class="stat-label">Tasks Completed</div>
+      </div>
     </div>
-    <div class="stat-item deadlines">
-      <div class="stat-value">{{ upcomingDeadlines || 0 }}</div>
-      <div class="stat-label">Deadlines</div>
-      <mat-icon class="stat-icon">notification_important</mat-icon>
+
+    <div class="stat-item">
+      <div class="stat-icon">
+        <mat-icon>percent</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.completionRate | number:'1.0-0' }}%</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+    </div>
+
+    <!-- Chart for Completion Rate -->
+    <div class="chart-container">
+      <canvas id="completionChart"></canvas>
+    </div>
+
+    <div class="loading-spinner" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
     </div>
   </div>
 </div>

@@ -8,7 +8,8 @@ import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {TimeLogService} from '../../../../services/my-tasks/time-log.service';
 import {MatTooltip} from '@angular/material/tooltip';
 import {MatPaginator, PageEvent} from '@angular/material/paginator';
-import {async} from 'rxjs';
+import {Router} from '@angular/router';
+import {ProjectContextService} from '../../../../services/project-context.service';
 
 @Component({
   selector: 'app-task-list',
@@ -35,7 +36,9 @@ export class TaskListComponent {
 
   constructor(
     public taskListService: TaskListService,
-    private timeLogService: TimeLogService
+    private timeLogService: TimeLogService,
+    private router: Router,
+    private projectContextService: ProjectContextService
   ) {
     this.taskListService.tasks$.subscribe(tasks => {
       this.tasks = tasks || [];
@@ -57,7 +60,12 @@ export class TaskListComponent {
   }
 
   onViewAllTasks(): void {
-    this.taskListService.triggerViewAllTasks();
+    const projectId = this.projectContextService.getCurrentProjectId();
+    if (projectId) {
+      this.router.navigate([`/project-details/${projectId}/dashboard`], {
+        queryParams: { tab: 'tasks', subTab: 'assigned-tasks' }
+      });
+    }
   }
 
   onLogTaskTime(task: any): void {
@@ -89,4 +97,18 @@ export class TaskListComponent {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
   }
+
+  onViewTask(task: any): void {
+    const projectId = this.projectContextService.getCurrentProjectId();
+    if (projectId && task?.id) {
+      this.router.navigate([`/project-details/${projectId}/dashboard`], {
+        queryParams: {
+          tab: 'tasks',
+          subTab: 'assigned-tasks',
+          taskId: task.id
+        }
+      });
+    }
+  }
+
 }

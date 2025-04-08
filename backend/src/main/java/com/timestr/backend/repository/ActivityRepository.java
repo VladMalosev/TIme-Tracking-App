@@ -15,4 +15,8 @@ public interface ActivityRepository extends JpaRepository<Activity, UUID> {
     void deleteByProjectId(UUID projectId);
 
     List<Activity> findByProjectIdAndTypeOrderByCreatedAtDesc(UUID projectId, ActivityType activityType);
+
+
+    List<Activity> findByUserIdOrderByCreatedAtDesc(UUID userId);
+    List<Activity> findByUserIdAndProjectIdOrderByCreatedAtDesc(UUID userId, UUID projectId);
 }

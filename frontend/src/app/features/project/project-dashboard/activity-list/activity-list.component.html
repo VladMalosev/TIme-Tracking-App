@@ -1,14 +1,43 @@
-<div class="card activity-card">
-  <h2>Recent Activity</h2>
-  <div class="activity-list">
-    <div class="activity-item" *ngFor="let activity of activities">
-      <div class="activity-icon" [ngClass]="getActivityType(activity)">
-        <mat-icon>{{ getActivityIcon(activity) }}</mat-icon>
-      </div>
-      <div class="activity-details">
-        <p class="activity-text">{{ activity.text }}</p>
-        <span class="activity-time">{{ activity.time }}</span>
+<!-- activity-list.component.html -->
+<div class="activity-card">
+  <div class="card-header">
+    <h2>Recent Activity</h2>
+    <div class="card-actions">
+
+    </div>
+  </div>
+
+
+  <div *ngIf="isLoading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && activities.length === 0" class="empty-state" [@fadeIn]>
+    <mat-icon>info</mat-icon>
+    <p>No recent activity found</p>
+    <span>Activities will appear here as you work on tasks</span>
+  </div>
+
+  <div class="activity-list-container" *ngIf="!isLoading && activities.length > 0">
+    <div class="activity-list">
+      <div class="activity-item" *ngFor="let activity of filteredActivities" [@fadeIn]>
+        <div class="activity-icon" [ngClass]="getActivityType(activity)" [matTooltip]="getActivityTitle(activity)">
+          <mat-icon>{{ getActivityIcon(activity) }}</mat-icon>
+        </div>
+        <div class="activity-details">
+          <p class="activity-text">{{ activity.description }}</p>
+          <span class="activity-time">{{ activity.time }}</span>
+        </div>
       </div>
     </div>
+
+    <mat-paginator
+      [length]="activities.length"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      [showFirstLastButtons]="true"
+      (page)="onPageChange($event)"
+      aria-label="Select page of activities">
+    </mat-paginator>
   </div>
 </div>

@@ -25,9 +25,12 @@
 
     <!-- Task list -->
     <div class="task-list">
-      <div class="task-item" *ngFor="let task of paginatedTasks"
+      <div class="task-item"
+           *ngFor="let task of paginatedTasks"
            [class.urgent]="isTaskUrgent(task)"
-           [class.completed]="task.status === 'COMPLETED'">
+           [class.completed]="task.status === 'COMPLETED'"
+           (click)="onViewTask(task)">
+
 
         <div class="task-content">
           <div class="task-header">

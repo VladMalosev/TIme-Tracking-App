@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ActivityListService } from './activity-list.service';
+import { TimeTrackingService } from './time-tracking.service';
 
-describe('ActivityListService', () => {
-  let service: ActivityListService;
+describe('TimeTrackingService', () => {
+  let service: TimeTrackingService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ActivityListService);
+    service = TestBed.inject(TimeTrackingService);
   });
 
   it('should be created', () => {
