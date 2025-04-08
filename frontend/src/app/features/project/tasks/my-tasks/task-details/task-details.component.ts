@@ -48,6 +48,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   description: string = '';
   errorMessage: string | null = null;
   private projectIdSubscription?: Subscription;
+  isDescriptionExpanded = false;
+  expandedDescriptions: {[key: string]: boolean} = {};
 
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
@@ -300,4 +302,9 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
     }
     return datetime;
   }
+
+  toggleDescription(key: string) {
+    this.expandedDescriptions[key] = !this.expandedDescriptions[key];
+  }
+
 }

@@ -14,6 +14,8 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import {MatDivider} from '@angular/material/divider';
 import {ProductivityStats, TaskStats, TimeLog, TimeLogDisplay, TimeStats} from '../../../../../../models';
+import {RecentTimeEntriesComponent} from './recent-time-entries/recent-time-entries.component';
+import {DashboardStatsComponent} from './dashboard-stats/dashboard-stats.component';
 
 Chart.register(...registerables);
 
@@ -31,7 +33,9 @@ Chart.register(...registerables);
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
-    MatDivider
+    MatDivider,
+    RecentTimeEntriesComponent,
+    DashboardStatsComponent
   ],
   templateUrl: './my-tasks-statistics.component.html',
   styleUrls: ['./my-tasks-statistics.component.scss']

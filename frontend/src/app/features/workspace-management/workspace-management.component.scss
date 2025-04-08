@@ -155,3 +155,49 @@ mat-card {
   border: 1px solid #767676;
   align-items: center;
 }
+.mat-column-select {
+  width: 5%;
+  min-width: 50px;
+  max-width: 60px;
+  text-align: center;
+}
+
+.mat-column-name, .name-column {
+  width: 10%;
+  min-width: 200px;
+  max-width: 300px;
+
+}
+
+.mat-column-status, .status-column {
+  width: 12%;
+  min-width: 120px;
+  max-width: 150px;
+  text-transform: capitalize;
+}
+
+.mat-column-description, .description-column {
+  width: 45%;
+  min-width: 250px;
+  max-width: 350px;
+
+}
+
+.mat-column-createdAt, .created-at-column {
+  width: 15%;
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.mat-column-deadline, .deadline-column {
+  width: 15%;
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.mat-column-actions, .actions-column {
+  width: 8%;
+  min-width: 100px;
+  max-width: 120px;
+  text-align: center;
+}

@@ -40,28 +40,28 @@ $light-gray: #e9ecef;
     display: flex;
     align-items: center;
     gap: 20px;
+    flex-wrap: wrap;
 
-    .project-badge {
-      @include flex-center;
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: $primary;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-    }
 
     h1 {
       font-size: 24px;
       margin: 0 0 4px;
       color: $dark;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     .subtitle {
       color: $gray;
       margin: 0 0 12px;
       font-size: 16px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      max-width: 100%;
+      padding-top: 5px;
     }
 
     .project-meta {
@@ -115,6 +115,7 @@ $light-gray: #e9ecef;
       align-items: center;
       gap: 8px;
       cursor: pointer;
+      min-width: 130px;
 
       &.primary {
         background: $primary;

@@ -8,7 +8,7 @@ import {FormsModule} from '@angular/forms';
   selector: 'app-register',
     imports: [CommonModule, FormsModule],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrl: '../../../../../public/styles/_register.component.css'
 })
 export class RegisterComponent {
   user = {

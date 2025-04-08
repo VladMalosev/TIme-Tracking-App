@@ -1,0 +1,122 @@
+<div class="stats-grid">
+  <!-- Time Allocation Card -->
+  <mat-card class="stats-card time-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="card-icon">schedule</mat-icon>
+        Time Allocation
+      </mat-card-title>
+      <mat-card-subtitle>How you've spent your time</mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content *ngIf="statsService.timeStats$ | async as timeStats">
+      <div class="stat-item main-stat">
+        <div class="stat-value">{{ statsService.formatMinutes(timeStats.totalLogged) }}</div>
+        <div class="stat-label">Total Time Logged</div>
+        <div class="stat-description">All tracked time across all tasks and projects</div>
+      </div>
+      <div class="secondary-stats">
+        <div class="stat-item">
+          <div class="stat-value">{{ statsService.formatMinutes(timeStats.weeklyAverage) }}</div>
+          <div class="stat-label">Weekly Average</div>
+          <div class="stat-description">Your typical weekly workload</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ timeStats.taskDistribution.length }}</div>
+          <div class="stat-label">Active Tasks</div>
+          <div class="stat-description">Tasks you've logged time against</div>
+        </div>
+      </div>
+      <div class="top-tasks" *ngIf="timeStats.taskDistribution.length > 0">
+        <h3 class="section-title">
+          <mat-icon>star</mat-icon>
+          Top Time Investments
+        </h3>
+        <div class="task-list">
+          <div class="task-item" *ngFor="let task of timeStats.taskDistribution | slice:0:3">
+            <span class="task-name">{{ task.taskName }}</span>
+            <span class="task-time">{{ statsService.formatMinutes(task.minutes) }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Task Progress Card -->
+  <mat-card class="stats-card completion-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="card-icon">task_alt</mat-icon>
+        Task Progress
+      </mat-card-title>
+      <mat-card-subtitle>Your completion metrics</mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content *ngIf="statsService.taskStats$ | async as taskStats">
+      <div class="completion-summary">
+        <div class="total-tasks">
+          <div class="number">{{ taskStats.totalTasks }}</div>
+          <div class="label">Total Tasks</div>
+        </div>
+        <div class="completion-rate">
+          <div class="percentage">
+            {{ taskStats.totalTasks > 0 ? (taskStats.completed / taskStats.totalTasks * 100).toFixed(0) : 0 }}%
+          </div>
+          <div class="label">Completion Rate</div>
+        </div>
+      </div>
+
+      <div class="completion-grid">
+        <div class="completion-item completed">
+          <div class="completion-number">{{ taskStats.completed }}</div>
+          <div class="completion-label">Completed</div>
+          <div class="completion-description">Tasks marked as done</div>
+        </div>
+        <div class="completion-item in-progress">
+          <div class="completion-number">{{ taskStats.inProgress }}</div>
+          <div class="completion-label">In Progress</div>
+          <div class="completion-description">Actively being worked on</div>
+        </div>
+        <div class="completion-item pending">
+          <div class="completion-number">{{ taskStats.pending }}</div>
+          <div class="completion-label">Pending</div>
+          <div class="completion-description">Waiting to be started</div>
+        </div>
+      </div>
+
+      <div class="completion-chart">
+        <canvas #completionChart></canvas>
+        <div class="chart-description">Visual breakdown of your task status distribution</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Weekly Work Patterns Card -->
+  <mat-card class="stats-card patterns-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="card-icon">insights</mat-icon>
+        Weekly Work Patterns
+      </mat-card-title>
+      <mat-card-subtitle>Your time logging habits by day</mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content *ngIf="statsService.productivityStats$ | async as productivityStats">
+      <div class="log-patterns" *ngIf="productivityStats.logPatterns">
+        <div class="chart-container">
+          <canvas #logPatternsChart></canvas>
+        </div>
+        <div class="insight-text">
+          <p *ngIf="statsService.getMostProductiveDay(productivityStats.logPatterns) as mostProductiveDay">
+            <mat-icon>stars</mat-icon>
+            <strong>Your most active day:</strong> {{ mostProductiveDay }}
+          </p>
+          <p *ngIf="statsService.getLeastProductiveDay(productivityStats.logPatterns) as leastProductiveDay">
+            <mat-icon>info</mat-icon>
+            <strong>Your quietest day:</strong> {{ leastProductiveDay }}
+          </p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

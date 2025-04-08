@@ -1,0 +1,67 @@
+.time-logs-card {
+  margin-top: 2rem;
+  box-shadow: none;
+
+  mat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+
+  .time-logs-intro {
+    margin-bottom: 1rem;
+    color: #666;
+    font-size: 0.95rem;
+  }
+
+  .time-logs-table {
+    margin-top: 1rem;
+    width: 100%;
+    table-layout: fixed;
+
+    th {
+      font-weight: 500;
+      background: #f8f9fa;
+      padding: 12px 16px;
+    }
+
+    td {
+      vertical-align: middle;
+      padding: 12px 16px;
+      word-wrap: break-word;
+      overflow: hidden;
+    }
+
+    .mat-column-date {
+      width: 30%;
+      min-width: 300px;
+    }
+
+    .mat-column-taskName {
+      width: 30%;
+      min-width: 200px;
+    }
+
+    .mat-column-duration {
+      width: 20%;
+      min-width: 200px;
+      text-align: center;
+    }
+
+    .mat-column-description {
+      min-width: 40%;
+    }
+  }
+
+  // Paginator styling
+  mat-paginator {
+    margin-top: 16px;
+    background: transparent;
+  }
+}

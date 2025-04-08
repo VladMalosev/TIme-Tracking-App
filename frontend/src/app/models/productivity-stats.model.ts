@@ -12,5 +12,5 @@ export interface ProductivityStats {
       day: string;
       count: number;
     }>;
-  };
+  } | null;
 }

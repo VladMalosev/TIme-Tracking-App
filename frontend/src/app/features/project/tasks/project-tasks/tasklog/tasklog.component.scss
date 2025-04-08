@@ -111,3 +111,66 @@
 }
 
 
+.log-table {
+  width: 100%;
+  overflow-x: auto;
+  max-width: 100%;
+
+  .full-width-table {
+    width: 100%;
+    min-width: 900px;
+    max-width: 100%;
+
+    .mat-column-action {
+      width: 120px;
+      min-width: 120px;
+    }
+
+    .mat-column-user,
+    .mat-column-targetUser {
+      width: 150px;
+      min-width: 150px;
+    }
+
+    .mat-column-statusChange {
+      width: 140px;
+      min-width: 140px;
+    }
+
+    .mat-column-taskName {
+      max-width: 200px;
+    }
+
+    .mat-column-description {
+      max-width: 250px;
+
+    }
+
+    .mat-column-deadline,
+    .mat-column-timestamp {
+      width: 160px;
+      min-width: 160px;
+    }
+
+    th.mat-header-cell {
+      background-color: #f8f9fa;
+      font-weight: 500;
+      color: #4A3AFF;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    // Cell styles
+    td.mat-cell {
+      vertical-align: middle;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    // Row hover effect
+    tr.mat-row:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}

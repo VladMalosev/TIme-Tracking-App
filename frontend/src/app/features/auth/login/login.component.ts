@@ -4,14 +4,13 @@ import {Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, provideHttpClient} from '@angular/common/http';
-import {HeaderComponent} from "../../../shared/components/header/header.component";
-import {FooterComponent} from '../../../shared/components/footer/footer.component';
+
 
 @Component({
   selector: 'app-login',
   imports: [CommonModule, FormsModule,],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: '../../../../../public/styles/_login.component.css'
 })
 export class LoginComponent {
   credentials = {

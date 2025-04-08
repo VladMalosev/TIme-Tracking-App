@@ -74,15 +74,57 @@
   background: white;
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 
-    th, td {
+  th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
     font-size: 14px;
   }
 
+  td:nth-child(1), th:nth-child(1) { // Task Name
+    width: 20%;
+    min-width: 200px;
+    max-width: 250px;
 
+  }
+
+  td:nth-child(2), th:nth-child(2) { // Description
+    width: 25%;
+    min-width: 250px;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  td:nth-child(3), th:nth-child(3) { // Status
+    width: 12%;
+    min-width: 120px;
+  }
+
+  td:nth-child(4), th:nth-child(4) { // Deadline
+    width: 12%;
+    min-width: 120px;
+  }
+
+  td:nth-child(5), th:nth-child(5) { // Assigned By
+    width: 15%;
+    min-width: 150px;
+
+  }
+
+  td:nth-child(6), th:nth-child(6) { // Assignment Date
+    width: 12%;
+    min-width: 120px;
+  }
+
+  td:nth-child(7), th:nth-child(7) { // Actions
+    width: 4%;
+    min-width: 60px;
+    text-align: center;
+  }
 
   th {
     color: #4A3AFF;
@@ -102,7 +144,17 @@
       padding: 0;
     }
   }
+
+  td {
+    &.task-name, &.task-description {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
+
 
 .no-tasks-message {
   display: flex;
