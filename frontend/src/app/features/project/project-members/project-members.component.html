@@ -18,6 +18,14 @@
       <span class="subtab-label">Member Logs</span>
       <span class="subtab-indicator"></span>
     </button>
+
+    <button class="subtab-button"
+            (click)="setActiveTab('invitations')"
+            [class.active]="activeTab === 'invitations'"
+            *ngIf="hasAdminAccess">
+      <span class="subtab-label">Invitations</span>
+      <span class="subtab-indicator"></span>
+    </button>
   </nav>
 
   <div class="subtab-content">
@@ -202,6 +210,16 @@
         </div>
         <app-member-activity-logs></app-member-activity-logs>
       </div>
+
+
+      <div class="tab-panel" *ngIf="activeTab === 'invitations' && hasAdminAccess">
+        <div class="logs-header">
+          <h2>Invitations</h2>
+          <p>Manage project invitations.</p>
+        </div>
+        <app-app-invitations></app-app-invitations>
+      </div>
+
     </div>
   </div>
 </div>

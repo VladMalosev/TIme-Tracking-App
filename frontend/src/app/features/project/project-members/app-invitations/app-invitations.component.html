@@ -1,0 +1,104 @@
+<div class="invitations-container">
+
+  <!-- Add Collaborator Section -->
+  <div class="card-section" *ngIf="assignableRoles.length > 0">
+    <div class="header">
+      <h3>Add Collaborator</h3>
+    </div>
+
+    <div class="form-content">
+      <form (ngSubmit)="addCollaborator()" class="invitation-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [(ngModel)]="collaboratorEmail" name="email" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Role</mat-label>
+          <mat-select [(ngModel)]="selectedRole" name="role" required>
+            <mat-option *ngFor="let role of assignableRoles" [value]="role">
+              {{ role }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" type="submit" [disabled]="!selectedRole || !collaboratorEmail">
+          <mat-icon>person_add</mat-icon>
+          Send Invitation
+        </button>
+      </form>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        {{ errorMessage }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sent Invitations Section -->
+  <div class="card-section">
+    <div class="header">
+      <h3>Sent Invitations</h3>
+    </div>
+
+    <div class="table-content" *ngIf="(invitations$ | async)?.length; else noInvitations">
+      <table mat-table [dataSource]="(invitations$ | async) || []" class="mat-elevation-z1 full-width">
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let invitation">{{ invitation.invitedUserEmail }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let invitation">{{ invitation.invitedUserName || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let invitation">{{ invitation.role }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let invitation">
+            <span class="status-badge" [ngClass]="'status-' + invitation.status.toLowerCase()">
+              {{ invitation.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sentBy">
+          <th mat-header-cell *matHeaderCellDef>Sent By</th>
+          <td mat-cell *matCellDef="let invitation">{{ invitation.senderEmail }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="sentAt">
+          <th mat-header-cell *matHeaderCellDef>Sent At</th>
+          <td mat-cell *matCellDef="let invitation">{{ invitation.createdAt | date:'short' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let invitation">
+            <button mat-icon-button color="warn" (click)="removeInvitation(invitation.id)" *ngIf="invitation.status === 'PENDING'">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <span *ngIf="invitation.status !== 'PENDING'">-</span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <ng-template #noInvitations>
+      <div class="no-invitations">
+        <mat-icon>inbox</mat-icon>
+        <p>No invitations sent yet</p>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

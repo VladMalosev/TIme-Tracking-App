@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -195,6 +196,7 @@ public class ProjectInvitationController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{invitationId}")
+    @Transactional
     public ResponseEntity<Void> deleteInvitation(
             @Parameter(description = "ID of the invitation", required = true)
             @PathVariable UUID invitationId) {
@@ -206,7 +208,12 @@ public class ProjectInvitationController {
         ProjectInvitation invitation = projectInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
-        if (!invitation.getSender().getId().equals(user.getId())) {
+        boolean isSender = invitation.getSender().getId().equals(user.getId());
+        boolean isProjectAdmin = projectUserRepository.findByUserIdAndProjectId(user.getId(), invitation.getProject().getId())
+                .map(projectUser -> projectUser.getRole() == Role.ADMIN || projectUser.getRole() == Role.OWNER)
+                .orElse(false);
+
+        if (!isSender && !isProjectAdmin) {
             throw new RuntimeException("You are not authorized to delete this invitation");
         }
 
@@ -227,7 +234,17 @@ public class ProjectInvitationController {
         ));
         auditLogRepository.save(auditLog);
 
-        projectInvitationRepository.delete(invitation);
+        Activity activity = new Activity();
+        activity.setProject(invitation.getProject());
+        activity.setUser(user);
+        activity.setType(ActivityType.INVITATION_REVOKED);
+        activity.setDescription(String.format(
+                "Invitation for %s was revoked by %s",
+                invitation.getInvitedUser().getName(),
+                user.getName()
+        ));
+        activity.setCreatedAt(LocalDateTime.now());
+        activityRepository.save(activity);
 
         projectInvitationRepository.delete(invitation);
 

@@ -11,6 +11,7 @@ public enum ActivityType {
     PROJECT_UPDATED,
     TASK_DELETED,
     TIME_LOG_LINKED,
+    INVITATION_REVOKED,
 
     ROLE_CHANGED,
     USER_REMOVED

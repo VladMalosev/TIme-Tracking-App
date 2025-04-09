@@ -189,11 +189,8 @@ public class ProjectController {
     })
     @PostMapping("/{projectId}/collaborators")
     public ResponseEntity<ProjectInvitation> inviteCollaborator(
-            @Parameter(description = "ID of the project", required = true)
             @PathVariable UUID projectId,
-            @Parameter(description = "Email of the user to invite", required = true, example = "user@example.com")
             @RequestParam String email,
-            @Parameter(description = "Role to assign to the collaborator", required = true)
             @RequestParam Role role) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -230,6 +227,7 @@ public class ProjectController {
 
         Activity activity = new Activity();
         activity.setProject(project);
+        activity.setUser(currentUser);
         activity.setType(ActivityType.COLLABORATOR_INVITED);
         activity.setDescription("User '" + invitedUser.getName() + "' was invited to the project");
         activity.setCreatedAt(LocalDateTime.now());

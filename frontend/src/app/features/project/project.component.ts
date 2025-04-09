@@ -6,7 +6,6 @@ import { ProjectMembersComponent } from './project-members/project-members.compo
 import { ProjectTasksComponent } from './tasks/project-tasks/project-tasks.component';
 import { FormsModule } from '@angular/forms';
 import {TaskAssignmentComponent} from "./tasks/task-assignment/task-assignment.component";
-import {ProjectInvitationsComponent} from "./project-invitations/project-invitations.component";
 import {TaskSubtabsComponent} from './tasks/my-tasks/task-subtabs/task-subtabs.component';
 import {TaskTabsService} from '../../services/task-tabs-service';
 import {ProjectTasksService} from '../../services/project-tasks/project-tasks.service';
@@ -44,7 +43,6 @@ import {MatIconModule} from '@angular/material/icon';
     ProjectTasksComponent,
     TaskAssignmentComponent,
     MyTasksComponent,
-    ProjectInvitationsComponent
   ],
   styleUrls: ['./project.component.css']
 })

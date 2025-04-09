@@ -2,35 +2,59 @@
      class="timer-widget-container"
      [class.collapsed]="collapsed"
      [class.expanded]="!collapsed"
-     (click)="toggleCollapse()">
+     [style.transform]="dragPosition"
+     (mousedown)="startDrag($event)">
 
-  <div class="timer-header" *ngIf="!collapsed">
+  <!-- Collapsed State -->
+  <div class="collapsed-state" *ngIf="collapsed" (click)="toggleCollapse()">
+    <div class="badge-container">
+
+    </div>
     <mat-icon class="timer-icon">timer</mat-icon>
-    <span class="timer-title">Active Timers</span>
-    <span class="timer-badge">{{activeTimers.length}}</span>
-    <button mat-icon-button class="collapse-button" (click)="toggleCollapse(); $event.stopPropagation()">
-      <mat-icon>expand_more</mat-icon>
-    </button>
   </div>
 
-  <div class="circle-icon" *ngIf="collapsed">
-    <mat-icon>timer</mat-icon>
-  </div>
-
-  <div class="timer-content" *ngIf="!collapsed">
-    <div *ngFor="let timer of activeTimers" class="timer-item">
-      <div class="timer-info">
-        <div class="timer-project">{{getProjectName(timer)}}</div>
-        <div class="timer-task">{{getTaskName(timer)}}</div>
-        <div class="timer-description">{{timer.description || 'No description'}}</div>
+  <!-- Expanded State -->
+  <div class="expanded-state" *ngIf="!collapsed">
+    <div class="timer-header">
+      <div class="header-left">
+        <mat-icon class="timer-icon">timer</mat-icon>
+        <span class="timer-title">Active Timers</span>
+        <span class="timer-badge">{{activeTimers.length}}</span>
       </div>
+      <button mat-icon-button class="collapse-button" (click)="toggleCollapse(); $event.stopPropagation()">
+        <mat-icon>expand_more</mat-icon>
+      </button>
+    </div>
 
-      <div class="timer-controls">
-        <div class="timer-duration">{{calculateCurrentDuration(timer)}}</div>
-        <button mat-icon-button (click)="stopTimer(timer.id); $event.stopPropagation()"
-                class="stop-button" matTooltip="Stop timer">
-          <mat-icon>stop</mat-icon>
-        </button>
+    <div class="timer-content">
+      <div *ngFor="let timer of activeTimers" class="timer-item">
+        <div class="timer-info">
+          <div class="timer-project">{{getProjectName(timer)}}</div>
+          <div class="timer-task">{{getTaskName(timer)}}</div>
+          <div class="timer-description">{{timer.description || 'No description'}}</div>
+        </div>
+
+        <div class="timer-controls">
+          <div class="timer-duration">
+            <span class="duration-value">{{calculateCurrentDuration(timer)}}</span>
+            <span class="duration-label">Time logged</span>
+          </div>
+
+          <div class="action-buttons">
+            <button mat-mini-fab color="primary" (click)="goToTask(timer); $event.stopPropagation()"
+                    matTooltip="Go to task" class="action-button">
+              <mat-icon>assignment</mat-icon>
+            </button>
+            <button mat-mini-fab color="accent" (click)="goToProject(timer); $event.stopPropagation()"
+                    matTooltip="Go to project" class="action-button">
+              <mat-icon>folder</mat-icon>
+            </button>
+            <button mat-mini-fab color="warn" (click)="stopTimer(timer.id); $event.stopPropagation()"
+                    matTooltip="Stop timer" class="action-button stop-button">
+              <mat-icon>stop</mat-icon>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -14,6 +14,7 @@ import { MatCardModule } from '@angular/material/card';
 import {TimeLogListComponent} from './time-log-list/time-log-list.component';
 import {ProjectContextService} from '../../../../../services/project-context.service';
 import {TimeTrackingService} from '../../../../../services/time-tracking.service';
+import {TimeEntryStateService} from '../../../../../services/my-tasks/time-entry-state.service';
 
 @Component({
   selector: 'app-task-details',
@@ -50,6 +51,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   private projectIdSubscription?: Subscription;
   isDescriptionExpanded = false;
   expandedDescriptions: {[key: string]: boolean} = {};
+  private subs: Subscription = new Subscription();
 
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
@@ -63,12 +65,22 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
     private taskAssignmentService: TaskAssignmentService,
     private taskSelectionService: TaskSelectionService,
     private projectContextService: ProjectContextService,
-    private timeTrackingService: TimeTrackingService
+    private timeTrackingService: TimeTrackingService,
+    private timeEntryState: TimeEntryStateService
   ) {}
+
 
   ngOnInit(): void {
     this.projectIdSubscription = this.projectContextService.currentProjectId$.subscribe(
       projectId => this.projectId = projectId
+    );
+
+    this.subs.add(
+      this.timeEntryState.timerStopped$.subscribe(timerId => {
+        if (this.isRunning) {
+          this.syncTimerState();
+        }
+      })
     );
 
     this.taskSubscription = this.taskSelectionService.selectedTaskId$.subscribe(taskId => {
@@ -87,6 +99,23 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       } else {
         this.task = null;
         this.stopTimer();
+      }
+    });
+  }
+
+  private syncTimerState(): void {
+    if (!this.task?.id) return;
+
+    this.timeTrackingService.getActiveTimeLog(this.task.id).subscribe({
+      next: (timeLog) => {
+        if (!timeLog) {
+          this.isRunning = false;
+          clearInterval(this.timerInterval);
+          this.elapsedTime = 0;
+        }
+      },
+      error: (error) => {
+        console.error('Error syncing timer state:', error);
       }
     });
   }

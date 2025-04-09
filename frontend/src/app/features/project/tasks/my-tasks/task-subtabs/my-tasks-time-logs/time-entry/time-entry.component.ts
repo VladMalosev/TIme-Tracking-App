@@ -82,6 +82,19 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeComponent();
     this.setupVisibilityTracking();
+
+    this.subs.add(
+      this.timeEntryState.timerStopped$.subscribe(timerId => {
+        if (this.isRunning) {
+          this.isRunning = false;
+          clearInterval(this.timerInterval);
+          this.stopHeartbeat();
+          this.elapsedTime = 0;
+
+          this.syncTimerWithServer().subscribe();
+        }
+      })
+    );
   }
 
   private initializeComponent(): void {

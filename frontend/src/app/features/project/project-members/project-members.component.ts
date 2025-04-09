@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { MemberService } from '../../../services/project-invitations/member.service';
 import { ProjectContextService } from '../../../services/project-context.service';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {
   MatCell,
   MatCellDef,
@@ -46,6 +46,7 @@ import {
 } from '../tasks/my-tasks/task-subtabs/my-tasks-statistics/my-tasks-statistics.component';
 import {MyTasksTimeLogsComponent} from '../tasks/my-tasks/task-subtabs/my-tasks-time-logs/my-tasks-time-logs.component';
 import {ProjectRoleService} from '../../../services/project-role.service';
+import {AppInvitationsComponent} from './app-invitations/app-invitations.component';
 
 @Component({
   selector: 'app-project-members',
@@ -71,6 +72,7 @@ import {ProjectRoleService} from '../../../services/project-role.service';
     MatMenuTrigger,
     MatProgressSpinner,
     MemberActivityLogsComponent,
+    AppInvitationsComponent,
 
   ],
   styleUrls: ['./project-members.component.scss']
@@ -83,9 +85,11 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
   isLoading = true;
   selectedRoles: string[] = [];
   currentFilter: string = '';
-  activeTab: 'members' | 'members-logs' = 'members';
+  activeTab: 'members' | 'members-logs' | 'invitations' = 'members';
   currentUserRole: string = '';
   hasAdminAccess: boolean = false;
+  nestedActiveTab: string = 'list';
+
 
   @ViewChild(MatSort, {static: false}) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -99,7 +103,8 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router,
-    private projectRoleService: ProjectRoleService
+    private projectRoleService: ProjectRoleService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -107,6 +112,12 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     this.setupSubscriptions();
     this.initializeFilterPredicate();
     this.fetchCurrentUserRole();
+    this.route.queryParams.subscribe(params => {
+      const tab = params['tab'];
+      if (tab) {
+        this.activeTab = tab;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -135,7 +146,7 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  setActiveTab(tab: 'members' | 'members-logs'): void {
+  setActiveTab(tab: 'members' | 'members-logs' | 'invitations'): void {
     this.activeTab = tab;
   }
 

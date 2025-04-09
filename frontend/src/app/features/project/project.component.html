@@ -13,9 +13,7 @@
           <li>
             <a (click)="setActiveTab('tasks')" [class.active]="activeTab === 'tasks'">Tasks</a>
           </li>
-          <li *ngIf="canAccessInvitations()">
-            <a (click)="setActiveTab('invitations')" [class.active]="activeTab === 'invitations'">Invitations</a>
-          </li>
+
           <li *ngIf="canAccessLogs()">
             <a (click)="setActiveTab('time-logs')" [class.active]="activeTab === 'time-logs'">Time Logs</a>
           </li>
@@ -58,10 +56,7 @@
             </app-task-subtabs>
           </div>
 
-            <!-- Invitations Tab -->
-            <div *ngIf="activeTab === 'invitations'">
-              <app-project-invitations *ngIf="projectId"></app-project-invitations>
-            </div>
+
         </div>
     </div>
 </div>
