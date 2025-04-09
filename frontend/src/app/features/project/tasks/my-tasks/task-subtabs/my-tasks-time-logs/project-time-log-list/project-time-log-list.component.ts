@@ -198,10 +198,18 @@ export class ProjectTimeLogListComponent implements OnInit, OnDestroy {
 
   calculateDuration(logs: any[]): string {
     const totalSeconds = logs.reduce((sum, log) => {
+      if (!log.startTime || !log.endTime) return sum;
+
       const start = new Date(log.startTime);
       const end = new Date(log.endTime);
-      return sum + (end.getTime() - start.getTime()) / 1000;
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return sum;
+
+      const duration = (end.getTime() - start.getTime()) / 1000;
+      return duration > 0 ? sum + duration : sum;
     }, 0);
+
+    if (totalSeconds <= 0) return 'null';
 
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -209,9 +217,23 @@ export class ProjectTimeLogListComponent implements OnInit, OnDestroy {
   }
 
   formatDuration(start: string, end: string): string {
+    if (!start || !end) {
+      return 'null';
+    }
+
     const startDate = new Date(start);
     const endDate = new Date(end);
+
+    if (isNaN(startDate.getTime())) {
+      return 'null';
+    }
+    if (isNaN(endDate.getTime())) {
+      return 'null';
+    }
+
     const duration = (endDate.getTime() - startDate.getTime()) / 1000;
+
+    if (duration < 0) return 'null';
 
     const hours = Math.floor(duration / 3600);
     const minutes = Math.floor((duration % 3600) / 60);
@@ -219,6 +241,9 @@ export class ProjectTimeLogListComponent implements OnInit, OnDestroy {
   }
 
   formatDateTime(dateString: string): string {
+    if (!dateString) {
+      return 'null';
+    }
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   }

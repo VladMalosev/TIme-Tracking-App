@@ -402,4 +402,34 @@ public class TimeLogController {
         return ResponseEntity.ok(response);
     }
 
+
+    @Operation(summary = "Get all active timers for user",
+            description = "Retrieves all active timers for a specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Active timers retrieved"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/active/user/{userId}")
+    public ResponseEntity<List<TimeLog>> getAllActiveTimersForUser(@PathVariable UUID userId) {
+        List<TimeLog> activeTimers = timeLogRepository.findByUserIdAndEndTimeIsNull(userId);
+        return ResponseEntity.ok(activeTimers);
+    }
+
+    @Operation(summary = "Stop specific timer",
+            description = "Stops a specific timer by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Timer stopped"),
+            @ApiResponse(responseCode = "404", description = "Timer not found"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - cannot stop another user's timer")
+    })
+    @PostMapping("/{timeLogId}/stop")
+    public ResponseEntity<TimeLog> stopSpecificTimer(
+            @PathVariable UUID timeLogId,
+            @RequestBody Map<String, String> request) {
+
+        UUID userId = UUID.fromString(request.get("userId"));
+        TimeLog stoppedTimer = timeLogService.stopSpecificTimer(timeLogId, userId);
+        return ResponseEntity.ok(stoppedTimer);
+    }
+
 }

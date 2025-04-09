@@ -7,7 +7,9 @@ import { ProjectContextService } from '../../../../services/project-context.serv
 import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { Chart } from 'chart.js';
+import {Chart, registerables} from 'chart.js';
+
+Chart.register(...registerables)
 
 @Component({
   selector: 'app-stats-card',
@@ -100,36 +102,46 @@ export class StatsCardComponent implements OnInit, OnDestroy {
   }
 
   createChart(): void {
-    const canvas = document.getElementById('completionChart') as HTMLCanvasElement;
+    const canvas = document.getElementById('completionChart') as HTMLCanvasElement | null;
 
     if (!canvas) {
       console.warn('Canvas element not found');
       return;
     }
 
-    if (this.chart) {
-      this.chart.destroy();
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+
+    if (this.stats.totalTasks === 0) {
+      return;
     }
 
     this.chart = new Chart(canvas, {
       type: 'pie',
       data: {
-        labels: ['Completed', 'Active'],
+        labels: ['Completed', 'Remaining'],
         datasets: [{
           data: [
             this.stats.completedTasks,
             Math.max(0, this.stats.totalTasks - this.stats.completedTasks)
           ],
           backgroundColor: ['#3f51b5', '#e0e0e0'],
+          borderWidth: 1
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
       }
     });
   }
-
   isStatsEmpty(): boolean {
     return this.stats.totalLoggedTime === 0 &&
       this.stats.weeklyAverage === 0 &&

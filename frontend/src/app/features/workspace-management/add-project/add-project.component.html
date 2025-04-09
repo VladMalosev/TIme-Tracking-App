@@ -1,0 +1,75 @@
+<div class="container">
+  <!-- Error Message -->
+  <mat-card *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </mat-card>
+
+  <h4 class="mat-display-1">Create a New Project</h4>
+  <p class="undertext mat-body-2">Start managing your work with a new project.</p>
+
+  <form (ngSubmit)="submitForm()">
+    <!-- Project Name -->
+    <h4>Project Name:</h4>
+    <p>This name will be displayed for everyone.</p>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Project Name</mat-label>
+      <input matInput id="projectName" [(ngModel)]="project.name" name="name" placeholder="Project name" required>
+    </mat-form-field>
+
+    <!-- Client and Deadline -->
+    <div class="row">
+      <div class="col s6">
+        <h4>Client:</h4>
+        <p>Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Choose your client</mat-label>
+          <mat-select [(ngModel)]="project.client" name="client" placeholder="Choose your client">
+            <mat-option value="" disabled selected>Select client</mat-option>
+            <mat-option *ngFor="let client of clients" [value]="client">{{ client }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="col s6">
+        <h4>Set Deadline:</h4>
+        <p>Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Set deadline</mat-label>
+          <input matInput id="projectDeadline" type="date" [(ngModel)]="project.deadline" name="deadline" placeholder="Set Deadline">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <h4>Add Description:</h4>
+    <p>Here you can add description for the project.</p>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput id="projectDescription" [(ngModel)]="project.description" name="description" placeholder="Project description"></textarea>
+    </mat-form-field>
+
+    <!-- Add Media and Category -->
+    <div class="row">
+      <div class="col s6">
+        <button class="buttons" color="accent">
+          <img src="assets/images/document.png" alt="Media Icon" class="icon"> Add Media
+        </button>
+        <button class="buttons" color="accent" [matMenuTriggerFor]="categoryMenu">Add Category</button>
+        <mat-menu #categoryMenu="matMenu">
+          <button mat-menu-item *ngFor="let category of categories" (click)="project.category = category">
+            {{ category }}
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Submit Button -->
+    <div class="row">
+      <div class="col s12 right-align">
+        <button mat-raised-button class="custom-submit-button" type="submit">Create Project</button>
+      </div>
+    </div>
+  </form>
+</div>

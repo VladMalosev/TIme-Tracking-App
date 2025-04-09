@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {BehaviorSubject, map, Observable, of, switchMap, take} from 'rxjs';
+import {BehaviorSubject, catchError, map, Observable, of, switchMap, take, throwError} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -228,6 +228,40 @@ export class TimeLogService {
   }
 
 
+  getActiveTimers(): Observable<any[]> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+        return this.http.get<any[]>(
+          `${environment.apiBaseUrl}/timelogs/active/user/${userId}`,
+          { withCredentials: true }
+        );
+      })
+    );
+  }
 
+  stopTimer(timeLogId: string): Observable<any> {
+    return this.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          return throwError(() => new Error('User ID not available'));
+        }
+        return this.http.post(
+          `${environment.apiBaseUrl}/timelogs/${timeLogId}/stop`,
+          { userId },
+          { withCredentials: true }
+        ).pipe(
+          catchError(error => {
+            console.error('Failed to stop timer:', error);
+            return throwError(() => error);
+          })
+        );
+      })
+    );
+  }
 
 }

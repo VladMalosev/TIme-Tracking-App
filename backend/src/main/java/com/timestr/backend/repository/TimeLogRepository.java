@@ -130,4 +130,5 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
     Optional<TimeLog> findByUserIdAndProjectIdAndEndTimeIsNull(@Param("userId") UUID userId, @Param("projectId") UUID projectId);
 
 
+    List<TimeLog> findByUserIdAndEndTimeIsNull(UUID userId);
 }

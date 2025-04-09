@@ -1,0 +1,37 @@
+<div *ngIf="activeTimers.length > 0"
+     class="timer-widget-container"
+     [class.collapsed]="collapsed"
+     [class.expanded]="!collapsed"
+     (click)="toggleCollapse()">
+
+  <div class="timer-header" *ngIf="!collapsed">
+    <mat-icon class="timer-icon">timer</mat-icon>
+    <span class="timer-title">Active Timers</span>
+    <span class="timer-badge">{{activeTimers.length}}</span>
+    <button mat-icon-button class="collapse-button" (click)="toggleCollapse(); $event.stopPropagation()">
+      <mat-icon>expand_more</mat-icon>
+    </button>
+  </div>
+
+  <div class="circle-icon" *ngIf="collapsed">
+    <mat-icon>timer</mat-icon>
+  </div>
+
+  <div class="timer-content" *ngIf="!collapsed">
+    <div *ngFor="let timer of activeTimers" class="timer-item">
+      <div class="timer-info">
+        <div class="timer-project">{{getProjectName(timer)}}</div>
+        <div class="timer-task">{{getTaskName(timer)}}</div>
+        <div class="timer-description">{{timer.description || 'No description'}}</div>
+      </div>
+
+      <div class="timer-controls">
+        <div class="timer-duration">{{calculateCurrentDuration(timer)}}</div>
+        <button mat-icon-button (click)="stopTimer(timer.id); $event.stopPropagation()"
+                class="stop-button" matTooltip="Stop timer">
+          <mat-icon>stop</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

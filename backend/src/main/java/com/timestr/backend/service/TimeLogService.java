@@ -241,4 +241,23 @@ public class TimeLogService {
     }
 
 
+    @Transactional
+    public TimeLog stopSpecificTimer(UUID timeLogId, UUID userId) {
+        TimeLog timeLog = timeLogRepository.findById(timeLogId)
+                .orElseThrow(() -> new EntityNotFoundException("Time log not found"));
+
+        if (!timeLog.getUser().getId().equals(userId)) {
+            throw new SecurityException("Cannot stop another user's timer");
+        }
+
+        if (timeLog.getEndTime() != null) {
+            throw new IllegalStateException("Timer is already stopped");
+        }
+
+        timeLog.setEndTime(LocalDateTime.now());
+        long minutes = Duration.between(timeLog.getStartTime(), timeLog.getEndTime()).toMinutes();
+        timeLog.setMinutes((int) minutes);
+
+        return timeLogRepository.save(timeLog);
+    }
 }

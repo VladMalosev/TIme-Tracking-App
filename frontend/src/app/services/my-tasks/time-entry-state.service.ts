@@ -10,12 +10,15 @@ export class TimeEntryStateService {
   private incompleteTasksSubject = new BehaviorSubject<any[]>([]);
   private tasksLoadingSubject = new BehaviorSubject<boolean>(false);
   private timeLogCreatedSubject = new Subject<void>();
+  private timerStoppedSubject = new Subject<string>();
+
 
   projectId$ = this.projectIdSubject.asObservable();
   userId$ = this.userIdSubject.asObservable();
   incompleteTasks$ = this.incompleteTasksSubject.asObservable();
   tasksLoading$ = this.tasksLoadingSubject.asObservable();
   timeLogCreated$ = this.timeLogCreatedSubject.asObservable();
+  timerStopped$ = this.timerStoppedSubject.asObservable();
 
   setProjectId(projectId: string | null) {
     this.projectIdSubject.next(projectId);
@@ -35,5 +38,9 @@ export class TimeEntryStateService {
 
   notifyTimeLogCreated() {
     this.timeLogCreatedSubject.next();
+  }
+
+  notifyTimerStopped(timerId: string) {
+    this.timerStoppedSubject.next(timerId);
   }
 }
