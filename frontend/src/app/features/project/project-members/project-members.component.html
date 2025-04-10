@@ -34,7 +34,22 @@
     <div class="nested-subtab-content">
       <!-- Members Tab Content -->
       <div class="tab-panel" *ngIf="activeTab === 'members'">
+
+        <nav class="nested-subtab-nav" *ngIf="false">
+          <button class="nested-subtab-button"
+                  (click)="setNestedActiveTab('list')"
+                  [class.active]="nestedActiveTab === 'list'">
+            <span class="subtab-label">List</span>
+          </button>
+          <button class="nested-subtab-button"
+                  (click)="setNestedActiveTab('stats')"
+                  [class.active]="nestedActiveTab === 'stats'">
+            <span class="subtab-label">Statistics</span>
+          </button>
+        </nav>
+
         <div class="members-container">
+
           <div class="header" *ngIf="!isLoading && dataSource.data.length > 0">
             <h2>Project Team Members</h2>
           </div>
@@ -210,7 +225,6 @@
         </div>
         <app-member-activity-logs></app-member-activity-logs>
       </div>
-
 
       <div class="tab-panel" *ngIf="activeTab === 'invitations' && hasAdminAccess">
         <div class="logs-header">

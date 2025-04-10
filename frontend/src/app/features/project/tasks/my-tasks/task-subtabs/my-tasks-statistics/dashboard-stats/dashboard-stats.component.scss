@@ -10,6 +10,7 @@
   min-height: 300px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: white;
 
   mat-card-header {
     padding: 0 0 1rem 0;
@@ -215,7 +216,6 @@
        }
 
        .insight-text {
-         background: #f5f5f5;
          padding: 4rem 1rem 0rem 1rem;
          border-radius: 8px;
 

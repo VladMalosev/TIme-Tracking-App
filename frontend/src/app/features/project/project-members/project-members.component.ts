@@ -112,11 +112,34 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     this.setupSubscriptions();
     this.initializeFilterPredicate();
     this.fetchCurrentUserRole();
+
     this.route.queryParams.subscribe(params => {
-      const tab = params['tab'];
-      if (tab) {
-        this.activeTab = tab;
+      if (params['taskTab']) {
+        this.activeTab = params['taskTab'] as 'members' | 'members-logs' | 'invitations';
       }
+
+      if (params['subTab']) {
+        this.nestedActiveTab = params['subTab'];
+      } else if (this.activeTab === 'members') {
+        this.nestedActiveTab = 'list';
+      }
+    });
+  }
+
+  setActiveTab(tab: 'members' | 'members-logs' | 'invitations'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { taskTab: tab },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  setNestedActiveTab(tab: string): void {
+    this.nestedActiveTab = tab;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {subTab: tab},
+      queryParamsHandling: 'merge'
     });
   }
 
@@ -146,9 +169,6 @@ export class ProjectMembersComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  setActiveTab(tab: 'members' | 'members-logs' | 'invitations'): void {
-    this.activeTab = tab;
-  }
 
   private fetchCurrentUserRole(): void {
     const projectId = this.projectContextService.getCurrentProjectId();

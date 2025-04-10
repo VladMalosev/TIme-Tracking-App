@@ -75,7 +75,17 @@ export class ProjectComponent implements OnInit {
     this.projectId = this.route.snapshot.paramMap.get('id');
     this.route.queryParams.subscribe(params => {
       this.activeTab = params['tab'] || 'dashboard';
-      this.activeTaskTab = params['taskTab'] || 'my-tasks';
+
+      if (this.activeTab === 'tasks' && !params['taskTab']) {
+        this.activeTaskTab = 'my-tasks';
+        this.updateTaskTabQueryParam('my-tasks');
+      } else if (this.activeTab === 'members' && !params['taskTab']) {
+        this.activeTaskTab = 'members';
+        this.updateTaskTabQueryParam('members');
+      } else {
+        this.activeTaskTab = params['taskTab'] || 'my-tasks';
+      }
+
       this.taskTabsService.setActiveTab(this.activeTaskTab);
       this.taskTabsService.setCanAssignTasks(this.canAssignTasks());
     });
@@ -97,7 +107,13 @@ export class ProjectComponent implements OnInit {
     }
   }
 
-
+  private updateTaskTabQueryParam(tab: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { taskTab: tab },
+      queryParamsHandling: 'merge'
+    });
+  }
 
 
     fetchProjectDetails(projectId: string): void {
@@ -209,9 +225,19 @@ export class ProjectComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
+
+    let queryParams: any = { tab };
+    if (tab === 'tasks') {
+      queryParams.taskTab = 'my-tasks';
+      this.activeTaskTab = 'my-tasks';
+    } else if (tab === 'members') {
+      queryParams.taskTab = 'members';
+      this.activeTaskTab = 'members';
+    }
+
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab },
+      queryParams,
       queryParamsHandling: 'merge'
     });
   }

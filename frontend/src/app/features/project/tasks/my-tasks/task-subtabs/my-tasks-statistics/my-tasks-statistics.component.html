@@ -23,7 +23,8 @@
         Recent Time Entries
       </mat-card-title>
       <div class="header-actions">
-        <button mat-stroked-button color="primary" class="export-button">
+        <button mat-stroked-button color="primary" class="export-button"
+                (click)="exportTimeLogs()">
           <mat-icon>download</mat-icon>
           Export CSV
         </button>
