@@ -10,32 +10,7 @@ import { RecentTimeEntriesComponent } from './recent-time-entries/recent-time-en
 import { ProjectContextService } from '../../../../../../services/project-context.service';
 import { ExportTimeLogService } from '../../../../../../services/my-tasks/my-tasks-statistics/export-time-log.service';
 import { saveAs } from 'file-saver';
-
-interface TimeLogEntry {
-  startTime: string;
-  endTime: string;
-  duration: number;
-  description: string;
-}
-
-interface UserInfo {
-  userName: string;
-  userEmail: string;
-  taskName: string | null;
-}
-
-interface TimeLogSummary {
-  totalTime: number;
-  totalLogs: number;
-  firstEntry: string | null;
-  lastEntry: string | null;
-}
-
-interface TimeLogData {
-  userInfo: UserInfo;
-  logs: TimeLogEntry[];
-  summary: TimeLogSummary;
-}
+import {TimeLogData, UserInfo, TimeLogEntry} from '../../../../../../models/statistics-csv';
 
 @Component({
   selector: 'app-my-tasks-statistics',

@@ -22,6 +22,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatOptionModule} from '@angular/material/core';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatIconModule} from '@angular/material/icon';
+import {ReportComponent} from './report/report.component';
 
 @Component({
     selector: 'app-project',
@@ -43,6 +44,7 @@ import {MatIconModule} from '@angular/material/icon';
     ProjectTasksComponent,
     TaskAssignmentComponent,
     MyTasksComponent,
+    ReportComponent,
   ],
   styleUrls: ['./project.component.css']
 })

@@ -2,10 +2,7 @@ package com.timestr.backend.controller;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.timestr.backend.model.*;
-import com.timestr.backend.repository.ActivityRepository;
-import com.timestr.backend.repository.ProjectRepository;
-import com.timestr.backend.repository.TimeLogRepository;
-import com.timestr.backend.repository.UserRepository;
+import com.timestr.backend.repository.*;
 import com.timestr.backend.service.TaskService;
 import com.timestr.backend.service.TimeLogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,10 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/timelogs")
@@ -50,6 +45,9 @@ public class TimeLogController {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @Operation(summary = "Start a timer", description = "Starts a timer for a specific user and task.")
     @ApiResponses(value = {
@@ -432,4 +430,77 @@ public class TimeLogController {
         return ResponseEntity.ok(stoppedTimer);
     }
 
+    @Operation(summary = "Export time logs for project",
+            description = "Exports all time logs for a project grouped by task and user")
+    @GetMapping("/project/{projectId}/export")
+    public ResponseEntity<List<Map<String, Object>>> exportTimeLogs(
+            @PathVariable UUID projectId) {
+
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        List<TimeLog> timeLogs = timeLogRepository.findByProjectId(projectId);
+
+        Map<UUID, Map<UUID, List<TimeLog>>> groupedLogs = timeLogs.stream()
+                .collect(Collectors.groupingBy(
+                        log -> log.getTask() != null ? log.getTask().getId() : null,
+                        Collectors.groupingBy(log -> log.getUser().getId())
+                ));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        groupedLogs.entrySet().stream()
+                .forEach(taskEntry -> {
+                    UUID taskId = taskEntry.getKey();
+                    Task task = taskId != null ? taskRepository.findById(taskId).orElse(null) : null;
+
+                    taskEntry.getValue().forEach((userId, userLogs) -> {
+                        User user = userRepository.findById(userId).orElse(null);
+
+                        Map<String, Object> userInfo = new LinkedHashMap<>();
+                        userInfo.put("userName", user != null ? user.getName() : "N/A");
+                        userInfo.put("userEmail", user != null ? user.getEmail() : "N/A");
+                        userInfo.put("taskName", task != null ? task.getName() : "Project Only");
+
+                        // Calculate totals
+                        long totalMinutes = userLogs.stream()
+                                .mapToLong(log -> log.getMinutes() != null ? log.getMinutes() : 0)
+                                .sum();
+                        int logCount = userLogs.size();
+
+                        List<Map<String, Object>> logs = userLogs.stream()
+                                .sorted(Comparator.comparing(TimeLog::getStartTime))
+                                .map(log -> {
+                                    Map<String, Object> logEntry = new LinkedHashMap<>();
+                                    logEntry.put("startTime", log.getStartTime());
+                                    logEntry.put("endTime", log.getEndTime());
+                                    logEntry.put("duration", log.getMinutes());
+                                    logEntry.put("description", log.getDescription());
+                                    return logEntry;
+                                })
+                                .collect(Collectors.toList());
+
+                        Map<String, Object> summary = new LinkedHashMap<>();
+                        summary.put("totalTime", totalMinutes);
+                        summary.put("totalLogs", logCount);
+                        summary.put("firstEntry", userLogs.stream()
+                                .map(TimeLog::getStartTime)
+                                .min(LocalDateTime::compareTo)
+                                .orElse(null));
+                        summary.put("lastEntry", userLogs.stream()
+                                .map(TimeLog::getEndTime)
+                                .max(LocalDateTime::compareTo)
+                                .orElse(null));
+
+                        Map<String, Object> row = new LinkedHashMap<>();
+                        row.put("userInfo", userInfo);
+                        row.put("logs", logs);
+                        row.put("summary", summary);
+
+                        result.add(row);
+                    });
+                });
+
+        return ResponseEntity.ok(result);
+    }
 }

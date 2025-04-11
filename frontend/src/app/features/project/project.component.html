@@ -14,7 +14,7 @@
             <a (click)="setActiveTab('tasks')" [class.active]="activeTab === 'tasks'">Tasks</a>
           </li>
 
-          <li *ngIf="canAccessLogs()">
+          <li *ngIf="currentUserRole && canAccessLogs()">
             <a (click)="setActiveTab('time-logs')" [class.active]="activeTab === 'time-logs'">Time Logs</a>
           </li>
         </ul>
@@ -32,6 +32,11 @@
                 <app-project-members></app-project-members>
             </div>
 
+          <!-- time logs -->
+          <div *ngIf="activeTab === 'time-logs'">
+            <app-report></app-report>
+          </div>
+
           <!-- Tasks Tab -->
           <div *ngIf="activeTab === 'tasks'">
             <h2 class="tab-header m-lg-5">Tasks</h2>
@@ -41,17 +46,17 @@
 
               <!-- Task Creation Component -->
               <div *ngIf="activeTaskTab === 'creation'">
-                <app-project-tasks *ngIf="projectId"></app-project-tasks>
+                <app-project-tasks></app-project-tasks>
               </div>
 
               <!-- Task Assignment Component -->
               <div *ngIf="activeTaskTab === 'assignment'">
-                <app-task-assignment *ngIf="projectId"></app-task-assignment>
+                <app-task-assignment></app-task-assignment>
               </div>
 
 
               <div *ngIf="activeTaskTab === 'my-tasks'">
-                <app-my-tasks *ngIf="projectId"></app-my-tasks>
+                <app-my-tasks></app-my-tasks>
               </div>
             </app-task-subtabs>
           </div>

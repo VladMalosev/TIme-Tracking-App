@@ -83,5 +83,15 @@ export class AuthService {
     );
   }
 
+  getUserProjectRole(projectId: string): Promise<string> {
+    return this.http.get<{ role: string }>(
+      `http://localhost:8080/api/projects/${projectId}/current-user-role`,
+      { withCredentials: true }
+    ).pipe(
+      map(response => response.role),
+      catchError(() => of('USER'))
+    ).toPromise()
+      .then(role => role as string);
+  }
 
 }

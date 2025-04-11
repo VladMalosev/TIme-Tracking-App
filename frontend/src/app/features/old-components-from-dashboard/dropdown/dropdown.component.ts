@@ -19,6 +19,7 @@ export class DropdownComponent implements AfterViewInit {
   dropdownInstance: any;
 
   selectedItem: any = null;
+  @Input() disabled!: boolean;
 
   ngAfterViewInit(): void {
     setTimeout(() => {

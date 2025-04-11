@@ -1,0 +1,87 @@
+
+.filter-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filter-section h2 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.filter-group,
+.filter-group-set{
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label,
+.filter-group-set label{
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.filter-group input,
+.filter-group select,
+.filter-group-set input,
+.filter-group-set select{
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+
+}
+
+.filter-group input,
+.filter-group select, {
+  padding-right: 40px;
+
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.generate-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.generate-btn:hover {
+  background-color: #2980b9;
+}
+
+.clear-btn {
+  background-color: #f1f1f1;
+  color: #555;
+}
+
+.clear-btn:hover {
+  background-color: #e0e0e0;
+}

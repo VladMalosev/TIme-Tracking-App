@@ -1,0 +1,81 @@
+<!-- report-generator.component.html -->
+<div class="filter-section">
+  <h2>Generate Report</h2>
+
+  <div class="filter-grid">
+    <div class="filter-group">
+      <label>Project</label>
+      <div class="project-display">
+        <input type="text" [value]="filter.project?.name" readonly>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Task</label>
+      <div class="searchable-dropdown">
+        <input type="text"
+               [(ngModel)]="taskSearchQuery"
+               (input)="filterTasks()"
+               (focus)="showTaskDropdown = true"
+               (blur)="onBlurTask()"
+               placeholder="Select or type to search task"
+               [disabled]="!filter.project">
+        <div class="dropdown-list" *ngIf="showTaskDropdown && filteredTasks.length > 0">
+          <div class="dropdown-item"
+               *ngFor="let task of filteredTasks"
+               (mousedown)="selectTask(task)">
+            {{ task.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>User</label>
+      <div class="searchable-dropdown">
+        <input type="text"
+               [(ngModel)]="userSearchQuery"
+               (input)="filterUsers()"
+               (focus)="showUserDropdown = true"
+               (blur)="onBlurUser()"
+               placeholder="Select or type to search user"
+               [disabled]="!filter.project">
+        <div class="dropdown-list" *ngIf="showUserDropdown && filteredUsers.length > 0">
+          <div class="dropdown-item"
+               *ngFor="let user of filteredUsers"
+               (mousedown)="selectUser(user)">
+            {{ user.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group-set">
+      <label>Start Date</label>
+      <input type="date" [(ngModel)]="filter.startDate">
+    </div>
+
+    <div class="filter-group-set">
+      <label>End Date</label>
+      <input type="date" [(ngModel)]="filter.endDate">
+    </div>
+
+    <div class="filter-group">
+      <label>Group By</label>
+      <select [(ngModel)]="filter.groupBy" (change)="onGroupByChange()">
+        <option value="none">None</option>
+        <option value="task">Task</option>
+        <option value="user">User</option>
+        <option value="project">Project</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn generate-btn" (click)="generateReport()" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Generate Report</span>
+      <span *ngIf="isLoading">Generating...</span>
+    </button>
+    <button class="btn clear-btn" (click)="clearFilters()">Clear Filters</button>
+  </div>
+</div>

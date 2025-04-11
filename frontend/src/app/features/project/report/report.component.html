@@ -1,0 +1,10 @@
+<div class="report-container" *ngIf="canAccess; else noAccess">
+  <app-report-generator></app-report-generator>
+  <app-report-results></app-report-results>
+</div>
+
+<ng-template #noAccess>
+  <div class="no-access-message">
+    <p>You don't have permission to access this page.</p>
+  </div>
+</ng-template>
