@@ -503,4 +503,48 @@ public class TimeLogController {
 
         return ResponseEntity.ok(result);
     }
+
+    @Operation(summary = "Get recent tasks for user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recent tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/user/{userId}/recent-tasks")
+    public ResponseEntity<List<Map<String, Object>>> getRecentTasksForUser(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "5") int limit) {
+
+        List<TimeLog> recentLogs = timeLogRepository.findByUserIdOrderByStartTimeDesc(userId);
+
+        Map<UUID, Map<String, Object>> taskInfoMap = new LinkedHashMap<>();
+
+        for (TimeLog log : recentLogs) {
+            if (log.getTask() == null) continue;
+
+            UUID taskId = log.getTask().getId();
+
+            if (!taskInfoMap.containsKey(taskId)) {
+                Map<String, Object> taskInfo = new HashMap<>();
+                taskInfo.put("task", log.getTask());
+                taskInfo.put("lastLogged", log.getStartTime());
+                taskInfo.put("totalMinutes", 0L);
+                taskInfoMap.put(taskId, taskInfo);
+            }
+
+            Long currentTotal = (Long) taskInfoMap.get(taskId).get("totalMinutes");
+            taskInfoMap.get(taskId).put("totalMinutes",
+                    currentTotal + (log.getMinutes() != null ? log.getMinutes() : 0));
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>(taskInfoMap.values());
+
+        result.sort((a, b) ->
+                ((LocalDateTime) b.get("lastLogged")).compareTo((LocalDateTime) a.get("lastLogged")));
+
+        if (result.size() > limit) {
+            result = result.subList(0, limit);
+        }
+
+        return ResponseEntity.ok(result);
+    }
 }

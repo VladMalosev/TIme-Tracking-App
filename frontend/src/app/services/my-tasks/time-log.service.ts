@@ -265,5 +265,11 @@ export class TimeLogService {
     );
   }
 
+  getRecentTasks(userId: string, limit: number = 5): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${environment.apiBaseUrl}/timelogs/user/${userId}/recent-tasks?limit=${limit}`,
+      {withCredentials: true}
+    );
+  }
 
 }

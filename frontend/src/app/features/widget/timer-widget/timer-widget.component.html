@@ -1,15 +1,8 @@
-<div *ngIf="activeTimers.length > 0"
-     class="timer-widget-container"
+<div class="timer-widget-container"
      [class.collapsed]="collapsed"
-     [class.expanded]="!collapsed"
-     [style.transform]="dragPosition"
-     (mousedown)="startDrag($event)">
-
+     [class.expanded]="!collapsed">
   <!-- Collapsed State -->
   <div class="collapsed-state" *ngIf="collapsed" (click)="toggleCollapse()">
-    <div class="badge-container">
-
-    </div>
     <mat-icon class="timer-icon">timer</mat-icon>
   </div>
 
@@ -18,40 +11,204 @@
     <div class="timer-header">
       <div class="header-left">
         <mat-icon class="timer-icon">timer</mat-icon>
-        <span class="timer-title">Active Timers</span>
-        <span class="timer-badge">{{activeTimers.length}}</span>
+        <span class="timer-title">Time Tracker</span>
       </div>
       <button mat-icon-button class="collapse-button" (click)="toggleCollapse(); $event.stopPropagation()">
-        <mat-icon>expand_more</mat-icon>
+        <mat-icon>close</mat-icon>
       </button>
     </div>
 
     <div class="timer-content">
-      <div *ngFor="let timer of activeTimers" class="timer-item">
-        <div class="timer-info">
-          <div class="timer-project">{{getProjectName(timer)}}</div>
-          <div class="timer-task">{{getTaskName(timer)}}</div>
-          <div class="timer-description">{{timer.description || 'No description'}}</div>
+      <!-- Active Timers Section -->
+      <div *ngIf="activeTimers.length > 0" class="section active-timers-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">play_circle</mat-icon>
+          <span class="section-title">Active Timers</span>
         </div>
 
-        <div class="timer-controls">
-          <div class="timer-duration">
-            <span class="duration-value">{{calculateCurrentDuration(timer)}}</span>
-            <span class="duration-label">Time logged</span>
+        <div *ngFor="let timer of activeTimers" class="timer-item">
+          <div class="timer-info">
+            <div class="timer-project">{{getProjectName(timer)}}</div>
+            <div class="timer-task">{{getTaskName(timer)}}</div>
+
+            <textarea
+              class="timer-description-input"
+              placeholder="What are you working on?"
+              [(ngModel)]="timer.description"
+              rows="2"
+            ></textarea>
           </div>
 
-          <div class="action-buttons">
-            <button mat-mini-fab color="primary" (click)="goToTask(timer); $event.stopPropagation()"
-                    matTooltip="Go to task" class="action-button">
-              <mat-icon>assignment</mat-icon>
-            </button>
-            <button mat-mini-fab color="accent" (click)="goToProject(timer); $event.stopPropagation()"
-                    matTooltip="Go to project" class="action-button">
-              <mat-icon>folder</mat-icon>
-            </button>
-            <button mat-mini-fab color="warn" (click)="stopTimer(timer.id); $event.stopPropagation()"
-                    matTooltip="Stop timer" class="action-button stop-button">
-              <mat-icon>stop</mat-icon>
+          <div class="timer-controls">
+            <div class="timer-duration">
+              <span class="duration-value">{{calculateCurrentDuration(timer)}}</span>
+              <span class="duration-label">Time logged</span>
+            </div>
+
+            <div class="action-buttons">
+              <button mat-mini-fab color="primary" (click)="goToTask(timer); $event.stopPropagation()"
+                      matTooltip="Go to task" class="action-button">
+                <mat-icon>assignment</mat-icon>
+              </button>
+              <button mat-mini-fab color="accent" (click)="goToProject(timer); $event.stopPropagation()"
+                      matTooltip="Go to project" class="action-button">
+                <mat-icon>folder</mat-icon>
+              </button>
+              <button mat-mini-fab color="warn" (click)="stopTimer(timer.id); $event.stopPropagation()"
+                      matTooltip="Stop timer" class="action-button stop-button">
+                <mat-icon>stop</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Time Logs Section -->
+      <div class="section task-time-logs" *ngIf="selectedTaskId">
+        <div class="section-header">
+          <button mat-icon-button (click)="selectedTaskId = null; taskTimeLogs = []" class="back-button">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <span class="section-title">Recent Time Logs</span>
+          <span *ngIf="isLoadingTimeLogs" class="loading-text">Loading...</span>
+        </div>
+
+        <div class="log-list" *ngIf="!isLoadingTimeLogs">
+          <div *ngIf="taskTimeLogs.length === 0" class="no-logs">
+            No time logs available for this task
+          </div>
+
+          <div *ngFor="let log of taskTimeLogs; let i = index" class="log-item">
+            <div class="log-main">
+              <div class="log-time">
+                <span>{{formatDateShort(log.startTime)}}</span>
+                <span *ngIf="log.endTime"> to {{formatDateShort(log.endTime)}}</span>
+              </div>
+              <div class="log-duration">{{formatDuration(log.startTime, log.endTime)}}</div>
+            </div>
+
+            <div class="log-description" *ngIf="!log.editing">
+              {{log.description || 'No description'}}
+            </div>
+
+            <div class="log-edit-form" *ngIf="log.editing">
+    <textarea [(ngModel)]="log.editDescription"
+              placeholder="Enter description..."
+              rows="2"></textarea>
+              <div class="edit-actions">
+                <button mat-button (click)="saveLogEdit(log)"
+                        [disabled]="!log.editDescription">
+                  Save
+                </button>
+                <button mat-button (click)="cancelLogEdit(log)">
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+            <div class="log-actions" *ngIf="!log.editing">
+              <button mat-icon-button (click)="startLogEdit(log)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteTimeLog(log.id)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Timer Form (shown when no active timers) -->
+      <div class="section new-timer-form" *ngIf="activeTimers.length === 0 && !selectedTaskId">
+        <div class="section-header" (click)="toggleNewTimerExpand()">
+          <mat-icon class="section-icon">add_circle</mat-icon>
+          <span class="section-title">Create New Timer</span>
+          <mat-icon class="expand-icon">
+            {{isNewTimerExpanded ? 'expand_less' : 'expand_more'}}
+          </mat-icon>
+        </div>
+
+        <div class="form-content" *ngIf="isNewTimerExpanded">
+          <div class="form-group">
+            <mat-form-field appearance="outline" floatLabel="always">
+              <mat-label>Project</mat-label>
+              <mat-select [(value)]="selectedProject" (selectionChange)="onProjectSelected()">
+                <mat-option *ngFor="let project of projects" [value]="project">
+                  {{project.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" floatLabel="always">
+              <mat-label>Task</mat-label>
+              <mat-select [(value)]="selectedTask" [disabled]="!selectedProject">
+                <mat-option *ngFor="let task of tasks" [value]="task">
+                  {{task.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" floatLabel="always">
+              <mat-label>Description</mat-label>
+              <textarea matInput [(ngModel)]="timerDescription"
+                        placeholder="What are you working on?"
+                        rows="2"></textarea>
+            </mat-form-field>
+          </div>
+
+          <button mat-raised-button
+                  color="primary"
+                  class="start-timer-btn"
+                  [disabled]="!selectedProject"
+                  (click)="startNewTimer()">
+            <mat-icon>play_arrow</mat-icon>
+            Start Timer
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Tasks Section -->
+      <div class="section recent-tasks-section" *ngIf="!selectedTaskId">
+        <div class="section-header">
+          <mat-icon class="section-icon">history</mat-icon>
+          <span class="section-title">Recent Tasks</span>
+        </div>
+
+        <div class="recent-task-list">
+          <div class="no-recent-tasks" *ngIf="recentTasks.length === 0">
+            No recent tasks available
+          </div>
+
+          <div class="recent-task-item" *ngFor="let taskInfo of recentTasks">
+            <div class="task-info" (click)="viewTaskTimeLogs(taskInfo.task)" matTooltip="View time logs">
+              <div class="task-header">
+                <span class="task-project">{{taskInfo.task.project?.name || 'No project'}}</span>
+                <span class="task-status" [class.completed]="taskInfo.task.status === 'COMPLETED'">
+                  {{taskInfo.task.status | titlecase}}
+                </span>
+              </div>
+              <span class="task-name">{{taskInfo.task.name}}</span>
+              <div class="task-meta">
+                <span class="last-logged">
+                  <mat-icon>schedule</mat-icon>
+                  <span>Last: {{taskInfo.lastLogged | date:'shortDate'}}</span>
+                </span>
+                <span class="total-time">
+                  <mat-icon>timer</mat-icon>
+                  <span>Total: {{formatMinutes(taskInfo.totalMinutes)}}</span>
+                </span>
+              </div>
+            </div>
+            <button mat-mini-fab
+                    color="primary"
+                    (click)="startTimerForRecentTask(taskInfo); $event.stopPropagation()"
+                    matTooltip="Start timer"
+                    class="play-button">
+              <mat-icon>play_arrow</mat-icon>
             </button>
           </div>
         </div>

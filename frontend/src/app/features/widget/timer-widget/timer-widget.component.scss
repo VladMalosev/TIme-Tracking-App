@@ -2,25 +2,26 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 320px;
+  width: 360px;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   transition: all 0.3s ease;
   z-index: 1000;
-
-
+  display: flex;
+  flex-direction: column;
 
   &.collapsed {
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background-color: #3f51b5 !important;
+    background-color: #3f51b5;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 0 4px 16px rgba(63, 81, 181, 0.4);
 
     .collapsed-state {
       display: flex;
@@ -41,13 +42,14 @@
         position: absolute;
         top: -4px;
         right: -4px;
-        background: #3f51b5;
+        background: #f44336;
         border-radius: 50%;
         width: 20px;
         height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
+        border: 2px solid white;
 
         .timer-badge {
           color: white;
@@ -60,20 +62,24 @@
 
   &.expanded {
     cursor: default;
+    height: auto;
+    max-height: 80vh;
   }
 }
+
 
 .expanded-state {
   display: flex;
   flex-direction: column;
   height: 100%;
+  max-height: inherit;
 }
 
 .timer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: #3f51b5;
   color: white;
   font-size: 16px;
@@ -86,17 +92,17 @@
 
   .timer-icon {
     color: white;
-    margin-right: 8px;
+    margin-right: 4px;
   }
 
   .timer-title {
     flex-grow: 1;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .timer-badge {
-    background: rgba(255, 255, 255, 0.2);
+    background: #f44336;
     border-radius: 12px;
     padding: 2px 8px;
     font-size: 12px;
@@ -104,12 +110,12 @@
   }
 
   .collapse-button {
-    transform: rotate(0deg);
     background: none;
     border: none;
-    transition: transform 0.2s ease;
     color: white;
     cursor: pointer;
+
+    line-height: 32px;
 
     &:hover {
       background: rgba(255, 255, 255, 0.1);
@@ -118,72 +124,104 @@
 }
 
 .timer-content {
-  padding: 16px;
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.timer-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 0;
+// Sections common styling
+.section {
+  padding: 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
   &:last-child {
     border-bottom: none;
   }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .section-icon {
+      color: #3f51b5;
+      margin-right: 8px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+// Active Timers Section
+.active-timers-section {
+  background-color: #f5f7ff;
+}
+
+.timer-item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .timer-info {
-  flex: 1;
-  margin-right: 12px;
-  min-width: 0;
+  margin-bottom: 12px;
 
   .timer-project {
     font-weight: 600;
     color: #3f51b5;
     font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .timer-task {
     font-size: 13px;
     color: rgba(0, 0, 0, 0.8);
     margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .timer-description {
-    font-size: 12px;
-    color: rgba(0, 0, 0, 0.6);
-    margin-top: 6px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .timer-description-input {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 2px 8px 2px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+    resize: none;
+
+    &:focus {
+      outline: none;
+      border-color: #3f51b5;
+      box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+    }
   }
 }
 
 .timer-controls {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
 
   .timer-duration {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-
     .duration-value {
       font-family: 'Roboto Mono', monospace;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 500;
-      color: rgba(0, 0, 0, 0.9);
+      color: rgba(0, 0, 0, 0.87);
     }
 
     .duration-label {
@@ -191,12 +229,13 @@
       color: rgba(0, 0, 0, 0.5);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      display: block;
     }
   }
 
   .action-buttons {
     display: flex;
-    gap: 6px;
+    gap: 8px;
 
     .action-button {
       width: 32px;
@@ -218,3 +257,230 @@
     }
   }
 }
+
+.new-timer-form {
+  .form-content {
+    background: white;
+    border-radius: 8px;
+
+    mat-form-field {
+      width: 100%;
+    }
+
+  }
+
+
+  .start-timer-btn {
+    width: 100%;
+    height: 40px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border: 1px solid #767676;
+    background-color: #4A3AFF !important;
+    color: white !important;
+
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+.recent-tasks-section {
+  .recent-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.recent-task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    background-color: #fafafa;
+  }
+
+  .task-info {
+    flex: 1;
+    min-width: 0;
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .task-project {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .task-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.87);
+      display: block;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-status {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.6);
+
+      &.completed {
+        background: rgba(76, 175, 80, 0.1);
+        color: #4CAF50;
+      }
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+
+      .last-logged, .total-time {
+        display: flex;
+        align-items: center;
+
+        mat-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+
+  .play-button {
+    width: 32px;
+    height: 32px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.no-recent-tasks {
+  text-align: center;
+  padding: 16px;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+  font-size: 13px;
+}
+
+// Task Time Logs
+.task-time-logs {
+  .section-header {
+    .back-button {
+      margin-right: 8px;
+    }
+
+    .loading-text {
+      margin-left: auto;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.5);
+      font-style: italic;
+    }
+  }
+
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .log-item {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    border-left: 3px solid #3f51b5;
+
+    .log-time {
+      font-size: 12px;
+      color: #3f51b5;
+      margin-bottom: 4px;
+    }
+
+    .log-duration {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .log-description {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  .no-logs {
+    text-align: center;
+    padding: 16px;
+    color: rgba(0, 0, 0, 0.5);
+    font-style: italic;
+    font-size: 13px;
+  }
+}
+log-edit-form {
+  margin-top: 8px;
+
+  textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 60px;
+    font-size: 13px;
+
+    &:focus {
+      outline: none;
+      border-color: #3f51b5;
+      box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+    }
+  }
+
+  .edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+
+    button {
+      padding: 4px 12px;
+      font-size: 13px;
+      min-width: 80px;
+    }
+  }
+}
+
+

@@ -131,4 +131,6 @@ public interface TimeLogRepository extends JpaRepository<TimeLog, UUID> {
 
 
     List<TimeLog> findByUserIdAndEndTimeIsNull(UUID userId);
+
+    List<TimeLog> findByUserIdOrderByStartTimeDesc(UUID userId);
 }

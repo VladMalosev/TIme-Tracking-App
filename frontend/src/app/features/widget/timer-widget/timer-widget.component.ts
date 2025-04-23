@@ -1,11 +1,17 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { Subject, takeUntil, interval } from 'rxjs';
+import {Subject, takeUntil, interval, switchMap, of, take} from 'rxjs';
 import { TimeLogService } from '../../../services/my-tasks/time-log.service';
 import { ProjectContextService } from '../../../services/project-context.service';
 import { MatIcon } from '@angular/material/icon';
-import { NgForOf, NgIf } from '@angular/common';
+import {DatePipe, NgForOf, NgIf, TitleCasePipe} from '@angular/common';
 import { TimeEntryStateService } from '../../../services/my-tasks/time-entry-state.service';
 import { Router } from '@angular/router';
+import {MatFormField, MatLabel, MatOption, MatSelect, MatSelectModule} from '@angular/material/select';
+import {FormsModule} from '@angular/forms';
+import {HttpClient} from '@angular/common/http';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   selector: 'app-timer-widget',
@@ -13,7 +19,14 @@ import { Router } from '@angular/router';
   imports: [
     MatIcon,
     NgForOf,
-    NgIf
+    NgIf,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    FormsModule,
+    DatePipe,
+    TitleCasePipe,
   ],
   styleUrls: ['./timer-widget.component.scss']
 })
@@ -23,17 +36,24 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private refreshInterval = 1000;
 
-  // Dragging functionality
-  private isDragging = false;
-  private startX = 0;
-  private startY = 0;
-  dragPosition = 'translate(0, 0)';
+  projects: any[] = [];
+  tasks: any[] = [];
+  selectedProject: any = null;
+  selectedTask: any = null;
+  timerDescription = '';
+  recentTasks: any[] = [];
+  errorMessage: string | null = null;
+  selectedTaskId: string | null = null;
+  taskTimeLogs: any[] = [];
+  isLoadingTimeLogs = false;
+  isNewTimerExpanded = false;
 
   constructor(
     private timeLogService: TimeLogService,
     private projectContextService: ProjectContextService,
     private timeEntryState: TimeEntryStateService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -42,11 +62,18 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
       .subscribe(userId => {
         if (userId) {
           this.loadActiveTimers();
+          this.fetchProjects();
+          this.loadRecentTasks();
           interval(this.refreshInterval)
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => this.loadActiveTimers());
         }
       });
+    this.timeEntryState.timerStopped$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadActiveTimers();
+    })
   }
 
   ngOnDestroy(): void {
@@ -54,35 +81,134 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Dragging functionality
-  quickTimerDescription: any;
-  startDrag(event: MouseEvent): void {
-    if (this.collapsed) {
-      this.isDragging = true;
-      this.startX = event.clientX;
-      this.startY = event.clientY;
-      event.preventDefault();
+  fetchProjects(): void {
+    this.http.get<any>('http://localhost:8080/api/projects', { withCredentials: true }).subscribe({
+      next: (response) => {
+        this.projects = response.projects || [];
+      },
+      error: (error) => {
+        console.error('Error fetching projects:', error);
+      }
+    });
+  }
+
+  onProjectSelected(): void {
+    if (this.selectedProject) {
+      this.fetchTasks(this.selectedProject.id);
+    } else {
+      this.tasks = [];
+      this.selectedTask = null;
     }
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onDrag(event: MouseEvent): void {
-    if (!this.isDragging) return;
-
-    const dx = event.clientX - this.startX;
-    const dy = event.clientY - this.startY;
-    this.dragPosition = `translate(${dx}px, ${dy}px)`;
+  fetchTasks(projectId: string): void {
+    this.http.get<any>(`http://localhost:8080/api/tasks/project/${projectId}`, { withCredentials: true }).subscribe({
+      next: (response) => {
+        this.tasks = Array.isArray(response) ? response : response.tasks || [];
+        this.selectedTask = null;
+      },
+      error: (error) => {
+        console.error('Error fetching tasks:', error);
+      }
+    });
   }
 
-  @HostListener('document:mouseup')
-  endDrag(): void {
-    this.isDragging = false;
-    this.dragPosition = 'translate(0, 0)';
+
+  loadRecentTasks(): void {
+    this.timeLogService.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) return of([]);
+        return this.timeLogService.getRecentTasks(userId, 5);
+      })
+    ).subscribe({
+      next: (tasks) => {
+        this.recentTasks = tasks.map(taskInfo => {
+          const taskWithProjectId = {
+            ...taskInfo.task,
+            projectId: taskInfo.projectId
+          };
+
+          return {
+            ...taskInfo,
+            project: this.projects.find(p => p.id === taskInfo.projectId),
+            task: taskWithProjectId
+          };
+        });
+        console.log('Recent tasks loaded:', this.recentTasks);
+      },
+      error: (err) => console.error('Error loading recent tasks:', err)
+    });
+  }
+
+  startTimerForRecentTask(taskInfo: any): void {
+    const task = taskInfo.task ? taskInfo.task : taskInfo;
+
+    this.timeLogService.userId$.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('User ID not available');
+        }
+
+        console.log('Starting timer for task:', task);
+
+        const projectId = task.project?.id;
+        if (!projectId) {
+          throw new Error(`Project ID is missing from the task. Task object: ${JSON.stringify(task)}`);
+        }
+
+        this.selectedProject = this.projects.find(p => p.id === projectId);
+        this.selectedTask = task;
+        this.timerDescription = '';
+
+        return this.timeLogService.startProjectTimer(
+          projectId,
+          this.timerDescription,
+          task.id
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.errorMessage = null;
+        this.loadActiveTimers();
+      },
+      error: (error) => {
+        console.error('Error starting timer:', error);
+        this.errorMessage = error.message || 'Failed to start timer';
+      }
+    });
+  }
+
+  startNewTimer(): void {
+    if (!this.selectedProject) {
+      this.errorMessage = 'Please select both a project and task';
+      return;
+    }
+
+    this.timeLogService.startProjectTimer(
+      this.selectedProject.id,
+      this.timerDescription,
+      this.selectedTask?.id
+    ).subscribe({
+      next: () => {
+        this.errorMessage = null;
+        this.loadActiveTimers();
+        this.timerDescription = '';
+      },
+      error: (error) => {
+        console.error('Error starting timer:', error);
+        this.errorMessage = error.error?.message || 'Failed to start timer';
+      }
+    });
+  }
+
+  toggleNewTimerExpand(): void {
+    this.isNewTimerExpanded = !this.isNewTimerExpanded;
   }
 
   toggleCollapse(): void {
     this.collapsed = !this.collapsed;
-    // Removed the dragging check since we're not handling drag in expanded state
   }
 
   loadActiveTimers(): void {
@@ -131,16 +257,10 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
     const taskId = timer.task?.id;
     const projectId = timer.project?.id;
 
-    if (taskId && projectId) {
-      this.router.navigate([`/project-details/${projectId}/dashboard`], {
-        queryParams: { tab: 'tasks', subTab: 'assigned-tasks', taskId }
-      });
-    } else if (projectId) {
+    if (taskId && projectId || projectId) {
       this.router.navigate([`/project-details/${projectId}/dashboard`], {
         queryParams: { tab: 'tasks', subTab: 'time-logs' }
       });
-    } else {
-      console.warn('No project or task info available for navigation.');
     }
   }
 
@@ -153,7 +273,94 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
     }
   }
 
-  calculateCurrentQuickTimerDuration() {
-    return "";
+  formatMinutes(minutes: number): string {
+    if (!minutes) return '0m';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  }
+
+  viewTaskTimeLogs(task: any): void {
+    if (this.selectedTaskId === task.id) {
+      this.selectedTaskId = null;
+      this.taskTimeLogs = [];
+      return;
+    }
+
+    this.selectedTaskId = task.id;
+    this.isLoadingTimeLogs = true;
+
+    this.timeLogService.getTimeLogsByTask(task.id).subscribe({
+      next: (logs) => {
+        this.taskTimeLogs = logs;
+        this.isLoadingTimeLogs = false;
+      },
+      error: (err) => {
+        console.error('Error loading task time logs:', err);
+        this.isLoadingTimeLogs = false;
+      }
+    });
+  }
+
+  startLogEdit(log: any): void {
+    log.editing = true;
+    log.editDescription = log.description;
+  }
+
+  cancelLogEdit(log: any): void {
+    log.editing = false;
+  }
+
+  saveLogEdit(log: any): void {
+    if (!log.editDescription) return;
+
+    this.timeLogService.updateTimeLogDescription(log.id, log.editDescription)
+      .subscribe({
+        next: (updatedLog) => {
+          log.description = updatedLog.description;
+          log.editing = false;
+        },
+        error: (err) => {
+          console.error('Error updating time log description:', err);
+        }
+      });
+  }
+
+
+
+  deleteTimeLog(logId: string): void {
+    if (confirm('Are you sure you want to delete this time log?')) {
+      this.timeLogService.deleteTimeLog(logId).subscribe({
+        next: () => {
+          this.taskTimeLogs = this.taskTimeLogs.filter(log => log.id !== logId);
+        },
+        error: (err) => {
+          console.error('Error deleting time log:', err);
+        }
+      });
+    }
+  }
+
+
+  formatDateShort(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+
+  formatDuration(startTime: string, endTime: string): string {
+    if (!startTime) return '0m';
+
+    const start = new Date(startTime);
+    const end = endTime ? new Date(endTime) : new Date();
+    const durationMs = end.getTime() - start.getTime();
+
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   }
 }
