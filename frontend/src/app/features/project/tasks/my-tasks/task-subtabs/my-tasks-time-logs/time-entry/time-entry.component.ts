@@ -72,6 +72,7 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
   private readonly SYNC_INTERVAL = 1000;
   private destroyRef = inject(DestroyRef);
   private subs = new Subscription();
+  private isDescriptionModified = false;
 
   constructor(
     private timeLogService: TimeLogService,
@@ -138,6 +139,7 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
             this.startTimerInterval();
             this.manualDescription = timeLog.description || '';
             this.selectedTaskId = timeLog.task?.id || null;
+            this.isDescriptionModified = false;
           }
           observer.next();
           observer.complete();
@@ -154,12 +156,14 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
     if (this.isRunning || !this.projectId) return;
 
     this.isRunning = true;
+    this.isDescriptionModified = false;
+    const initialDescription = this.manualDescription;
     const startTime = new Date();
     this.startTimerInterval();
 
     this.timeLogService.startProjectTimer(
       this.projectId,
-      this.manualDescription,
+      initialDescription,
       this.selectedTaskId || undefined
     ).subscribe({
       next: () => {
@@ -176,6 +180,32 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
     });
   }
 
+  updateTimerDescription(): void {
+    if (!this.isRunning || !this.projectId || !this.manualDescription) return;
+
+    if (this.isDescriptionModified) {
+      this.timeLogService.getActiveProjectTimer(this.projectId).subscribe({
+        next: (timeLog) => {
+          if (timeLog) {
+            this.timeLogService.updateTimeLogDescription(timeLog.id, this.manualDescription)
+              .subscribe({
+                next: () => console.log('Description updated successfully'),
+                error: (err) => console.error('Failed to update description:', err)
+              });
+          }
+        },
+        error: (err) => console.error('Failed to get active timer:', err)
+      });
+    }
+  }
+
+  onDescriptionChange(): void {
+    if (this.isRunning) {
+      this.isDescriptionModified = true;
+      this.updateTimerDescription();
+    }
+  }
+
   stopTimer(): void {
     if (!this.isRunning || !this.projectId) return;
 
@@ -183,10 +213,13 @@ export class TimeEntryComponent implements OnInit, OnDestroy {
     clearInterval(this.timerInterval);
     this.stopHeartbeat();
 
+    this.updateTimerDescription();
+
     this.timeLogService.stopProjectTimer(this.projectId).subscribe({
       next: () => {
         this.elapsedTime = 0;
         this.timeEntryState.notifyTimeLogCreated();
+        this.isDescriptionModified = false;
       },
       error: (error) => {
         console.error('Error stopping timer:', error);

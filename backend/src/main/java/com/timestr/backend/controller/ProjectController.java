@@ -1,5 +1,9 @@
 package com.timestr.backend.controller;
 
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.timestr.backend.dto.CustomReportRequest;
 import com.timestr.backend.model.*;
 import com.timestr.backend.repository.*;
 import com.timestr.backend.utils.RoleUtils;
@@ -18,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import com.timestr.backend.model.ProjectInvitation;
 
 
+import javax.swing.text.Document;
+import java.io.ByteArrayOutputStream;
+import java.lang.annotation.Documented;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -134,10 +141,6 @@ public class ProjectController {
 
         return ResponseEntity.ok(response);
     }
-
-
-
-
 
     @Operation(summary = "Delete a project", description = "Deletes a project. Only the owner can delete the project.")
     @ApiResponses(value = {
@@ -768,6 +771,5 @@ public class ProjectController {
 
         return ResponseEntity.ok(response);
     }
-
 
 }

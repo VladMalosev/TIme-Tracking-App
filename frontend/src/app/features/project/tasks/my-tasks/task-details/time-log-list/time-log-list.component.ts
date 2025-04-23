@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { TimeLogService } from '../../../../../../services/my-tasks/time-log.service';
 import { TaskSelectionService } from '../../../../../../services/my-tasks/task-selection.service';
 
@@ -24,7 +25,8 @@ import { TaskSelectionService } from '../../../../../../services/my-tasks/task-s
     MatTooltipModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule
   ],
   templateUrl: './time-log-list.component.html',
   styleUrls: ['./time-log-list.component.scss']
@@ -32,6 +34,7 @@ import { TaskSelectionService } from '../../../../../../services/my-tasks/task-s
 export class TimeLogListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['startTime', 'endTime', 'duration', 'description'];
   timeLogs: any[] = [];
+  displayedLogs: any[] = [];
   loading = false;
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -41,6 +44,10 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
   editDescriptionText = '';
   selectedTimeLog: any = null;
 
+  pageSize = 10;
+  pageIndex = 0;
+  pageSizeOptions = [5, 10, 25, 50];
+  totalItems = 0;
 
   constructor(
     private timeLogService: TimeLogService,
@@ -54,6 +61,8 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
         this.loadTimeLogs(taskId);
       } else {
         this.timeLogs = [];
+        this.displayedLogs = [];
+        this.totalItems = 0;
       }
     });
 
@@ -80,6 +89,7 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
       this.sortDirection = 'asc';
     }
     this.sortLogs();
+    this.updateDisplayedLogs();
   }
 
   private sortLogs(): void {
@@ -137,18 +147,20 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
           endTimeValue: new Date(log.endTime).getTime(),
           durationValue: this.getDurationInMinutes(log.startTime, log.endTime)
         }));
+        this.totalItems = this.timeLogs.length;
         this.sortLogs();
+        this.updateDisplayedLogs();
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading logs:', error);
         this.loading = false;
         this.timeLogs = [];
+        this.displayedLogs = [];
+        this.totalItems = 0;
       }
     });
   }
-
-
 
   calculateDuration(startTime: string, endTime: string): string {
     if (!startTime || !endTime) return 'N/A';
@@ -164,6 +176,7 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
     console.log('Manual refresh triggered');
     this.taskSelectionService.triggerTimeLogsRefresh();
   }
+
   openEditDialog(log: any): void {
     this.selectedTimeLog = log;
     this.editDescriptionText = log.description || '';
@@ -192,6 +205,8 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
       this.timeLogService.deleteTimeLog(log.id).subscribe({
         next: () => {
           this.timeLogs = this.timeLogs.filter(l => l.id !== log.id);
+          this.totalItems = this.timeLogs.length;
+          this.updateDisplayedLogs();
           this.loading = false;
         },
         error: () => {
@@ -199,5 +214,17 @@ export class TimeLogListComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updateDisplayedLogs();
+  }
+
+  private updateDisplayedLogs(): void {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.displayedLogs = this.timeLogs.slice(startIndex, endIndex);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,7 +40,7 @@ import {ActivatedRoute, Router} from '@angular/router';
   templateUrl: './my-tasks.component.html',
   styleUrls: ['./my-tasks.component.scss']
 })
-export class MyTasksComponent implements OnInit {
+export class MyTasksComponent implements OnInit, OnDestroy {
   assignedTasks$: Observable<any[]> = of([]);
   filteredTasks$: Observable<any[]> = of([]);
   loading = true;
@@ -82,6 +82,18 @@ export class MyTasksComponent implements OnInit {
         this.taskSelectionService.setSelectedTaskId(taskIdFromUrl);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.taskSelectionService.clearSelectedTaskId();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { taskId: null },
+      queryParamsHandling: 'merge'
+    });
+
+    this.expandedTaskId = null;
   }
 
   loadAssignedTasks(): void {

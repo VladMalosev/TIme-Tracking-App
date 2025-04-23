@@ -55,6 +55,7 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
   }
 
   // Dragging functionality
+  quickTimerDescription: any;
   startDrag(event: MouseEvent): void {
     if (this.collapsed) {
       this.isDragging = true;
@@ -150,5 +151,9 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
     } else {
       console.warn('No project info available for navigation.');
     }
+  }
+
+  calculateCurrentQuickTimerDuration() {
+    return "";
   }
 }

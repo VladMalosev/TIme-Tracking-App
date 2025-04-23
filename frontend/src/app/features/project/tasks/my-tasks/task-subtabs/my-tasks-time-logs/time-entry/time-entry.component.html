@@ -35,7 +35,8 @@
       <mat-form-field class="work-description" appearance="outline">
         <mat-label>Work Description</mat-label>
         <textarea matInput [(ngModel)]="manualDescription" name="manualDescription" rows="3"
-                  placeholder="Detail the work performed during this period"></textarea>
+                  placeholder="Detail the work performed during this period"
+                  (ngModelChange)="onDescriptionChange()"></textarea>
         <mat-hint>Be specific (e.g., "Debugging API integration", "Client meeting")</mat-hint>
       </mat-form-field>
 

@@ -33,7 +33,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let log of timeLogs">
+      <tr *ngFor="let log of displayedLogs">
         <td>{{ log.startTime | date:'medium' }}</td>
         <td>{{ log.endTime | date:'medium' }}</td>
         <td>{{ log.duration }}</td>
@@ -55,6 +55,16 @@
       </tr>
       </tbody>
     </table>
+
+    <!-- Pagination Component -->
+    <mat-paginator class="paginator" *ngIf="timeLogs.length > 0"
+                   [length]="totalItems"
+                   [pageSize]="pageSize"
+                   [pageSizeOptions]="pageSizeOptions"
+                   [pageIndex]="pageIndex"
+                   (page)="onPageChange($event)"
+                   aria-label="Select page">
+    </mat-paginator>
 
     <div *ngIf="timeLogs.length === 0" class="no-logs">
       <mat-icon>timer_off</mat-icon>

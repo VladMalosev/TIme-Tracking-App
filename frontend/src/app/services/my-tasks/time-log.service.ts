@@ -3,6 +3,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {BehaviorSubject, catchError, map, Observable, of, switchMap, take, throwError} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
+import {TimeLog} from '../../models';
 
 @Injectable({
   providedIn: 'root'
@@ -263,5 +264,6 @@ export class TimeLogService {
       })
     );
   }
+
 
 }

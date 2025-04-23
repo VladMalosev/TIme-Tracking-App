@@ -216,6 +216,12 @@
   <div class="report-header">
     <h3>Report Results</h3>
     <div class="export-options">
+      <div class="export-settings" *ngIf="filter.groupBy !== 'none'">
+        <label>
+          <input type="checkbox" [(ngModel)]="exportAll">
+          Export all data (including collapsed groups)
+        </label>
+      </div>
       <button class="btn export-btn" (click)="exportToPDF()">
         <i class="icon pdf-icon"></i> Export PDF
       </button>

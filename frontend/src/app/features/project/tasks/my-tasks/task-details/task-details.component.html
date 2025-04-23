@@ -9,219 +9,206 @@
       <h2>Task Details</h2>
       <p class="subtitle">Review and manage all aspects of this task including time tracking, logs, and status updates.</p>
     </div>
+    <div class="action-buttons">
 
-  </div>
-
-  <div class="detail-grid">
-    <div class="detail-card name-card">
-      <div class="detail-label">
-        <mat-icon>title</mat-icon>
-        Task Name
-      </div>
-      <div class="detail-value">{{ task.name }}</div>
-      <div class="detail-hint">The primary identifier for this task</div>
-    </div>
-
-    <div class="detail-card description-card">
-      <div class="detail-label">
-        <mat-icon>description</mat-icon>
-        Description
-      </div>
-        <div class="detail-value" [class.empty-value]="!task.description">
-          {{ task.description || 'No description provided' }}
+      <!-- Timer Controls -->
+      <div class="dropdown-control">
+        <div class="timer-control" (click)="toggleDropdown('time')">
+          <div class="time-display">{{ formatTime(elapsedTime) }}</div>
+          <button class="timer-action start"
+                  (click)="startTimer(); $event.stopPropagation()"
+                  [disabled]="isRunning || task.status === TASK_STATUS.COMPLETED">
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+          <button class="timer-action stop"
+                  (click)="stopTimer(); $event.stopPropagation()"
+                  [disabled]="!isRunning">
+            <mat-icon>stop</mat-icon>
+          </button>
         </div>
-      <div class="detail-hint">Detailed information about what needs to be accomplished</div>
-    </div>
 
-    <div class="detail-card status-card" [class.status-pending]="task.status === 'PENDING'"
-         [class.status-assigned]="task.status === 'ASSIGNED'"
-         [class.status-in_progress]="task.status === 'IN_PROGRESS'"
-         [class.status-completed]="task.status === 'COMPLETED'"
-         [class.status-reopened]="task.status === 'REOPENED'">
-      <div class="detail-label">
-        <mat-icon>flag</mat-icon>
-        Status
-      </div>
-      <div class="detail-value">
-        {{ task.status | titlecase }}
-      </div>
-      <div class="detail-hint">Current progress state of this task</div>
-    </div>
-
-    <div class="detail-card deadline-card">
-      <div class="detail-label">
-        <mat-icon>event</mat-icon>
-        Deadline
-      </div>
-      <div class="detail-value" [class.empty-value]="!task.deadline">
-        {{ task.deadline ? (task.deadline | date:'mediumDate') : 'Not set' }}
-      </div>
-      <div class="detail-hint">Target completion date for this task</div>
-    </div>
-
-    <div class="detail-card assigned-card">
-      <div class="detail-label">
-        <mat-icon>person</mat-icon>
-        Assigned By
-      </div>
-      <div class="detail-value">
-        {{ task.assignedBy?.name || 'System' }}
-        <span *ngIf="task.assignedBy?.email" class="email">({{ task.assignedBy?.email }})</span>
-      </div>
-      <div class="detail-hint">The person who assigned this task to you</div>
-    </div>
-
-    <div class="detail-card date-card">
-      <div class="detail-label">
-        <mat-icon>event_available</mat-icon>
-        Assignment Date
-      </div>
-      <div class="detail-value" [class.empty-value]="!task.assignedAt">
-        {{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}
-      </div>
-      <div class="detail-hint">When this task was assigned to you</div>
-    </div>
-  </div>
-
-  <div class="time-sections-container">
-    <div class="section-intro">
-      <h3><mat-icon>access_time</mat-icon> Time Management</h3>
-      <p>Track and log your working time to maintain accurate records of your effort on this task.</p>
-    </div>
-
-    <div class="time-tracking-columns">
-
-      <!-- Time Tracking -->
-      <div class="time-logging-section">
-        <h4>
-          <mat-icon>timer</mat-icon>
-          Real-time Tracking
-        </h4>
-        <p class="section-description">Start and stop the timer as you work on this task to automatically record your time.</p>
-        <div class="stopwatch">
-          <div class="timer">{{ formatTime(elapsedTime) }}</div>
-          <div *ngIf="errorMessage" class="error-message">
-            <mat-icon>error</mat-icon> {{ errorMessage }}
+        <div class="dropdown-menu" [class.hidden]="!activeDropdowns['time']">
+          <mat-form-field appearance="outline" class="description-field">
+            <mat-label>Work Description</mat-label>
+            <input matInput [(ngModel)]="description" placeholder="What are you working on?">
+          </mat-form-field>
+          <div class="dropdown-actions">
+            <button class="close-button" mat-button (click)="closeDropdown('time')">Close</button>
           </div>
-          <div class="description">
-            <mat-form-field class="work-description" appearance="outline">
-              <mat-label>Work Description</mat-label>
-              <input matInput [(ngModel)]="description" placeholder="What are you working on?">
-              <mat-hint>Briefly describe your current activity</mat-hint>
-            </mat-form-field>
-          </div>
-
-          <div class="controls">
-            <button mat-raised-button
-                    (click)="startTimer()"
-                    [disabled]="isRunning || task.status === TASK_STATUS.COMPLETED">
-              <mat-icon>play_arrow</mat-icon> Start
-            </button>
-            <button class="controls-btn" mat-raised-button
-                    (click)="stopTimer()"
-                    [disabled]="!isRunning">
-              <mat-icon>stop</mat-icon> Stop
-            </button>
-          </div>
-
         </div>
+        <div class="click-overlay"
+             [class.active]="activeDropdowns['time']"
+             (click)="closeAllDropdowns()"></div>
       </div>
 
       <!-- Manual Time Entry -->
-      <div class="manual-time-section">
-        <h4>
+      <div class="dropdown-control">
+        <button class="action-btn" (click)="toggleDropdown('manual')">
           <mat-icon>schedule</mat-icon>
-          Manual Time Entry
-        </h4>
-        <p class="section-description">Add time entries for work already completed or when you forget to start the timer.</p>
-        <form (ngSubmit)="createManualTimeLog()">
-          <div class="form-row">
-            <mat-form-field appearance="outline">
+          <span>Log Time</span>
+        </button>
+
+        <div class="dropdown-menu" [class.hidden]="!activeDropdowns['manual']">
+          <h4>Add Time Entry</h4>
+          <form #manualTimeForm="ngForm" (ngSubmit)="createManualTimeLog()">
+            <mat-form-field appearance="outline" class="full-width-field">
               <mat-label>Start Time</mat-label>
               <input matInput type="datetime-local" [(ngModel)]="manualStartTime" name="manualStartTime" required>
-              <mat-hint>When you began working</mat-hint>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" class="full-width-field">
               <mat-label>End Time</mat-label>
               <input matInput type="datetime-local" [(ngModel)]="manualEndTime" name="manualEndTime" required>
-              <mat-hint>When you stopped working</mat-hint>
             </mat-form-field>
-          </div>
 
-          <div class="form-group">
-            <mat-form-field class="work-description" appearance="outline">
-              <mat-label >Work Description</mat-label>
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>Description</mat-label>
               <input matInput [(ngModel)]="manualDescription" name="manualDescription" placeholder="What did you work on?">
-              <mat-hint>Describe the work performed during this period</mat-hint>
             </mat-form-field>
-          </div>
 
+            <div class="dropdown-actions">
+              <button mat-button type="button" (click)="closeDropdown('manual'); resetManualTimeForm()">Cancel</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="manualTimeForm.invalid">
+                Add Entry
+              </button>
+            </div>
+          </form>
           <div *ngIf="manualTimeError" class="error-message">
-            <mat-icon>error</mat-icon> {{ manualTimeError }}
+            <mat-icon>error_outline</mat-icon> {{ manualTimeError }}
+          </div>
+        </div>
+        <div class="click-overlay"
+             [class.active]="activeDropdowns['manual']"
+             (click)="closeAllDropdowns()"></div>
+      </div>
+
+      <!-- Task Status -->
+      <div class="dropdown-control">
+        <button class="action-btn status-btn" (click)="toggleDropdown('status')">
+          <mat-icon>flag</mat-icon>
+          <span class="status-label">{{ task.status | titlecase }}</span>
+          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+        </button>
+
+        <div class="dropdown-menu status-menu" [class.hidden]="!activeDropdowns['status']">
+          <div class="status-options">
+            <button *ngIf="task.status === TASK_STATUS.PENDING || task.status === TASK_STATUS.ASSIGNED"
+                    class="status-option start" (click)="startTask(); closeDropdown('status')">
+              <mat-icon>play_arrow</mat-icon>
+              <span>Start Task</span>
+            </button>
+            <button *ngIf="task.status === TASK_STATUS.IN_PROGRESS || task.status === TASK_STATUS.REOPENED"
+                    class="status-option complete" (click)="completeTask(); closeDropdown('status')">
+              <mat-icon>check_circle</mat-icon>
+              <span>Complete Task</span>
+            </button>
+            <button *ngIf="task.status === TASK_STATUS.COMPLETED"
+                    class="status-option reopen" (click)="reopenTask(); closeDropdown('status')">
+              <mat-icon>replay</mat-icon>
+              <span>Reopen Task</span>
+            </button>
+          </div>
+        </div>
+        <div class="click-overlay"
+             [class.active]="activeDropdowns['status']"
+             (click)="closeAllDropdowns()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <mat-tab-group animationDuration="0ms" (selectedTabChange)="onTabChanged($event)">
+    <mat-tab label="Details">
+      <div class="tab-content">
+        <div class="detail-grid">
+          <div class="detail-card name-card">
+            <div class="detail-label">
+              <mat-icon>title</mat-icon>
+              Task Name
+            </div>
+            <div class="detail-value">{{ task.name }}</div>
+            <div class="detail-hint">The primary identifier for this task</div>
           </div>
 
-          <button mat-raised-button color="primary" type="submit">
-            <mat-icon>add</mat-icon> Add Time Entry
-          </button>
-        </form>
+          <div class="detail-card description-card">
+            <div class="detail-label">
+              <mat-icon>description</mat-icon>
+              Description
+            </div>
+            <div class="detail-value" [class.empty-value]="!task.description">
+              {{ task.description || 'No description provided' }}
+            </div>
+            <div class="detail-hint">Detailed information about what needs to be accomplished</div>
+          </div>
+
+          <div class="detail-card status-card" [ngClass]="{
+                'status-pending': task.status === TASK_STATUS.PENDING,
+                'status-assigned': task.status === TASK_STATUS.ASSIGNED,
+                'status-in_progress': task.status === TASK_STATUS.IN_PROGRESS,
+                'status-completed': task.status === TASK_STATUS.COMPLETED,
+                'status-reopened': task.status === TASK_STATUS.REOPENED
+              }">
+            <div class="detail-label">
+              <mat-icon>flag</mat-icon>
+              Status
+            </div>
+            <div class="detail-value">
+              {{ task.status | titlecase }}
+            </div>
+            <div class="detail-hint">Current progress state of this task</div>
+          </div>
+
+          <div class="detail-card deadline-card">
+            <div class="detail-label">
+              <mat-icon>event</mat-icon>
+              Deadline
+            </div>
+            <div class="detail-value" [class.empty-value]="!task.deadline">
+              {{ task.deadline ? (task.deadline | date:'mediumDate') : 'Not set' }}
+            </div>
+            <div class="detail-hint">Target completion date for this task</div>
+          </div>
+
+          <div class="detail-card assigned-card">
+            <div class="detail-label">
+              <mat-icon>person</mat-icon>
+              Assigned By
+            </div>
+            <div class="detail-value">
+              {{ task.assignedBy?.name || 'System' }}
+              <span *ngIf="task.assignedBy?.email" class="email">({{ task.assignedBy?.email }})</span>
+            </div>
+            <div class="detail-hint">The person who assigned this task to you</div>
+          </div>
+
+          <div class="detail-card date-card">
+            <div class="detail-label">
+              <mat-icon>event_available</mat-icon>
+              Assignment Date
+            </div>
+            <div class="detail-value" [class.empty-value]="!task.assignedAt">
+              {{ task.assignedAt ? (task.assignedAt | date:'mediumDate') : 'Not available' }}
+            </div>
+            <div class="detail-hint">When this task was assigned to you</div>
+          </div>
+        </div>
       </div>
-    </div>
+    </mat-tab>
 
-    <!-- Time Logs -->
-    <div class="time-logs-section">
-      <div class="section-header">
-        <h4>
-          <mat-icon>list</mat-icon>
-          Time Log History
-        </h4>
+    <mat-tab label="Time Logs">
+      <div class="tab-content">
+        <div class="time-logs-section">
+          <div class="section-header">
+            <h4>
+              <mat-icon>list</mat-icon>
+              Time Log History
+            </h4>
+          </div>
+          <div class="app-time">
+            <app-time-log-list></app-time-log-list>
+          </div>
+        </div>
       </div>
-      <div class="app-time">
-        <app-time-log-list></app-time-log-list>
-      </div>
-    </div>
-  </div>
-
-  <!-- Task Actions Section -->
-  <div class="task-actions-section">
-    <h3><mat-icon>build</mat-icon> Task Management</h3>
-    <p>Update the status of this task as you progress through your work.</p>
-
-    <div class="actions-row">
-      <button class="controls-btn" *ngIf="task.status === TASK_STATUS.PENDING || task.status === TASK_STATUS.ASSIGNED"
-              mat-raised-button color="primary" (click)="startTask()">
-        <mat-icon>play_arrow</mat-icon> Start Task
-      </button>
-
-      <button class="controls-btn"  *ngIf="task.status === TASK_STATUS.IN_PROGRESS || task.status === TASK_STATUS.REOPENED"
-              mat-raised-button color="accent" (click)="completeTask()">
-        <mat-icon>check_circle</mat-icon> Complete Task
-      </button>
-
-      <button class="controls-btn"  *ngIf="task.status === TASK_STATUS.COMPLETED"
-              mat-raised-button color="primary" (click)="reopenTask()">
-        <mat-icon>replay</mat-icon> Reopen Task
-      </button>
-    </div>
-
-    <div *ngIf="task.status === TASK_STATUS.COMPLETED" class="status-warning">
-      <mat-icon>warning</mat-icon>
-      <span>This task is marked as completed. You need to reopen it to add more time logs or change its status.</span>
-    </div>
-  </div>
-
-  <div class="resources-section">
-    <h3><mat-icon>help_outline</mat-icon> Need Help?</h3>
-    <div class="resource-links">
-      <a class="need-help-btns" mat-button href="#">
-        <mat-icon>description</mat-icon> View Task Documentation
-      </a>
-      <a class="need-help-btns" mat-button href="#">
-        <mat-icon>forum</mat-icon> Ask a Question
-      </a>
-      <a class="need-help-btns" mat-button href="#">
-        <mat-icon>video_library</mat-icon> Training Videos
-      </a>
-    </div>
-  </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>

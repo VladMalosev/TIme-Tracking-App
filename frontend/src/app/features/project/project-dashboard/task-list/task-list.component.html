@@ -92,6 +92,17 @@
         </div>
 
         <div class="task-actions">
+
+          <button mat-icon-button
+                  (click)="onToggleTimer(task); $event.stopPropagation()"
+                  class="task-action"
+                  matTooltip="Start/Stop timer"
+                  [color]="isTaskTimerRunning(task.id) ? 'warn' : 'primary'">
+            <mat-icon class="action-icon">
+              {{ isTaskTimerRunning(task.id) ? 'stop_circle' : 'timer' }}
+            </mat-icon>
+          </button>
+
           <button mat-icon-button (click)="onLogTaskTime(task)" class="task-action" matTooltip="Log time">
             <mat-icon class="action-icon">play_circle</mat-icon>
           </button>

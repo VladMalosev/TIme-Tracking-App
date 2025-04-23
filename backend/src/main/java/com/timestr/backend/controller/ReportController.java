@@ -1,5 +1,10 @@
 package com.timestr.backend.controller;
 
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.timestr.backend.dto.CustomReportRequest;
 import com.timestr.backend.dto.TimeLogWithStatus;
 import com.timestr.backend.model.TimeLog;
 import com.timestr.backend.service.PdfReportService;
@@ -16,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -214,5 +220,48 @@ public class ReportController {
         List<TimeLogWithStatus> report = reportService.generateUserTimeLogsReport(start, end);
         return ResponseEntity.ok(report);
     }
+
+    @Operation (summary = "Generate custom PDF report", description = "Generates a custom PDF report based on provided data and filters.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "PDF generated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/custom-pdf")
+    public ResponseEntity<byte[]> generateCustomPDF(
+            @RequestBody CustomReportRequest request) {
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf, PageSize.A4);
+
+
+            reportService.addReportHeader(document, request.getFilters());
+
+            if (request.getFilters().getGroupBy() != null && !request.getFilters().getGroupBy().equals("none")) {
+                reportService.addGroupedDataTable(document, request.getData(), request.getFilters().getGroupBy());
+            } else {
+                reportService.addDataTable(document, request.getData(), request.getSortColumn(), request.getSortDirection());
+            }
+
+            reportService.addSummary(document, request.getData());
+
+            document.close();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", reportService.generateFileName(request.getFilters()) + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(baos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
 }

@@ -72,4 +72,24 @@ export class ReportService {
   getProjectDetails(projectId: string): Observable<any> {
     return this.http.get<any>(`${environment.apiBaseUrl}/projects/${projectId}`, { withCredentials: true });
   }
+
+  generateCustomPdf(data: any[], startTime: string | null, endTime: string | null, filename: string, filters: any): Observable<Blob> {
+    const requestBody = {
+      data: data,
+      filters: {
+        startTime: startTime,
+        endTime: endTime,
+        projectId: filters.project?.id,
+        userId: filters.user?.id,
+        taskId: filters.task?.id,
+        groupBy: filters.groupBy
+      },
+      sortColumn: filters.sortColumn || '',
+      sortDirection: filters.sortDirection || ''
+    };
+
+    return this.http.post(`${environment.apiBaseUrl}/reports/custom-pdf`, requestBody, {
+      responseType: 'blob'
+    });
+  }
 }

@@ -29,6 +29,7 @@ export class ReportResultsComponent implements OnInit, OnDestroy {
   isLoading = false;
   sortColumn = '';
   sortDirection: 'asc' | 'desc' = 'asc';
+  exportAll: boolean = false;
 
   private reportDataSubscription?: Subscription;
   private filterSubscription?: Subscription;
@@ -190,34 +191,36 @@ export class ReportResultsComponent implements OnInit, OnDestroy {
   }
 
   exportToPDF(): void {
-    if (!this.filter.project) return;
+    this.isLoading = true;
+
+    const dataToExport = this.filter.groupBy !== 'none'
+      ? this.flattenGroupedData()
+      : this.reportData;
 
     const startTime = this.filter.startDate ? `${this.filter.startDate}T00:00:00` : null;
     const endTime = this.filter.endDate ? `${this.filter.endDate}T23:59:59` : null;
+    const fileName = this.generateReportFileName();
 
-    if (this.filter.task) {
-      this.reportService.downloadTaskPdf(
-        this.filter.task.id,
-        startTime,
-        endTime,
-        this.filter.task.name
-      ).subscribe(this.handlePdfDownload('task_report.pdf'));
-    } else if (this.filter.user) {
-      this.reportService.downloadUserPdf(
-        this.filter.user.id,
-        this.filter.project.id,
-        startTime,
-        endTime,
-        this.filter.user.name
-      ).subscribe(this.handlePdfDownload('user_report.pdf'));
-    } else {
-      this.reportService.downloadProjectPdf(
-        this.filter.project.id,
-        startTime,
-        endTime,
-        this.filter.project.name
-      ).subscribe(this.handlePdfDownload('project_report.pdf'));
-    }
+    this.reportService.generateCustomPdf(
+      dataToExport,
+      startTime,
+      endTime,
+      fileName,
+      {
+        ...this.filter,
+        sortColumn: this.sortColumn,
+        sortDirection: this.sortDirection
+      }
+    ).subscribe({
+      next: (blob) => {
+        this.handlePdfDownload(`${fileName}.pdf`)(blob);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error exporting PDF:', err);
+        this.isLoading = false;
+      }
+    });
   }
 
   private handlePdfDownload(defaultFilename: string): (blob: Blob) => void {
@@ -232,43 +235,94 @@ export class ReportResultsComponent implements OnInit, OnDestroy {
   }
 
   exportToCSV(): void {
+    const dataToExport = this.filter.groupBy !== 'none'
+      ? this.flattenGroupedData()
+      : this.reportData;
+
     let csvContent = "data:text/csv;charset=utf-8,";
 
-    // Add headers
-    const headers = [
-      'Start Time', 'End Time', 'Duration (min)',
-      'Description', 'User', 'Task', 'Status'
-    ];
-    csvContent += headers.join(",") + "\r\n";
+    const headers = ['Start Time', 'End Time', 'Duration (min)', 'Description'];
 
-    const dataToExport = this.filter.groupBy !== 'none'
-      ? this.groupedReportData.flatMap(g => g.logs)
-      : this.reportData;
+    if (this.filter.groupBy !== 'user') {
+      headers.push('User');
+    }
+
+    if (this.filter.groupBy !== 'task') {
+      headers.push('Task');
+    }
+
+    headers.push('Status');
+    csvContent += headers.join(",") + "\r\n";
 
     dataToExport.forEach(log => {
       const row = [
-        log.timeLog.startTime,
-        log.timeLog.endTime,
+        new Date(log.timeLog.startTime).toLocaleString(),
+        new Date(log.timeLog.endTime).toLocaleString(),
         log.timeLog.minutes,
-        `"${log.timeLog.description.replace(/"/g, '""')}"`,
-        log.timeLog.user?.name || 'N/A',
-        log.timeLog.task?.name || 'N/A',
-        log.status
+        `"${log.timeLog.description?.replace(/"/g, '""') || ''}"`
       ];
+
+      if (this.filter.groupBy !== 'user') {
+        row.push(log.timeLog.user?.name || 'N/A');
+      }
+
+      if (this.filter.groupBy !== 'task') {
+        row.push(log.timeLog.task?.name || 'N/A');
+      }
+
+      row.push(log.status);
       csvContent += row.join(",") + "\r\n";
     });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "report_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    this.downloadCSV(csvContent, `${this.generateReportFileName()}.csv`);
   }
 
   getTotalMinutes(): number {
     return this.reportData.reduce((sum, item) => sum + (item.timeLog.minutes || 0), 0);
+  }
+
+  private flattenGroupedData(): any[] {
+    let flatData: any[] = [];
+    this.groupedReportData.forEach(group => {
+      if (group.expanded || this.exportAll) {
+        if (group.subGroups) {
+          group.subGroups.forEach(subGroup => {
+            if (subGroup.expanded || this.exportAll) {
+              flatData = flatData.concat(subGroup.logs);
+            }
+          });
+        } else {
+          flatData = flatData.concat(group.logs);
+        }
+      }
+    });
+    return flatData;
+  }
+
+  private generateReportFileName(): string {
+    const datePart = this.filter.startDate || this.filter.endDate
+      ? `_${this.filter.startDate || 'start'}_to_${this.filter.endDate || 'end'}`
+      : '';
+
+    if (this.filter.task) {
+      return `task_${this.filter.task.name.replace(/\s+/g, '_').toLowerCase()}${datePart}`;
+    } else if (this.filter.user) {
+      return `user_${this.filter.user.name.replace(/\s+/g, '_').toLowerCase()}${datePart}`;
+    } else if (this.filter.project) {
+      return `project_${this.filter.project.name.replace(/\s+/g, '_').toLowerCase()}${datePart}`;
+    } else {
+      return `time_report${datePart}`;
+    }
+  }
+
+  private downloadCSV(csvContent: string, filename: string): void {
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   getGroupLabel(): string {

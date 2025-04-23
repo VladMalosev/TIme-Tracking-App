@@ -81,7 +81,6 @@ td {
   text-overflow: ellipsis;
 }
 
-/* Consistent column widths for all tables */
 table th:nth-child(1),
 table td:nth-child(1) {
   width: 180px; /* Start Time */
@@ -99,15 +98,18 @@ table td:nth-child(3) {
 
 table th:nth-child(4),
 table td:nth-child(4) {
-  width: 250px; /* Description */
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 300px;
 }
+
 
 table th:nth-child(5),
 table td:nth-child(5) {
   width: 100px; /* Status */
 }
 
-/* Additional columns for tables with User and Task */
 table th:nth-child(6),
 table td:nth-child(6) {
   width: 150px; /* User */
@@ -460,9 +462,7 @@ table th,
 table td {
   padding: 12px 15px;
   border-bottom: 1px solid #eee;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
 }
 
 table th:nth-child(5),

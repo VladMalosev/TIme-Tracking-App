@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {Observable, of, Subscription, switchMap, take} from 'rxjs';
+import {filter, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import { TaskAssignmentService } from '../../../../../services/project-tasks/task-assignment.service';
 import { TaskSelectionService } from '../../../../../services/my-tasks/task-selection.service';
 import { CommonModule } from '@angular/common';
@@ -15,6 +15,9 @@ import {TimeLogListComponent} from './time-log-list/time-log-list.component';
 import {ProjectContextService} from '../../../../../services/project-context.service';
 import {TimeTrackingService} from '../../../../../services/time-tracking.service';
 import {TimeEntryStateService} from '../../../../../services/my-tasks/time-entry-state.service';
+import {MatTab, MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs';
+import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
+import {NavigationStart, Router} from '@angular/router';
 
 @Component({
   selector: 'app-task-details',
@@ -29,7 +32,10 @@ import {TimeEntryStateService} from '../../../../../services/my-tasks/time-entry
     MatChipsModule,
     MatButtonModule,
     MatCardModule,
-    TimeLogListComponent
+    TimeLogListComponent,
+    MatTabGroup,
+    MatTab,
+
   ],
   templateUrl: './task-details.component.html',
   styleUrls: ['./task-details.component.scss']
@@ -53,6 +59,13 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   expandedDescriptions: {[key: string]: boolean} = {};
   private subs: Subscription = new Subscription();
 
+
+  activeDropdowns: { [key: string]: boolean } = {
+    time: false,
+    manual: false,
+    status: false
+  };
+
   readonly TASK_STATUS = {
     PENDING: 'PENDING',
     ASSIGNED: 'ASSIGNED',
@@ -66,13 +79,29 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
     private taskSelectionService: TaskSelectionService,
     private projectContextService: ProjectContextService,
     private timeTrackingService: TimeTrackingService,
-    private timeEntryState: TimeEntryStateService
+    private timeEntryState: TimeEntryStateService,
+    private router: Router
   ) {}
+
+  onTabChanged(event: MatTabChangeEvent): void {
+    if (event.index === 1) {
+      this.taskSelectionService.triggerTimeLogsRefresh();
+    }
+  }
+
 
 
   ngOnInit(): void {
     this.projectIdSubscription = this.projectContextService.currentProjectId$.subscribe(
       projectId => this.projectId = projectId
+    );
+
+    this.subs.add(
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationStart)
+      ).subscribe(() => {
+        this.closeDetails();
+      })
     );
 
     this.subs.add(
@@ -83,9 +112,15 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.taskSubscription = this.taskSelectionService.selectedTaskId$.subscribe(taskId => {
-      if (taskId) {
-        this.taskAssignmentService.userId$.pipe(
+    this.taskSubscription = this.taskSelectionService.selectedTaskId$.pipe(
+      switchMap(taskId => {
+        if (!taskId) {
+          this.task = null;
+          this.stopTimer();
+          return of(null);
+        }
+
+        return this.taskAssignmentService.userId$.pipe(
           take(1),
           switchMap(userId => {
             if (!userId) return of(null);
@@ -95,12 +130,9 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
             this.loadTaskDetails(taskId);
             return this.checkActiveTimer(taskId);
           })
-        ).subscribe();
-      } else {
-        this.task = null;
-        this.stopTimer();
-      }
-    });
+        );
+      })
+    ).subscribe();
   }
 
   private syncTimerState(): void {
@@ -152,7 +184,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.taskSubscription?.unsubscribe();
     this.projectIdSubscription?.unsubscribe();
-    this.stopTimer();
+    this.subs.unsubscribe();
+    this.closeDetails();
   }
 
   reopenTask(): void {
@@ -173,6 +206,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
   loadTaskDetails(taskId: string): void {
     this.loading = true;
     this.task = null;
+    this.stopTimer();
+
     this.taskAssignmentService.getTaskDetails(taskId).subscribe({
       next: (task) => {
         this.task = task;
@@ -182,6 +217,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading task details:', error);
         this.loading = false;
+        this.task = null;
+        this.stopTimer();
       }
     });
   }
@@ -221,7 +258,7 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
 
   stopTimer(): void {
-    if (this.isRunning) {
+    if (this.isRunning && this.task) {
       this.isRunning = false;
       clearInterval(this.timerInterval);
 
@@ -246,6 +283,8 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
   closeDetails(): void {
     this.taskSelectionService.clearSelectedTaskId();
+    this.task = null;
+    this.loading = false;
   }
 
   formatTime(seconds: number): string {
@@ -334,6 +373,30 @@ export class TaskDetailsComponent implements OnInit, OnDestroy {
 
   toggleDescription(key: string) {
     this.expandedDescriptions[key] = !this.expandedDescriptions[key];
+  }
+
+  toggleDropdown(dropdownName: string): void {
+    // Close all other dropdowns
+    Object.keys(this.activeDropdowns).forEach(key => {
+      this.activeDropdowns[key] = key === dropdownName ? !this.activeDropdowns[key] : false;
+    });
+  }
+
+  closeDropdown(dropdownName: string): void {
+    this.activeDropdowns[dropdownName] = false;
+  }
+
+  closeAllDropdowns(): void {
+    Object.keys(this.activeDropdowns).forEach(key => {
+      this.activeDropdowns[key] = false;
+    });
+  }
+
+  resetManualTimeForm(): void {
+    this.manualStartTime = '';
+    this.manualEndTime = '';
+    this.manualDescription = '';
+    this.manualTimeError = null;
   }
 
 }
