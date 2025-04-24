@@ -1,17 +1,107 @@
+<!-- login.component.html -->
+<div class="login-container">
+  <!-- Left side - Sliding Banner -->
+  <div class="banner-container">
+    <div class="carousel-container">
+      <div class="carousel" #carousel>
+        <div class="slide" [class.active]="currentSlide === 0">
+          <h1>Welcome to TimeSTR</h1>
+          <p>Your gateway to effortless management</p>
+          <div class="banner-image">
+            <mat-icon>schedule</mat-icon>
+          </div>
+        </div>
+        <div class="slide" [class.active]="currentSlide === 1">
+          <h1>Seamless Collaboration</h1>
+          <p>Work together with your team in real-time</p>
+          <div class="banner-image">
+            <mat-icon>groups</mat-icon>
+          </div>
+        </div>
+        <div class="slide" [class.active]="currentSlide === 2">
+          <h1>Effortless Management</h1>
+          <p>Streamline your workflow with powerful tools</p>
+          <div class="banner-image">
+            <mat-icon>auto_awesome</mat-icon>
+          </div>
+        </div>
+      </div>
 
-<main>
-  <h2 class="test">Login</h2>
-  <form (submit)="login()">
-    <label>Email:</label>
-    <input type="email" [(ngModel)]="credentials.email" name="email" required />
+      <!-- Carousel Navigation -->
+      <div class="carousel-indicators">
+        <span
+          *ngFor="let slide of [0, 1, 2]; let i = index"
+          class="indicator"
+          [class.active]="currentSlide === i"
+          (click)="goToSlide(i)">
+        </span>
+      </div>
+    </div>
+  </div>
 
-    <label>Password:</label>
-    <input type="password" [(ngModel)]="credentials.password" name="password" required />
+  <!-- Right side - Login Form -->
+  <div class="login-form-container">
+    <div class="login-form">
+      <div class="form-header">
+        <h2>Sign In</h2>
+        <p>Access your TimeSTR account</p>
+      </div>
 
-    <button type="submit">Login</button>
-  </form>
-  <p *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p>Don't have an account? <a routerLink="/register">Register</a></p>
-  <button (click)="loginWithGoogle()">Login with Google</button>
-</main>
+      <form (submit)="login()">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [(ngModel)]="credentials.email" name="email" required>
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
 
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="credentials.password" name="password" required>
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+            <mat-icon>{{hidePassword ? 'visibility' : 'visibility_off'}}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <div class="forgot-password">
+          <a class="link" href="/forgot-password">Forgot password?</a>
+        </div>
+
+        <button mat-raised-button color="primary" type="submit" class="login-button">
+          Sign In
+        </button>
+      </form>
+
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <div class="social-login">
+        <button mat-stroked-button class="social-btn google-btn" (click)="loginWithGoogle()">
+          <img src="assets/icons/google.png" alt="Google">
+        </button>
+
+        <button mat-stroked-button class="social-btn microsoft-btn" (click)="loginWithMicrosoft()">
+          <img src="assets/icons/microsoft.png" alt="Microsoft">
+        </button>
+
+        <button mat-stroked-button class="social-btn apple-btn" (click)="loginWithApple()">
+          <img src="assets/icons/apple-logo.png" alt="Apple">
+        </button>
+      </div>
+
+      <div class="signup-link">
+        <p class="link">Don't have an account? <a href="/register">Sign up</a></p>
+      </div>
+
+
+      <div class="terms-and-service">
+        <p>By signing up to create an account I accept Company’s <a href="" class="terms-and-service-link"> Terms of use & Privacy Policy.</a></p>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: none !important;
+}
+
+mat-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+
+  mat-card-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+    color: #4A3AFF;
+  }
+
+  mat-card-subtitle {
+    font-size: 16px;
+    text-align: center;
+    color: #666;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.sign-up {
+  width: 100%;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #767676;
+  background-color: #4A3AFF !important;
+  color: white !important;
+  padding: 8px 16px;
+  height: 48px;
+  font-weight: 500;
+}
+
+.password-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+
+  .requirement-icon {
+    margin-right: 8px;
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+  }
+
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: #aaa;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider span {
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+
+.social-login {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.social-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.login-redirect {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+
+  p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+
+    a {
+      color: #4A3AFF;
+      font-weight: 500;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 12px;
+  margin: 4px 0;
+}
+.link{
+  text-decoration: none;
+}

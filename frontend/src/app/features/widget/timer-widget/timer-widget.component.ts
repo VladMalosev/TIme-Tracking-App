@@ -32,7 +32,7 @@ import {MatButtonModule} from '@angular/material/button';
 })
 export class TimerWidgetComponent implements OnInit, OnDestroy {
   activeTimers: any[] = [];
-  collapsed = false;
+  collapsed = true;
   private destroy$ = new Subject<void>();
   private refreshInterval = 1000;
 

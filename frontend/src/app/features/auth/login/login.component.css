@@ -1,0 +1,242 @@
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.banner-container {
+  flex: 1;
+  background: linear-gradient(135deg, #164470, #2196f3, #79bef4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  color: white;
+  overflow: hidden;
+  margin: 2rem 6rem 2rem 2rem;
+  border-radius: 12px;
+}
+
+.carousel-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.carousel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.slide h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.slide p {
+  font-size: 1.2rem;
+  max-width: 80%;
+  margin: 0 auto 2rem;
+}
+
+.banner-image {
+  margin-top: 2rem;
+}
+
+.banner-image mat-icon {
+  font-size: 5rem;
+  height: 5rem;
+  width: 5rem;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.indicator.active {
+  background-color: white;
+}
+
+.login-form-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-form {
+  margin-right: 6rem;
+  width: 100%;
+  max-width: 420px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 2.5rem;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.form-header p {
+  color: #666;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.forgot-password {
+  margin-top: -1rem;
+  text-align: right;
+  margin-bottom: 3rem;
+}
+
+.forgot-password a {
+  color: #2196f3;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.login-button {
+  width: 100%;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #767676;
+  background-color: #4A3AFF !important;
+  color: white !important;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: #aaa;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider span {
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+
+.social-login {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.social-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+
+.signup-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: #2196f3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #ffebee;
+  color: #f44336;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.terms-and-service{
+  padding-top: 8rem;
+  text-align: center;
+  font-size: 14px;
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+.terms-and-service-link{
+  text-decoration: none;
+  color: #2196f3;
+}
+
+.link{
+  text-decoration: none;
+  
+}
