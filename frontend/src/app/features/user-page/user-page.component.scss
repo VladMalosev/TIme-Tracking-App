@@ -1,0 +1,193 @@
+.profile-unified-container {
+  max-width: 80%;
+  margin: 2rem auto;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.welcome-message {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 1.5rem 0 0.25rem 2rem;
+  font-weight: 500;
+}
+
+.current-date {
+  color: #777;
+  margin: 0 0 1.5rem 2rem;
+  font-size: 0.9rem;
+}
+
+.profile-header-section {
+  background: linear-gradient(90deg, rgba(130, 216, 250, 1) 0%, rgba(255, 250, 181, 1) 100%);
+  padding: 2.5rem;
+  height: 100px;
+  position: relative;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.avatar-section {
+  flex-shrink: 0;
+}
+
+.avatar-container {
+  position: relative;
+}
+
+.profile-photo {
+  margin-left: 1rem;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.photo-upload-button {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background-color: #ff4081;
+  color: white;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.user-name {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.user-tagline {
+  margin: 0.5rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-right: 1rem;
+}
+
+.action-buttons button {
+  min-width: 130px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.save-button, .cancel-button {
+  height: 42px;
+}
+
+.profile-content-section {
+  padding: 2rem 2rem 3rem;
+  margin-top: 2rem;
+}
+
+.user-info-display {
+  padding: 0;
+}
+
+.info-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  color: #4A3AFF;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 1.05rem;
+  color: #333;
+  line-height: 1.4;
+}
+
+.user-bio {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #444;
+  max-width: 90%;
+}
+
+.edit-button {
+  height: 42px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #4A3AFF !important;
+  color: white !important;
+  margin-right: 1rem;
+  gap: 0.5rem;
+  border: none;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.edit-button:hover {
+  background-color: #3929d9 !important;
+}
+
+.edit-form {
+  padding: 0;
+}
+
+.form-section {
+  margin-bottom: 2.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-field {
+  width: 100%;
+  font-size: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}

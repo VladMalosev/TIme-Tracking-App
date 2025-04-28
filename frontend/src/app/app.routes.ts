@@ -13,15 +13,27 @@ import {ProjectTasksComponent} from './features/project/tasks/project-tasks/proj
 import {ProjectInvitationsComponent} from './features/project/project-invitations/project-invitations.component';
 import {TimeLogsComponent} from './features/project/time-logs/time-logs.component';
 import {TaskDetailsComponent} from './features/project/tasks/my-tasks/task-details/task-details.component';
+import {NoAuthGuard} from './core/auth/no-auth.guard';
+import {RedirectComponent} from './core/auth/redirect-component/redirect-component.component';
+import {UserPageComponent} from './features/user-page/user-page.component';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [NoAuthGuard]
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    canActivate: [NoAuthGuard]
+  },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'chat', component: ChatComponent, canActivate: [AuthGuard] },
   { path: 'add-project', component: AddProjectComponent, canActivate: [AuthGuard] },
   { path: 'workspaces', component: WorkspaceManagementComponent, canActivate: [AuthGuard] },
   { path: 'edit-project/:id', component: EditProjectComponent, canActivate: [AuthGuard] },
+  { path: 'user/:id', component: UserPageComponent, canActivate: [AuthGuard] },
   {
     path: 'project-details/:id',
     component: ProjectComponent,
@@ -36,5 +48,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '**', component: RedirectComponent }
 ];

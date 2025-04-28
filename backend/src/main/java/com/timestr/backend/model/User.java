@@ -41,6 +41,29 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @Size(max = 100, message = "Tagline cannot exceed 100 characters")
+    @Column(name = "tagline", length = 100)
+    private String tagline;
+
+    @Size(max = 500, message = "Bio cannot exceed 500 characters")
+    @Column(name = "bio", length = 500)
+    private String bio;
+
+    @Size(max = 50, message = "Location cannot exceed 50 characters")
+    @Column(name = "location", length = 50)
+    private String location;
+
+    @Size(max = 50, message = "Timezone cannot exceed 50 characters")
+    @Column(name = "timezone", length = 50)
+    private String timezone;
+
+    @Size(max = 20, message = "Gender cannot exceed 20 characters")
+    @Column(name = "gender", length = 20)
+    private String gender;
+
+    @Column(name = "photo_url", length = 255)
+    private String photoUrl;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -52,7 +75,66 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+
     // Getters and Setters
+
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -125,6 +207,12 @@ public class User {
         private String password;
         private String phone;
         private Role role;
+        private String tagline;
+        private String bio;
+        private String location;
+        private String timezone;
+        private String gender;
+        private String photoUrl;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -173,6 +261,36 @@ public class User {
             return this;
         }
 
+        public Builder setTagline(String tagline) {
+            this.tagline = tagline;
+            return this;
+        }
+
+        public Builder setBio(String bio) {
+            this.bio = bio;
+            return this;
+        }
+
+        public Builder setLocation(String location) {
+            this.location = location;
+            return this;
+        }
+
+        public Builder setTimezone(String timezone) {
+            this.timezone = timezone;
+            return this;
+        }
+
+        public Builder setGender(String gender) {
+            this.gender = gender;
+            return this;
+        }
+
+        public Builder setPhotoUrl(String photoUrl) {
+            this.photoUrl = photoUrl;
+            return this;
+        }
+
         public User build() {
             User user = new User();
             user.setId(id);
@@ -181,6 +299,12 @@ public class User {
             user.setPassword(password);
             user.setPhone(phone);
             user.setRoles(role);
+            user.setTagline(tagline);
+            user.setBio(bio);
+            user.setLocation(location);
+            user.setTimezone(timezone);
+            user.setGender(gender);
+            user.setPhotoUrl(photoUrl);
             user.setCreatedAt(createdAt);
             user.setUpdatedAt(updatedAt);
             return user;

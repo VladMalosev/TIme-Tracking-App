@@ -219,7 +219,13 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
           currentDuration: this.calculateCurrentDuration(timer)
         }));
       },
-      error: (err) => console.error('Error loading active timers:', err)
+      error: (err) => {
+        if (err.status === 401 || err.status === 403 || err.status === 500) {
+          this.activeTimers = [];
+        } else {
+          console.error('Error loading active timers:', err);
+        }
+      }
     });
   }
 

@@ -54,7 +54,6 @@ export class EditProjectComponent implements OnInit {
       .subscribe(
         (response) => {
           this.project = response;
-          // Ensure deadline is a Date object for the datepicker
           if (this.project.deadline) {
             this.project.deadline = new Date(this.project.deadline);
           }

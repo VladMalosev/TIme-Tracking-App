@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable, map, tap, catchError, BehaviorSubject, of} from 'rxjs';
+import {UserService} from '../../services/user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,27 +14,28 @@ export class AuthService {
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
   userId$ = this.userIdSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+              private userService: UserService) {}
 
 
   isAuthenticated(): Observable<boolean> {
-    return this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/dashboard`, { withCredentials: true }).pipe(
       map(response => !!response.email),
       catchError(() => [false])
     );
   }
 
   checkAuthentication(): void {
-    this.http.get<any>('http://localhost:8080/api/auth/dashboard', { withCredentials: true }).pipe(
+    this.http.get<any>(`${this.apiUrl}/dashboard`, { withCredentials: true }).pipe(
       tap(response => {
         this.isLoggedInSubject.next(!!response.email);
         if (response.userId) {
-          this.userIdSubject.next(response.userId);
+          this.userService.setUserId(response.userId);
         }
       }),
       catchError(() => {
         this.isLoggedInSubject.next(false);
-        this.userIdSubject.next(null);
+        this.userService.setUserId("");
         return of(false);
       })
     ).subscribe();
@@ -55,8 +57,21 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
-      tap(() => this.isLoggedInSubject.next(false))
+    return this.http.post(`${this.apiUrl}/logout`, {}, {
+      withCredentials: true
+    }).pipe(
+      tap(() => {
+        this.isLoggedInSubject.next(false);
+        this.userIdSubject.next(null);
+        this.userService.setUserId("");
+      }),
+      catchError(error => {
+        console.error('Logout API error:', error);
+        this.isLoggedInSubject.next(false);
+        this.userIdSubject.next(null);
+        this.userService.setUserId("");
+        return of({ message: 'Logged out client-side' });
+      })
     );
   }
 

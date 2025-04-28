@@ -1,0 +1,148 @@
+<div class="profile-unified-container">
+  <h2 class="welcome-message">Welcome, John Doe</h2>
+  <p class="current-date">Tue 07 June 2022</p>
+
+  <div class="profile-header-section">
+    <div class="header-content">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-container">
+          <img [src]="'assets/icons/avatar.png'" alt="Profile Photo" class="profile-photo">
+          <button *ngIf="isOwner && isEditing" mat-mini-fab class="photo-upload-button" (click)="fileInput.click()">
+            <mat-icon>photo_camera</mat-icon>
+          </button>
+          <input hidden type="file" #fileInput (change)="onPhotoSelected($event)" accept="image/*">
+        </div>
+      </div>
+
+      <div class="user-info">
+        <h1 class="user-name">{{user.name}}</h1>
+        <p class="user-tagline" *ngIf="user.tagline">{{user.tagline}}</p>
+      </div>
+
+      <div class="action-buttons" *ngIf="isOwner">
+        <button *ngIf="!isEditing" mat-raised-button class="edit-button" (click)="toggleEditMode()">
+          <mat-icon>edit</mat-icon> Edit Profile
+        </button>
+        <ng-container *ngIf="isEditing">
+          <button mat-raised-button color="primary" class="save-button" [disabled]="profileForm.invalid || !profileForm.dirty" (click)="saveProfile()">
+            <mat-icon>save</mat-icon> Save Changes
+          </button>
+          <button mat-stroked-button class="cancel-button" (click)="cancelEdit()">
+            <mat-icon>close</mat-icon> Cancel
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-content-section">
+    <div class="user-info-display" *ngIf="!isEditing">
+      <div class="info-section">
+        <h2 class="section-title">Personal Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{user.name}}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{user.email}}</span>
+          </div>
+          <div class="info-item" *ngIf="user.phone">
+            <span class="info-label">Phone</span>
+            <span class="info-value">{{user.phone}}</span>
+          </div>
+          <div class="info-item" *ngIf="user.gender">
+            <span class="info-label">Gender</span>
+            <span class="info-value">{{user.gender}}</span>
+          </div>
+          <div class="info-item" *ngIf="user.location">
+            <span class="info-label">Location</span>
+            <span class="info-value">{{user.location}}</span>
+          </div>
+          <div class="info-item" *ngIf="user.timezone">
+            <span class="info-label">Timezone</span>
+            <span class="info-value">{{user.timezone}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section" *ngIf="user.bio">
+        <h2 class="section-title">About</h2>
+        <p class="user-bio">{{user.bio}}</p>
+      </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <form [formGroup]="profileForm" *ngIf="isEditing" class="edit-form">
+      <div class="form-section">
+        <h2 class="section-title">Personal Information</h2>
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Full Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter your full name">
+            <mat-error *ngIf="profileForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" placeholder="Enter your email">
+            <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+              Please enter a valid email address
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phone" placeholder="Enter your phone number">
+            <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
+              Please enter a valid phone number
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Gender</mat-label>
+            <mat-select formControlName="gender">
+              <mat-option value="Male">Male</mat-option>
+              <mat-option value="Female">Female</mat-option>
+              <mat-option value="Other">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Location</mat-label>
+            <input matInput formControlName="location" placeholder="City, Country">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Timezone</mat-label>
+            <mat-select formControlName="timezone">
+              <mat-option *ngFor="let tz of timezones" [value]="tz">
+                {{tz}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2 class="section-title">About You</h2>
+        <mat-form-field appearance="outline" class="full-width form-field">
+          <mat-label>Tagline</mat-label>
+          <input matInput formControlName="tagline" placeholder="A brief description (e.g. Full Stack Developer)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width form-field">
+          <mat-label>Bio</mat-label>
+          <textarea matInput formControlName="bio" placeholder="Tell us about yourself" rows="4"></textarea>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+</div>

@@ -146,29 +146,25 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Logout a user", description = "Logs out the user and invalidates the JWT token.")
+    @Operation(summary = "Logout user", description = "Logs out the user and clears the JWT cookie.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Logout successful"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "200", description = "Logout successful")
     })
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logoutUser(@CookieValue(value = "JWT", defaultValue = "") String token, HttpServletResponse response) {
-        logger.info("Logout request received");
-        if (token.isEmpty() || !jwtTokenProvider.validateToken(token)) {
-            logger.warning("Unauthorized logout attempt");
-            return ResponseEntity.status(401).body(Collections.singletonMap("message", "Unauthorized"));
-        }
-
-        String email = jwtTokenProvider.getUsernameFromToken(token);
-        onlineUserTracker.setUserOffline(email);
-
-        Cookie cookie = new Cookie("JWT", token);
-        cookie.setMaxAge(0);
+    public ResponseEntity<Map<String, String>> logoutUser(HttpServletResponse response) {
+        Cookie cookie = new Cookie("JWT", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
         cookie.setPath("/");
+        cookie.setMaxAge(0);
+
         response.addCookie(cookie);
 
-        logger.info("Logout successful for user: " + email);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Logout successful"));
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", "Logout successful");
+
+        logger.info("User logged out successfully");
+        return ResponseEntity.ok(responseBody);
     }
 
     @Operation(summary = "Get online users", description = "Returns a list of currently online users.")

@@ -4,9 +4,9 @@
   </a>
 
   <ul #dropdownMenu class="dropdown-content white" [class.show]="isDropdownOpen">
-    <li><a href="/profile" class="black-text">Profile</a></li>
+    <li><a [routerLink]="['/user', userId]" class="black-text">Profile</a></li>
     <li><a href="/settings" class="black-text">Settings</a></li>
     <li class="divider"></li>
-    <li><a href="#" (click)="logout()" class="black-text">Logout</a></li>
+    <li><a (click)="logout()" class="black-text">Logout</a></li>
   </ul>
 </li>

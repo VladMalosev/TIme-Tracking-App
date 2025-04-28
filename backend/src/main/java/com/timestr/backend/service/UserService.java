@@ -1,6 +1,7 @@
 package com.timestr.backend.service;
 
 import com.timestr.backend.dto.RegisterRequest;
+import com.timestr.backend.dto.UserProfileUpdateRequest;
 import com.timestr.backend.model.Role;
 import com.timestr.backend.model.User;
 import com.timestr.backend.repository.UserRepository;
@@ -86,5 +87,37 @@ public class UserService {
                     newUser.setRoles(Role.USER);
                     return userRepository.save(newUser);
                 });
+    }
+
+    public User updateProfile(UUID userId, UserProfileUpdateRequest updateRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (updateRequest.getName() != null) {
+            user.setName(updateRequest.getName());
+        }
+        if (updateRequest.getPhone() != null) {
+            user.setPhone(updateRequest.getPhone());
+        }
+        if (updateRequest.getTagline() != null) {
+            user.setTagline(updateRequest.getTagline());
+        }
+        if (updateRequest.getBio() != null) {
+            user.setBio(updateRequest.getBio());
+        }
+        if (updateRequest.getLocation() != null) {
+            user.setLocation(updateRequest.getLocation());
+        }
+        if (updateRequest.getTimezone() != null) {
+            user.setTimezone(updateRequest.getTimezone());
+        }
+        if (updateRequest.getGender() != null) {
+            user.setGender(updateRequest.getGender());
+        }
+        if (updateRequest.getPhotoUrl() != null) {
+            user.setPhotoUrl(updateRequest.getPhotoUrl());
+        }
+
+        return userRepository.save(user);
     }
 }

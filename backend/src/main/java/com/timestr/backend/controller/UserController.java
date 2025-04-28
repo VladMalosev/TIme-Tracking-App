@@ -1,6 +1,7 @@
 package com.timestr.backend.controller;
 
 
+import com.timestr.backend.dto.UserProfileUpdateRequest;
 import com.timestr.backend.model.User;
 import com.timestr.backend.repository.UserRepository;
 import com.timestr.backend.service.UserService;
@@ -10,10 +11,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -105,4 +109,38 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Update user profile", description = "Updates profile information for a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<User> updateUserProfile(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID id,
+            @RequestBody UserProfileUpdateRequest updateRequest) {
+        try {
+            User updatedUser = userService.updateProfile(id, updateRequest);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+/*    @Operation(summary = "Upload user photo", description = "Uploads a profile photo for a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Photo uploaded successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadUserPhoto(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) {
+
+
+    }*/
 }
+
