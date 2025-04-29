@@ -16,8 +16,14 @@ import {TaskDetailsComponent} from './features/project/tasks/my-tasks/task-detai
 import {NoAuthGuard} from './core/auth/no-auth.guard';
 import {RedirectComponent} from './core/auth/redirect-component/redirect-component.component';
 import {UserPageComponent} from './features/user-page/user-page.component';
+import {LandingPageComponent} from './features/landing-page/landing-page.component';
 
 export const routes: Routes = [
+  {
+    path: '',
+    component: LandingPageComponent,
+    canActivate: [NoAuthGuard]
+  },
   {
     path: 'login',
     component: LoginComponent,

@@ -10,7 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +43,7 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhone(request.getPhone());
         user.setRoles(request.getRole() != null ? request.getRole() : Role.USER);
 
         return userRepository.save(user);
@@ -119,5 +126,33 @@ public class UserService {
         }
 
         return userRepository.save(user);
+    }
+
+    public String uploadUserPhoto(UUID userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = originalFilename != null ?
+                originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+        String newFilename = "profile_" + userId + fileExtension;
+
+        try {
+            Path uploadPath = Paths.get("uploads/profile-photos");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String photoUrl = "/api/profile-photos/" + newFilename;
+            user.setPhotoUrl(photoUrl);
+            userRepository.save(user);
+
+            return photoUrl;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
     }
 }

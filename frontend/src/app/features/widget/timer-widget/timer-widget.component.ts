@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import {Subject, takeUntil, interval, switchMap, of, take} from 'rxjs';
+import {Subject, takeUntil, interval, switchMap, of, take, Observable} from 'rxjs';
 import { TimeLogService } from '../../../services/my-tasks/time-log.service';
 import { ProjectContextService } from '../../../services/project-context.service';
 import { MatIcon } from '@angular/material/icon';
-import {DatePipe, NgForOf, NgIf, TitleCasePipe} from '@angular/common';
+import {AsyncPipe, DatePipe, NgForOf, NgIf, TitleCasePipe} from '@angular/common';
 import { TimeEntryStateService } from '../../../services/my-tasks/time-entry-state.service';
 import { Router } from '@angular/router';
 import {MatFormField, MatLabel, MatOption, MatSelect, MatSelectModule} from '@angular/material/select';
@@ -12,6 +12,7 @@ import {HttpClient} from '@angular/common/http';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {AuthService} from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-timer-widget',
@@ -27,6 +28,7 @@ import {MatButtonModule} from '@angular/material/button';
     FormsModule,
     DatePipe,
     TitleCasePipe,
+    AsyncPipe,
   ],
   styleUrls: ['./timer-widget.component.scss']
 })
@@ -47,33 +49,57 @@ export class TimerWidgetComponent implements OnInit, OnDestroy {
   taskTimeLogs: any[] = [];
   isLoadingTimeLogs = false;
   isNewTimerExpanded = false;
+  isAuthenticated$: Observable<boolean>;
 
   constructor(
     private timeLogService: TimeLogService,
     private projectContextService: ProjectContextService,
     private timeEntryState: TimeEntryStateService,
     private router: Router,
-    private http: HttpClient
-  ) {}
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
+    this.isAuthenticated$ = this.authService.isLoggedIn$;
+  }
 
   ngOnInit(): void {
-    this.timeLogService.userId$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(userId => {
-        if (userId) {
-          this.loadActiveTimers();
-          this.fetchProjects();
-          this.loadRecentTasks();
-          interval(this.refreshInterval)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => this.loadActiveTimers());
-        }
-      });
+    this.authService.isLoggedIn$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.initializeWidget();
+      } else {
+        this.cleanupWidget();
+      }
+    });
+
     this.timeEntryState.timerStopped$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      this.loadActiveTimers();
-    })
+      if (this.authService.isLoggedIn$) {
+        this.loadActiveTimers();
+      }
+    });
+  }
+
+  private initializeWidget(): void {
+    this.loadActiveTimers();
+    this.fetchProjects();
+    this.loadRecentTasks();
+
+    interval(this.refreshInterval)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.authService.isLoggedIn$) {
+          this.loadActiveTimers();
+        }
+      });
+  }
+
+  private cleanupWidget(): void {
+    this.activeTimers = [];
+    this.projects = [];
+    this.recentTasks = [];
   }
 
   ngOnDestroy(): void {

@@ -1,4 +1,4 @@
-<div class="timer-widget-container"
+<div *ngIf="isAuthenticated$ | async" class="timer-widget-container"
      [class.collapsed]="collapsed"
      [class.expanded]="!collapsed">
   <!-- Collapsed State -->

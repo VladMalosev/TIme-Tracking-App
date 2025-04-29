@@ -41,7 +41,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   constructor(private authService: AuthService, private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
-    // Auto-rotate carousel every 5 seconds
     this.startCarouselTimer();
   }
 
@@ -63,12 +62,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Pause carousel on manual navigation
   pauseCarousel() {
     this.isCarouselPaused = true;
     this.stopCarouselTimer();
 
-    // Resume after 10 seconds of inactivity
     setTimeout(() => {
       this.isCarouselPaused = false;
       this.startCarouselTimer();
@@ -80,6 +77,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('JWT Token received:', response);
         this.router.navigate(['/dashboard']);
+        window.location.reload();
       },
       error: (err) => {
         console.log(err);

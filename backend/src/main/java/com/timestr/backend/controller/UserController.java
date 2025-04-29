@@ -128,7 +128,7 @@ public class UserController {
         }
     }
 
-/*    @Operation(summary = "Upload user photo", description = "Uploads a profile photo for a user")
+    @Operation(summary = "Upload user photo", description = "Uploads a profile photo for a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Photo uploaded successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
@@ -140,7 +140,24 @@ public class UserController {
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
 
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "File is empty"));
+            }
 
-    }*/
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Only image files are allowed"));
+            }
+
+            String photoUrl = userService.uploadUserPhoto(id, file);
+
+            return ResponseEntity.ok(Map.of("photoUrl", photoUrl));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to upload photo"));
+        }
+    }
 }
 

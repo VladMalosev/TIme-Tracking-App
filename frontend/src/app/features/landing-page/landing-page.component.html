@@ -1,0 +1,63 @@
+<div class="landing-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Streamline Your Project Management</h1>
+      <p class="subtitle">The all-in-one solution for time tracking, team collaboration, and project management</p>
+      <button mat-raised-button color="primary" (click)="navigateToRegister()">
+        Get Started - It's Free
+      </button>
+    </div>
+    <div class="hero-image">
+      <img src="assets/icons/dashboard.png" alt="Project management dashboard">
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <h2>Powerful Features</h2>
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features">
+        <mat-icon>{{feature.icon}}</mat-icon>
+        <h3>{{feature.title}}</h3>
+        <p>{{feature.description}}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Create Your Account</h3>
+        <p>Sign up in seconds and set up your profile</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Add Your Projects</h3>
+        <p>Create projects and invite team members</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Start Tracking Time</h3>
+        <p>Use our intuitive interface to track work hours</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <h2>What Our Users Say</h2>
+    <div class="testimonial-cards">
+      <div class="testimonial" *ngFor="let testimonial of testimonials">
+        <mat-icon class="quote-icon">format_quote</mat-icon>
+        <p class="quote">"{{testimonial.quote}}"</p>
+        <p class="author">- {{testimonial.author}}</p>
+      </div>
+    </div>
+  </section>
+
+
+</div>

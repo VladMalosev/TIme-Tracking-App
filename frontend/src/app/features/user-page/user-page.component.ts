@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import {environment} from '../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {PhotoUploadService} from '../../services/user-profile/photo-upload.service';
+import {finalize} from 'rxjs';
 
 interface User {
   id: string;
@@ -86,6 +87,7 @@ export class UserPageComponent implements OnInit {
   isEditing = false;
   isLoading = true;
   selectedFile: File | null = null;
+  date: string ='';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -96,15 +98,39 @@ export class UserPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.date = new Intl.DateTimeFormat('en-GB', {
+      weekday: "short",
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    }).format(new Date());
+
+
     this.initializeForm();
     this.loadUserData();
+  }
+
+  getPhotoUrl(url: string | undefined): string {
+    if (!url) {
+      return 'assets/icons/avatar.png';
+    }
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // remove the leading '/' from the URL if it exists, to avoid path issues
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+
+    return `${environment.apiBaseUrl.replace(/\/api$/, '')}/${cleanPath}`;
   }
 
   initializeForm(): void {
     this.profileForm = this.formBuilder.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.pattern('^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$')],
+      phone: ['', Validators.pattern(''
+      )],
       gender: [''],
       location: [''],
       timezone: [''],
@@ -116,9 +142,10 @@ export class UserPageComponent implements OnInit {
   loadUserData(): void {
     const userId = this.route.snapshot.paramMap.get('id');
 
-    this.http.get<User>(`${environment.apiBaseUrl}/users/${userId}`)
+    this.http.get<User>(`${environment.apiBaseUrl}/users/${userId}`, { withCredentials: true })
       .subscribe({
         next: (user) => {
+          console.log('User data:', user);
           this.user = user;
           this.isOwner = true;
           this.updateFormValues();
@@ -159,27 +186,47 @@ export class UserPageComponent implements OnInit {
   }
 
   onPhotoSelected(event: Event): void {
-/*    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
-      const file = input.files[0];
-      this.photoUploadService.uploadPhoto(this.user.id, file)
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+
+      if (!this.selectedFile.type.startsWith('image/')) {
+        this.snackBar.open('Only image files are allowed', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+        return;
+      }
+
+      if (this.selectedFile.size > 5 * 1024 * 1024) {
+        this.snackBar.open('Image must be less than 5MB', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+        return;
+      }
+
+      this.isLoading = true;
+      this.photoUploadService.uploadUserPhoto(this.user.id, this.selectedFile)
+        .pipe(
+          finalize(() => this.isLoading = false)
+        )
         .subscribe({
           next: (response) => {
             this.user.photoUrl = response.photoUrl;
-            this.profileForm.patchValue({ photoUrl: response.photoUrl });
-            this.profileForm.markAsDirty();
+            this.snackBar.open('Profile photo updated successfully', 'Close', {
+              duration: 3000
+            });
           },
           error: (err) => {
+            console.error('Photo upload failed:', err);
             this.snackBar.open('Failed to upload photo', 'Close', {
               duration: 3000,
-              horizontalPosition: 'end',
-              verticalPosition: 'top',
               panelClass: ['error-snackbar']
             });
-            console.error('Photo upload error:', err);
           }
         });
-    }*/
+    }
   }
 
   saveProfile(): void {
@@ -188,7 +235,7 @@ export class UserPageComponent implements OnInit {
         ...this.profileForm.value
       };
 
-      this.http.put<User>(`${environment.apiBaseUrl}/users/${this.user.id}/profile`, updatedProfile)
+      this.http.put<User>(`${environment.apiBaseUrl}/users/${this.user.id}/profile`, updatedProfile, {withCredentials:true})
         .subscribe({
           next: (updatedUser) => {
             this.user = updatedUser;

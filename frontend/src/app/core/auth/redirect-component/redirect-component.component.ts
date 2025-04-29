@@ -18,7 +18,7 @@ export class RedirectComponent implements OnInit {
           return true;
         }),
         catchError(error => {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/']);
           return of(false);
         })
       )

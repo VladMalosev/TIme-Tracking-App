@@ -46,7 +46,7 @@ public class User {
     private String tagline;
 
     @Size(max = 500, message = "Bio cannot exceed 500 characters")
-    @Column(name = "bio", length = 500)
+    @Column(name = "bio", length = 1500)
     private String bio;
 
     @Size(max = 50, message = "Location cannot exceed 50 characters")

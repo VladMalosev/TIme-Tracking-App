@@ -20,6 +20,22 @@
   font-size: 0.9rem;
 }
 
+.cancel-button {
+  border-radius: 10px;
+  border: 1px solid #767676;
+  background: white;
+}
+
+.save-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #4A3AFF !important;
+  color: white !important;
+  border: none;
+}
+
 .profile-header-section {
   background: linear-gradient(90deg, rgba(130, 216, 250, 1) 0%, rgba(255, 250, 181, 1) 100%);
   padding: 2.5rem;

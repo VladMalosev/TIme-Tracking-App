@@ -1,13 +1,13 @@
 <div class="profile-unified-container">
-  <h2 class="welcome-message">Welcome, John Doe</h2>
-  <p class="current-date">Tue 07 June 2022</p>
+  <h2 class="welcome-message">Welcome, {{user.name}}</h2>
+  <p class="current-date">{{ date }}</p>
 
   <div class="profile-header-section">
     <div class="header-content">
       <!-- Avatar Section -->
       <div class="avatar-section">
         <div class="avatar-container">
-          <img [src]="'assets/icons/avatar.png'" alt="Profile Photo" class="profile-photo">
+          <img [src]="getPhotoUrl(user.photoUrl)" alt="Profile Photo" class="profile-photo">
           <button *ngIf="isOwner && isEditing" mat-mini-fab class="photo-upload-button" (click)="fileInput.click()">
             <mat-icon>photo_camera</mat-icon>
           </button>
@@ -25,7 +25,7 @@
           <mat-icon>edit</mat-icon> Edit Profile
         </button>
         <ng-container *ngIf="isEditing">
-          <button mat-raised-button color="primary" class="save-button" [disabled]="profileForm.invalid || !profileForm.dirty" (click)="saveProfile()">
+          <button mat-raised-button color="primary" class="save-button" (click)="saveProfile()">
             <mat-icon>save</mat-icon> Save Changes
           </button>
           <button mat-stroked-button class="cancel-button" (click)="cancelEdit()">
@@ -43,32 +43,32 @@
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">Full Name</span>
-            <span class="info-value">{{user.name}}</span>
+            <span class="info-value">{{ user.name || 'Not provided' }}</span>
           </div>
           <div class="info-item">
             <span class="info-label">Email</span>
-            <span class="info-value">{{user.email}}</span>
+            <span class="info-value">{{ user.email || 'Not provided' }}</span>
           </div>
-          <div class="info-item" *ngIf="user.phone">
+          <div class="info-item">
             <span class="info-label">Phone</span>
-            <span class="info-value">{{user.phone}}</span>
+            <span class="info-value">{{ user.phone || 'Not provided' }}</span>
           </div>
-          <div class="info-item" *ngIf="user.gender">
+          <div class="info-item">
             <span class="info-label">Gender</span>
-            <span class="info-value">{{user.gender}}</span>
+            <span class="info-value">{{ user.gender || 'Not selected' }}</span>
           </div>
-          <div class="info-item" *ngIf="user.location">
+          <div class="info-item">
             <span class="info-label">Location</span>
-            <span class="info-value">{{user.location}}</span>
+            <span class="info-value">{{ user.location || 'Not provided' }}</span>
           </div>
-          <div class="info-item" *ngIf="user.timezone">
+          <div class="info-item">
             <span class="info-label">Timezone</span>
-            <span class="info-value">{{user.timezone}}</span>
+            <span class="info-value">{{ user.timezone || 'Not selected' }}</span>
           </div>
         </div>
       </div>
 
-      <div class="info-section" *ngIf="user.bio">
+          <div class="info-section" *ngIf="user.bio">
         <h2 class="section-title">About</h2>
         <p class="user-bio">{{user.bio}}</p>
       </div>
