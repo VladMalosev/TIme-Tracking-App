@@ -1,0 +1,20 @@
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Why Choose Us</span>
+      <h2>Powerful Features</h2>
+      <p class="section-description">Our platform provides everything you need to manage your projects and track time efficiently</p>
+    </div>
+
+    <div class="features-grid" @staggerAnimation>
+      <div class="feature-card" *ngFor="let feature of features" @fadeInUp>
+        <div class="feature-icon-wrapper">
+          <div class="feature-icon-bg"></div>
+          <mat-icon>{{feature.icon}}</mat-icon>
+        </div>
+        <h3>{{feature.title}}</h3>
+        <p>{{feature.description}}</p>
+      </div>
+    </div>
+  </div>
+</section>

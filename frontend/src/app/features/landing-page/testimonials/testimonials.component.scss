@@ -1,0 +1,131 @@
+.testimonials {
+  padding: 80px 0;
+  text-align: center;
+  background-color: #f8f9fa;
+  overflow: hidden;
+
+  h2 {
+    margin-bottom: 50px;
+    font-size: 2.2rem;
+    color: #2c3e50;
+  }
+
+  .testimonial-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: visible;
+    white-space: nowrap;
+    margin-bottom: 20px;
+    padding: 10px 0;
+  }
+
+  .row-offset-left {
+    transform: translateX(-5%);
+  }
+
+  .row-offset-right {
+    transform: translateX(-17%);
+  }
+  .section-subtitle {
+    font-size: 1.1rem;
+    color: #718096;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 16px;
+  }
+
+  .testimonial {
+    display: inline-block;
+    white-space: normal;
+    min-width: 400px;
+    max-height: 200px;
+    padding: 30px;
+    margin: 0 16px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    position: relative;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+
+    &:hover {
+      transform: translateY(-5px) !important;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, #4776E6, #8E54E9);
+      z-index: 2;
+    }
+
+    .quote-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: #e2e8f0;
+      z-index: 0;
+    }
+
+    .quote {
+      font-style: italic;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+      color: #4a5568;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .author {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+
+      &::before {
+        content: "— ";
+      }
+    }
+
+    .author-title {
+      font-size: 0.9rem;
+      color: #718096;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .rating {
+      display: flex;
+      color: #f6ad55;
+      font-size: 18px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 30px;
+      background-color: #ebf4ff;
+      color: #4c6ef5;
+      margin-right: 8px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+  }
+}

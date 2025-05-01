@@ -1,0 +1,30 @@
+<section class="team-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Meet Our Leadership Team</h2>
+      <p class="section-subtitle">The talented people behind our success</p>
+    </div>
+
+    <div class="team-cards">
+      <div class="team-member" *ngFor="let member of teamMembers" @fadeIn>
+        <div class="member-image">
+          <img [src]="member.image" [alt]="member.name + ' profile photo'">
+        </div>
+        <div class="member-info">
+          <h3 class="member-name">{{member.name}}</h3>
+          <p class="position">{{member.position}}</p>
+          <p class="bio">{{member.bio}}</p>
+          <div class="social-links">
+            <a *ngFor="let link of member.socialLinks"
+               [href]="link.url"
+               [attr.aria-label]="link.name + ' for ' + member.name"
+               target="_blank"
+               rel="noopener noreferrer">
+              <mat-icon [fontIcon]="link.icon"></mat-icon>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

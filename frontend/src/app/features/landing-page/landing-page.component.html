@@ -2,62 +2,54 @@
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-content">
+      <span class="hero-badge">Project Management Simplified</span>
       <h1>Streamline Your Project Management</h1>
-      <p class="subtitle">The all-in-one solution for time tracking, team collaboration, and project management</p>
-      <button mat-raised-button color="primary" (click)="navigateToRegister()">
-        Get Started - It's Free
-      </button>
+      <p class="subtitle">The all-in-one solution for time tracking, team collaboration, and project management that helps teams deliver projects on time.</p>
+
+      <div class="cta-buttons">
+        <button class="primary-cta" (click)="navigateToRegister()">
+          Get Started - It's Free
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+
+        <div class="play-demo" >
+          <mat-icon>play_circle</mat-icon>
+          Watch Demo
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-value">10,000+</span>
+          <span class="stat-label">Active Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">98%</span>
+          <span class="stat-label">Customer Satisfaction</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">50+</span>
+          <span class="stat-label">Integrations</span>
+        </div>
+      </div>
     </div>
+
     <div class="hero-image">
-      <img src="assets/icons/dashboard.png" alt="Project management dashboard">
+      <div class="image-wrapper">
+        <img src="assets/icons/dashboard.png" alt="Project management dashboard">
+      </div>
     </div>
   </section>
 
   <!-- Features Section -->
-  <section class="features-section">
-    <h2>Powerful Features</h2>
-    <div class="features-grid">
-      <div class="feature-card" *ngFor="let feature of features">
-        <mat-icon>{{feature.icon}}</mat-icon>
-        <h3>{{feature.title}}</h3>
-        <p>{{feature.description}}</p>
-      </div>
-    </div>
-  </section>
+  <app-features></app-features>
 
   <!-- How It Works Section -->
-  <section class="how-it-works">
-    <h2>How It Works</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <h3>Create Your Account</h3>
-        <p>Sign up in seconds and set up your profile</p>
-      </div>
-      <div class="step">
-        <div class="step-number">2</div>
-        <h3>Add Your Projects</h3>
-        <p>Create projects and invite team members</p>
-      </div>
-      <div class="step">
-        <div class="step-number">3</div>
-        <h3>Start Tracking Time</h3>
-        <p>Use our intuitive interface to track work hours</p>
-      </div>
-    </div>
-  </section>
+  <app-how-it-works></app-how-it-works>
 
   <!-- Testimonials -->
-  <section class="testimonials">
-    <h2>What Our Users Say</h2>
-    <div class="testimonial-cards">
-      <div class="testimonial" *ngFor="let testimonial of testimonials">
-        <mat-icon class="quote-icon">format_quote</mat-icon>
-        <p class="quote">"{{testimonial.quote}}"</p>
-        <p class="author">- {{testimonial.author}}</p>
-      </div>
-    </div>
-  </section>
+  <app-testimonials></app-testimonials>
 
-
+  <!-- Team Members Section -->
+  <app-team-members></app-team-members>
 </div>

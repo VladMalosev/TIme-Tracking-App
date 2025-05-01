@@ -22,7 +22,6 @@ export const routes: Routes = [
   {
     path: '',
     component: LandingPageComponent,
-    canActivate: [NoAuthGuard]
   },
   {
     path: 'login',
@@ -54,6 +53,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '', pathMatch: 'full' },
   { path: '**', component: RedirectComponent }
 ];

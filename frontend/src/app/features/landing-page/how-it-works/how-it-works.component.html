@@ -1,0 +1,47 @@
+<section class="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Simple Process</span>
+      <h2 class="section-title">How Our Platform Works</h2>
+      <p class="section-description">Get started in minutes with our streamlined workflow process</p>
+    </div>
+
+    <div class="process-timeline">
+      <div class="steps-row">
+        <div class="process-step" *ngFor="let step of steps; let i = index" [attr.data-step]="i + 1" @fadeInStep>
+          <div class="step-icon-container">
+            <div class="step-number">{{i + 1}}</div>
+            <div class="step-icon">
+              <mat-icon [fontIcon]="step.icon"></mat-icon>
+            </div>
+          </div>
+
+          <div class="step-content">
+            <h3 class="step-title">{{step.title}}</h3>
+            <p class="step-description">{{step.description}}</p>
+            <ul class="step-features" *ngIf="step.features">
+              <li *ngFor="let feature of step.features">
+                <mat-icon fontIcon="check_circle"></mat-icon>
+                <span>{{feature}}</span>
+              </li>
+            </ul>
+            <a *ngIf="step.action" [href]="step.action.url" class="step-action">
+              {{step.action.text}} <mat-icon fontIcon="arrow_forward"></mat-icon>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-container">
+      <button class="primary-button" (click)="navigateToSignup()">
+        Get Started Now
+        <mat-icon fontIcon="east"></mat-icon>
+      </button>
+      <a href="/demo" class="secondary-button">
+        <mat-icon fontIcon="play_circle"></mat-icon>
+        Watch Demo
+      </a>
+    </div>
+  </div>
+</section>

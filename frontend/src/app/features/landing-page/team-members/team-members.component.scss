@@ -1,0 +1,137 @@
+.team-section {
+  padding: 100px 0;
+  background-color: white;
+  position: relative;
+  overflow: hidden;
+
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 60px;
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #212529;
+      position: relative;
+      display: inline-block;
+
+
+    }
+
+    .section-subtitle {
+      font-size: 1.2rem;
+      color: #6c757d;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  }
+
+  .team-cards {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .team-member {
+    background: white;
+    border-radius: 12px;
+    width: 330px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+
+      .member-image img {
+        transform: scale(1.05);
+      }
+    }
+
+    .member-image {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 30px auto 0;
+      box-shadow: none !important;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+    }
+
+    .member-info {
+      padding: 25px;
+      text-align: center;
+    }
+
+    .member-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #212529;
+    }
+
+    .position {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #3f51b5;
+      margin-bottom: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    .bio {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #6c757d;
+      margin-bottom: 25px;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+
+      a {
+        color: #757575;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f5f5f5;
+        transition: all 0.3s ease;
+        text-decoration: none;
+
+        &:hover {
+          color: white;
+          background-color: #3f51b5;
+          transform: translateY(-5px);
+        }
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          line-height: 18px;
+        }
+      }
+    }
+  }
+}
