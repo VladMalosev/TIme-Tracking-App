@@ -1,0 +1,42 @@
+<div class="profile-container">
+  <!-- Header with profile info -->
+  <div class="profile-header">
+    <div class="menu-icon">
+      <mat-icon>more_vert</mat-icon>
+    </div>
+    <h2 class="section-title">Your Profile</h2>
+
+    <!-- Profile image -->
+    <div class="profile-image">
+      <img [src]="userData.profileImage" alt="Profile" />
+    </div>
+
+    <!-- Greeting and message -->
+    <div class="greeting-text">
+      <p class="greeting">{{ getGreeting() }} {{ userData.name }}</p>
+      <p class="message">Continue Your Journey And Achieve Your Target</p>
+    </div>
+
+    <!-- Action icons -->
+    <div class="action-buttons">
+      <button mat-icon-button><mat-icon>notifications</mat-icon></button>
+      <button mat-icon-button><mat-icon>mail</mat-icon></button>
+      <button mat-icon-button><mat-icon>chat</mat-icon></button>
+    </div>
+  </div>
+
+  <!-- Activity section -->
+  <div class="activity-section">
+    <h3 class="section-title">Last Activity</h3>
+    <div class="activity-list">
+      <div class="activity-item" *ngFor="let activity of userData.activities.slice(0, 4)">
+        <div>
+          <p class="activity-project">Project: {{ activity.project }}</p>
+          <p class="activity-time">{{ activity.timeRange }}</p>
+        </div>
+        <span class="activity-status">{{ activity.status }}</span>
+      </div>
+    </div>
+    <button mat-raised-button color="primary" class="see-all-button">See All</button>
+  </div>
+</div>

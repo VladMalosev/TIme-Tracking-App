@@ -2,6 +2,7 @@ package com.timestr.backend.repository;
 
 import com.timestr.backend.model.Task;
 import com.timestr.backend.model.TaskStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -61,4 +62,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             @Param("projectId") UUID projectId,
             @Param("userId") UUID userId);
 
+    List<Task> findByAssignedToIdAndDeadlineIsNotNullAndStatusNot(
+            UUID userId, TaskStatus status, Sort sort);
 }

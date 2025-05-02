@@ -1,0 +1,103 @@
+.profile-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-header {
+  padding: 24px;
+  position: relative;
+  text-align: center;
+}
+
+.menu-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: gray;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: left;
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 12px;
+}
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.greeting-text .greeting {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.greeting-text .message {
+  font-size: 0.875rem;
+  color: #777;
+  margin-top: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.activity-section {
+  padding: 16px 24px;
+  flex: 1;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-project {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.activity-status {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.see-all-button {
+  width: 100%;
+  margin-top: 16px;
+  font-weight: 500;
+}

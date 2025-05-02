@@ -1,58 +1,33 @@
-
-.time-logs-section {
-  margin-top: 20px;
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+
+.main-content {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 160px);
+}
+
+.left-column {
+  margin-left: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 70%;
+}
+
+
+.red-border {
+  border: 2px solid red;
   border-radius: 5px;
-}
-
-.time-logs-section table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.time-logs-section th,
-.time-logs-section td {
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-.time-logs-section th {
-  background-color: #f2f2f2;
-}
-.filter-section {
-  margin-bottom: 20px;
   padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
 }
 
-.form-group {
-  margin-bottom: 10px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
-}
-
-button {
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
+h2, h3 {
+  margin-top: 0;
 }

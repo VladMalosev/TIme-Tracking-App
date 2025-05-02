@@ -1,0 +1,33 @@
+<div class="top-section">
+  <h2>UPCOMING DEADLINES:</h2>
+
+  <div *ngIf="isLoading" class="loading">Loading upcoming tasks...</div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!isLoading && !error">
+    <div *ngIf="upcomingTasks.length === 0" class="no-tasks">
+      No upcoming deadlines found.
+    </div>
+
+    <div class="deadlines-container" *ngIf="upcomingTasks.length > 0">
+      <div *ngFor="let task of upcomingTasks" class="deadline-card">
+        <div class="deadline-info">
+          <div class="deadline-date">{{ task.deadline | date:'MMMM d, y' }}</div>
+          <div class="deadline-title">Task name: {{ task.name }}</div>
+          <div class="task-project">
+            Project: {{ task.project?.name}}
+          </div>
+        </div>
+        <div class="deadline-actions">
+          <div class="action-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

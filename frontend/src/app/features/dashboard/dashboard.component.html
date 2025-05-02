@@ -1,60 +1,22 @@
+<div class="dashboard-container">
 
-<div *ngIf="userName && userEmail">
-  <h1>Welcome, {{ userName }}!</h1>
-  <p>Email: {{ userEmail }}</p>
-  <a href="/chat">Chat</a>
 
-  <p></p>
 
-  <div *ngIf="userEmail === allowedEmail">
-    <a href="http://localhost:8080/swagger-ui/index.html" target="_blank">Swagger API Documentation</a>
+  <div class="main-content">
+    <div class="left-column">
+
+      <app-upcoming-deadlines></app-upcoming-deadlines>
+
+      <app-active-projects></app-active-projects>
+
+      <app-employers></app-employers>
+
+      <app-employees></app-employees>
+
+    </div>
+
+
+    <app-your-profile></app-your-profile>
+
   </div>
-
-  <p></p>
-
-  <a href="/workspaces">Workspaces</a>
-
-  <app-report></app-report>
-
-  <app-log-time [userId]="userId"></app-log-time>
-
-  <app-invitations-component></app-invitations-component>
-
-  <app-task-management></app-task-management>
-
-
-  <!-- Time Logs Section -->
-  <div class="time-logs-section">
-    <h2>Your Time Logs</h2>
-    <table *ngIf="timeLogs.length > 0">
-      <thead>
-      <tr>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Duration (Minutes)</th>
-        <th>Description</th>
-        <th>Task/Project</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let log of timeLogs">
-        <td>{{ log.startTime | date: 'medium' }}</td>
-        <td>{{ log.endTime | date: 'medium' }}</td>
-        <td>{{ log.minutes }}</td>
-        <td>{{ log.description }}</td>
-        <td>
-          <span *ngIf="log.task">
-            {{ log.task.name }} ({{ log.task.project?.name || 'No Project' }})
-          </span>
-          <span *ngIf="!log.task">No Task</span>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-    <p *ngIf="timeLogs.length === 0">No time logs found.</p>
-  </div>
-</div>
-
-<div *ngIf="!userName || !userEmail">
-  <p>You are not authorized to view this page. Please log in.</p>
 </div>

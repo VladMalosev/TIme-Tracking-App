@@ -1,0 +1,61 @@
+<div class="projects-dashboard">
+  <div class="dashboard-header">
+    <h2>Active Projects</h2>
+    <a [routerLink]="['/workspaces']" class="view-all-btn" *ngIf="projects.length > 3">
+      See All
+    </a>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loader"></div>
+    <p>Loading projects...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="fetchActiveProjects()">Retry</button>
+  </div>
+
+  <div *ngIf="!isLoading && !error">
+    <div *ngIf="projects.length === 0" class="empty-state">
+      <p>No active projects found.</p>
+      <a [routerLink]="['/projects/new']" class="create-btn">Create your first project</a>
+    </div>
+
+    <div *ngIf="projects.length > 0" class="projects-row">
+      <div *ngFor="let project of projects | slice:0:3"
+           class="project-card"
+           [routerLink]="['/project-details', project.id]">
+        <div class="project-header">
+          <h3>{{ project.name }}</h3>
+          <span class="status-badge">Active</span>
+        </div>
+
+        <div class="project-meta">
+          <span *ngIf="project.createdAt" class="meta-item">
+            <i class="fa fa-calendar"></i> Created: {{ project.createdAt | date:'MMM d, y' }}
+          </span>
+          <span *ngIf="project.dueDate" class="meta-item">
+            <i class="fa fa-clock-o"></i> Due: {{ project.dueDate | date:'MMM d, y' }}
+          </span>
+        </div>
+
+        <p class="project-description">
+          {{ project.description || 'No description provided' }}
+        </p>
+
+        <div class="project-progress" *ngIf="project.dueDate">
+          <div class="progress-bar">
+            <div class="progress" [style.width.%]="getProgress(project.createdAt, project.dueDate)"></div>
+          </div>
+          <span class="progress-text">{{ getProgress(project.createdAt, project.dueDate) }}% of time elapsed</span>
+        </div>
+      </div>
+
+      <div class="project-card new-project" [routerLink]="['/add-project']">
+        <div class="add-icon">+</div>
+        <h3>Create New Project</h3>
+      </div>
+    </div>
+  </div>
+</div>

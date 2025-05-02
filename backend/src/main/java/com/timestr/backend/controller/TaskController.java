@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -334,6 +335,22 @@ public class TaskController {
 
         List<Task> tasks = taskService.getAllTasksByProjectAndUser(projectId, userId);
         return ResponseEntity.ok(tasks);
+    }
+
+    @Operation(summary = "Get upcoming tasks for user",
+            description = "Retrieves all tasks with deadlines assigned to the user, ordered by deadline")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/user/{userId}/upcoming")
+    public ResponseEntity<List<Task>> getUpcomingTasksForUser(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable UUID userId) {
+
+    List<Task> tasks = taskRepository.findByAssignedToIdAndDeadlineIsNotNullAndStatusNot(userId, TaskStatus.COMPLETED, Sort.by("deadline").ascending());
+    return ResponseEntity.ok(tasks);
     }
 
 }
