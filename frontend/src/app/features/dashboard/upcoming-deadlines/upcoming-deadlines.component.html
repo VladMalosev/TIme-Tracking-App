@@ -1,31 +1,153 @@
-<div class="top-section">
-  <h2>UPCOMING DEADLINES:</h2>
+<div class="dashboard-layout">
+  <div class="calendar-container">
+    <div class="monthly-calendar">
+      <div class="calendar-header">
+        <h2 class="month-title">{{ currentMonth | date:'MMMM yyyy' }}</h2>
+        <div class="calendar-navigation">
+          <button class="calendar-nav-button" (click)="previousMonth()">
+            <i> < </i>
+          </button>
+          <button class="calendar-nav-button" (click)="nextMonth()">
+            <i> > </i>
+          </button>
+        </div>
+      </div>
 
-  <div *ngIf="isLoading" class="loading">Loading upcoming tasks...</div>
+      <div class="weekdays">
+        <div class="weekday" *ngFor="let day of weekdays">{{ day }}</div>
+      </div>
 
-  <div *ngIf="error" class="error">{{ error }}</div>
+      <div *ngIf="isLoading" class="loading-view">
+        <div class="spinner"></div>
+        <span>Loading calendar...</span>
+      </div>
 
-  <div *ngIf="!isLoading && !error">
-    <div *ngIf="upcomingTasks.length === 0" class="no-tasks">
-      No upcoming deadlines found.
-    </div>
+      <div *ngIf="error" class="error-view">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+      </div>
 
-    <div class="deadlines-container" *ngIf="upcomingTasks.length > 0">
-      <div *ngFor="let task of upcomingTasks" class="deadline-card">
-        <div class="deadline-info">
-          <div class="deadline-date">{{ task.deadline | date:'MMMM d, y' }}</div>
-          <div class="deadline-title">Task name: {{ task.name }}</div>
-          <div class="task-project">
-            Project: {{ task.project?.name}}
+      <div *ngIf="!isLoading && !error" class="calendar-grid">
+        <div *ngFor="let day of calendarDays"
+             [class.inactive]="!day.isCurrentMonth"
+             [class.today]="isToday(day.date)"
+             class="calendar-day">
+
+          <div class="day-number">{{ day.date | date:'d' }}</div>
+
+          <div *ngIf="hasOverdueTasks(day)" class="task-indicator overdue"></div>
+          <div *ngIf="hasDueSoonTasks(day) && !hasOverdueTasks(day)" class="task-indicator due-soon"></div>
+
+          <div class="day-tasks">
+            <ng-container *ngIf="day.tasks.length > 0">
+              <div *ngFor="let task of day.tasks.slice(0, 3)"
+                   [class.priority-high]="task.priority === 'high'"
+                   [class.priority-medium]="task.priority === 'medium'"
+                   [class.priority-low]="task.priority === 'low'"
+                   class="day-task"
+                   [matTooltip]="task.name"
+                   (click)="viewTaskDetails(task)">
+                {{ task.name }}
+              </div>
+
+              <div *ngIf="day.tasks.length > 3"
+                   class="more-tasks"
+                   (click)="showMoreTasks(day)">
+                +{{ day.tasks.length - 3 }} more
+              </div>
+            </ng-container>
           </div>
         </div>
-        <div class="deadline-actions">
-          <div class="action-dots">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deadlines-container">
+    <div class="deadlines-section">
+      <div class="section-header">
+        <h2 class="section-title">Upcoming Deadlines</h2>
+        <a href="/tasks" class="view-all">View all</a>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-view">
+        <div class="spinner"></div>
+        <span>Loading deadlines...</span>
+      </div>
+
+      <div *ngIf="error" class="error-view">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+      </div>
+
+      <div *ngIf="!isLoading && !error && upcomingTasks.length === 0" class="no-deadlines">
+        <i class="fas fa-check-circle"></i>
+        <div>No upcoming deadlines found</div>
+      </div>
+
+      <div *ngIf="!isLoading && !error && upcomingTasks.length > 0" class="deadline-list">
+        <div *ngFor="let task of upcomingTasks | slice:0:5"
+             [class.high-priority]="task.priority === 'high'"
+             [class.medium-priority]="task.priority === 'medium'"
+             [class.low-priority]="task.priority === 'low'"
+             [class.overdue]="isOverdue(task)"
+             [class.due-soon]="isDueSoon(task) && !isOverdue(task)"
+             class="deadline-item"
+             (click)="viewTaskDetails(task)">
+
+          <div class="deadline-header">
+            <h3 class="deadline-title" [matTooltip]="task.name">{{ task.name }}</h3>
+            <div class="deadline-date"
+                 [class.overdue]="isOverdue(task)"
+                 [class.due-soon]="isDueSoon(task) && !isOverdue(task)">
+              <i class="fas fa-clock"></i>
+              <span>{{ task.deadline | date:'MMM d, y' }}</span>
+            </div>
           </div>
 
+          <div class="deadline-details">
+            <div class="deadline-project" [matTooltip]="task.project?.name">
+              {{ task.project?.name }}
+            </div>
+
+            <div class="deadline-actions">
+              <button class="deadline-action"
+                      matTooltip="Go to Project"
+                      (click)="$event.stopPropagation(); goToProject(task)">
+                <mat-icon>folder</mat-icon>
+
+              </button>
+              <button class="deadline-action"
+                      matTooltip="Go to Task"
+                      (click)="$event.stopPropagation(); goToTask(task)">
+                <mat-icon>assignment</mat-icon>
+
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="activePopover" class="task-popover" [style.top.px]="popoverPosition.top" [style.left.px]="popoverPosition.left">
+  <div class="popover-header">
+    <h3>{{ activePopover.date | date:'MMM d, yyyy' }}</h3>
+    <button (click)="closePopover()" class="close-button">×</button>
+  </div>
+  <div class="popover-content">
+    <div *ngFor="let task of activePopover.tasks"
+         [class.priority-high]="task.priority === 'high'"
+         [class.priority-medium]="task.priority === 'medium'"
+         [class.priority-low]="task.priority === 'low'"
+         class="deadline-item"
+         (click)="viewTaskDetails(task); closePopover()">
+      <div class="deadline-header">
+        <h4 class="deadline-title">{{ task.name }}</h4>
+      </div>
+      <div class="deadline-details">
+        <div class="deadline-project">
+          {{ task.project?.name }}
         </div>
       </div>
     </div>

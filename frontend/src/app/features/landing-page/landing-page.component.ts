@@ -15,8 +15,6 @@ import { TestimonialsComponent } from './testimonials/testimonials.component';
   standalone: true,
   imports: [
     MatIconModule,
-    NgFor,
-    NgIf,
     FeaturesComponent,
     HowItWorksComponent,
     TeamMembersComponent,

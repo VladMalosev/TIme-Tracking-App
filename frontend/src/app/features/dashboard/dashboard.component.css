@@ -10,7 +10,6 @@
 .main-content {
   display: flex;
   gap: 20px;
-  height: calc(100vh - 160px);
 }
 
 .left-column {

@@ -16,7 +16,6 @@ interface Feature {
   imports: [
     MatIconModule,
     NgFor,
-    NgIf
   ],
   templateUrl: './features.component.html',
   styleUrls: ['./features.component.scss'],

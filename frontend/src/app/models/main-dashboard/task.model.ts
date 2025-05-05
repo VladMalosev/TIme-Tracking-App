@@ -4,6 +4,7 @@ export interface Task {
   description?: string;
   status: TaskStatus;
   deadline?: Date | string;
+  priority?: 'high' | 'medium' | 'low' | string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   assignedTo?: User;

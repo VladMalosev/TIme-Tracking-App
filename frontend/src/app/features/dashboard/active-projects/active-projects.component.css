@@ -1,7 +1,6 @@
 .projects-dashboard {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   padding: 24px;
-  background-color: #f9fafb;
   border-radius: 12px;
 }
 
@@ -42,6 +41,7 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid lightgrey;
   padding: 16px;
   min-width: 200px;
   transition: all 0.2s ease;
@@ -51,10 +51,6 @@
   flex-direction: column;
 }
 
-.project-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
 
 .project-card.new-project {
   border: 2px dashed #d1d5db;
