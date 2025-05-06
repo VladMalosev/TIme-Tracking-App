@@ -78,6 +78,7 @@ public class ProjectInvitationController {
         activity.setType(ActivityType.COLLABORATOR_JOINED);
         activity.setDescription("User '" + user.getName() + "' joined the project");
         activity.setCreatedAt(LocalDateTime.now());
+        activity.setUser(user);
         activityRepository.save(activity);
 
         AuditLog auditLog = new AuditLog();

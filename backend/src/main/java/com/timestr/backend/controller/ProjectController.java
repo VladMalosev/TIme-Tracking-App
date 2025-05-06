@@ -425,36 +425,36 @@ public class ProjectController {
 
 
 
-        @Operation(summary = "Get project statistics", description = "Retrieves statistics for a specific project.")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
-                @ApiResponse(responseCode = "404", description = "Project not found"),
-                @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        @GetMapping("/{projectId}/stats")
-        public ResponseEntity<Map<String, Integer>> getProjectStats(@PathVariable UUID projectId) {
-            int totalTasks = taskRepository.countByProjectId(projectId);
-            int completedTasks = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.COMPLETED);
-            int totalMembers = projectUserRepository.countByProjectId(projectId);
-            int upcomingDeadlines = taskRepository.countByProjectIdAndDeadlineAfter(projectId, LocalDateTime.now());
+    @Operation(summary = "Get project statistics", description = "Retrieves statistics for a specific project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{projectId}/stats")
+    public ResponseEntity<Map<String, Integer>> getProjectStats(@PathVariable UUID projectId) {
+        int totalTasks = taskRepository.countByProjectId(projectId);
+        int completedTasks = taskRepository.countByProjectIdAndStatus(projectId, TaskStatus.COMPLETED);
+        int totalMembers = projectUserRepository.countByProjectId(projectId);
+        int upcomingDeadlines = taskRepository.countByProjectIdAndDeadlineAfter(projectId, LocalDateTime.now());
 
-            Map<String, Integer> stats = new HashMap<>();
-            stats.put("totalTasks", totalTasks);
-            stats.put("completedTasks", completedTasks);
-            stats.put("totalMembers", totalMembers);
-            stats.put("upcomingDeadlines", upcomingDeadlines);
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("totalTasks", totalTasks);
+        stats.put("completedTasks", completedTasks);
+        stats.put("totalMembers", totalMembers);
+        stats.put("upcomingDeadlines", upcomingDeadlines);
 
-            return ResponseEntity.ok(stats);
-        }
+        return ResponseEntity.ok(stats);
+    }
 
-        @Operation(summary = "Get recent activities", description = "Retrieves recent activities for a specific project.")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Activities retrieved successfully"),
-                @ApiResponse(responseCode = "404", description = "Project not found"),
-                @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        @GetMapping("/{projectId}/activities")
-        public ResponseEntity<List<String>> getRecentActivities(@PathVariable UUID projectId) {
+    @Operation(summary = "Get recent activities", description = "Retrieves recent activities for a specific project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Activities retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{projectId}/activities")
+    public ResponseEntity<List<String>> getRecentActivities(@PathVariable UUID projectId) {
         List<Activity> activities = activityRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
 
         List<String> activityDescriptions = activities.stream()
@@ -462,32 +462,32 @@ public class ProjectController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(activityDescriptions);
-        }
+    }
 
-        @Operation(summary = "Get upcoming deadlines", description = "Retrieves upcoming deadlines for a specific project.")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Deadlines retrieved successfully"),
-                @ApiResponse(responseCode = "404", description = "Project not found"),
-                @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        @GetMapping("/{projectId}/deadlines")
-        public ResponseEntity<List<Map<String, Object>>> getUpcomingDeadlines(@PathVariable UUID projectId) {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime nextWeek = now.plusDays(7);
+    @Operation(summary = "Get upcoming deadlines", description = "Retrieves upcoming deadlines for a specific project.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Deadlines retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Project not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{projectId}/deadlines")
+    public ResponseEntity<List<Map<String, Object>>> getUpcomingDeadlines(@PathVariable UUID projectId) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextWeek = now.plusDays(7);
 
-            List<Task> tasks = taskRepository.findByProjectIdAndDeadlineBetween(projectId, now, nextWeek);
+        List<Task> tasks = taskRepository.findByProjectIdAndDeadlineBetween(projectId, now, nextWeek);
 
-            List<Map<String, Object>> deadlines = tasks.stream()
-                    .map(task -> {
-                        Map<String, Object> deadline = new HashMap<>();
-                        deadline.put("task", task.getName());
-                        deadline.put("date", task.getDeadline());
-                        return deadline;
-                    })
-                    .collect(Collectors.toList());
+        List<Map<String, Object>> deadlines = tasks.stream()
+                .map(task -> {
+                    Map<String, Object> deadline = new HashMap<>();
+                    deadline.put("task", task.getName());
+                    deadline.put("date", task.getDeadline());
+                    return deadline;
+                })
+                .collect(Collectors.toList());
 
-            return ResponseEntity.ok(deadlines);
-        }
+        return ResponseEntity.ok(deadlines);
+    }
 
 
     @Operation(summary = "Get current user role", description = "Retrieves the current user's role for a specific project.")

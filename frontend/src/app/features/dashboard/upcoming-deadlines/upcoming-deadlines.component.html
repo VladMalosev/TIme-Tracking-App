@@ -95,7 +95,7 @@
              (click)="viewTaskDetails(task)">
 
           <div class="deadline-header">
-            <h3 class="deadline-title" [matTooltip]="task.name">{{ task.name }}</h3>
+            <h3 class="deadline-title" [matTooltip]="task.name">Task: {{ task.name }}</h3>
             <div class="deadline-date"
                  [class.overdue]="isOverdue(task)"
                  [class.due-soon]="isDueSoon(task) && !isOverdue(task)">
@@ -106,7 +106,7 @@
 
           <div class="deadline-details">
             <div class="deadline-project" [matTooltip]="task.project?.name">
-              {{ task.project?.name }}
+              Project: {{ task.project?.name }}
             </div>
 
             <div class="deadline-actions">

@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login",  "/oauth2/**", "/api/auth/logout").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").authenticated() // Allow access to Swagger UI and API docs
                         .requestMatchers("/ws/**", "/api/reports/**").permitAll()
+                        .requestMatchers("/api/clients/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/api/workspaces/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/api/projects/**").hasAnyRole("ADMIN", "MANAGER", "USER")
                         .requestMatchers("/api/tasks/**").hasAnyRole("ADMIN", "MANAGER", "USER")

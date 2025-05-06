@@ -42,6 +42,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.startCarouselTimer();
+
+    if (this.router.url.includes('?code=') || this.router.url.includes('?token=')) {
+      this.router.navigate(['/dashboard']).then(() => {
+        window.location.reload();
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -76,8 +82,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.login(this.credentials).subscribe({
       next: (response) => {
         console.log('JWT Token received:', response);
-        this.router.navigate(['/dashboard']);
-        window.location.reload();
+        this.router.navigate(['/dashboard']).then(() => {
+          window.location.reload();
+        });
       },
       error: (err) => {
         console.log(err);
@@ -87,14 +94,17 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   loginWithGoogle() {
+    localStorage.setItem('preAuthRoute', window.location.pathname);
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   }
 
   loginWithMicrosoft() {
+    localStorage.setItem('preAuthRoute', window.location.pathname);
     window.location.href = 'http://localhost:8080/oauth2/authorization/microsoft';
   }
 
   loginWithApple() {
+    localStorage.setItem('preAuthRoute', window.location.pathname);
     window.location.href = 'http://localhost:8080/oauth2/authorization/apple';
   }
 

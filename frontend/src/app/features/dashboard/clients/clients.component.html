@@ -1,0 +1,112 @@
+<div class="clients-container">
+  <div *ngIf="errorMessage" class="error-alert">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+    <button mat-icon-button (click)="errorMessage = null">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <!-- Clients Panel -->
+  <div class="clients-panel">
+    <div class="clients-header">
+      <h2>Clients Management</h2>
+      <div class="tab-buttons">
+        <button
+          [ngClass]="{'active': activeTab === 'list'}"
+          (click)="activeTab = 'list'"
+        >
+          Client List ({{ clients.length }})
+        </button>
+        <button
+          [ngClass]="{'active': activeTab === 'add'}"
+          (click)="activeTab = 'add'"
+        >
+          Add Client
+        </button>
+      </div>
+    </div>
+
+    <!-- Client List Tab -->
+    <div *ngIf="activeTab === 'list'" class="clients-content">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>Loading clients...</span>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && clients.length === 0" class="empty-state">
+        <div class="empty-icon-container">
+          <mat-icon>people_outline</mat-icon>
+        </div>
+        <h3>No clients found</h3>
+        <p>Add your first client to get started</p>
+      </div>
+
+      <!-- Client List -->
+      <div *ngIf="!isLoading && clients.length > 0" class="client-section">
+        <div *ngFor="let client of clients" class="client-card">
+          <div class="client-details">
+            <div class="icon-container client-icon">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="client-info">
+              <h4>{{ client.name }}</h4>
+              <div class="client-contact">
+                <span *ngIf="client.contactEmail" class="contact-item">
+                  <mat-icon class="contact-icon">email</mat-icon>
+                  {{ client.contactEmail }}
+                </span>
+                <span *ngIf="client.contactPhone" class="contact-item">
+                  <mat-icon class="contact-icon">phone</mat-icon>
+                  {{ client.contactPhone }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="client-actions">
+            <button class="action-button" (click)="editClient(client)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="action-button delete-button" (click)="deleteClient(client)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Client Tab -->
+    <div *ngIf="activeTab === 'add'" class="clients-content">
+      <div class="form-container">
+        <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline">
+            <mat-label>Client Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter client name">
+            <mat-error *ngIf="clientForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Contact Email</mat-label>
+            <input matInput formControlName="contactEmail" placeholder="Enter contact email" type="email">
+            <mat-error *ngIf="clientForm.get('contactEmail')?.hasError('email')">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Contact Phone</mat-label>
+            <input matInput formControlName="contactPhone" placeholder="Enter contact phone">
+          </mat-form-field>
+          <div class="form-actions">
+            <button class="decline-button" type="button" (click)="clientForm.reset()" [disabled]="isLoading">
+              Reset
+            </button>
+            <button class="accept-button" type="submit" [disabled]="isLoading || clientForm.invalid">
+              {{ isLoading ? 'Adding...' : 'Add Client' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

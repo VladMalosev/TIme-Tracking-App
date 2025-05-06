@@ -1,0 +1,104 @@
+<div class="page-container">
+  <div class="left-panel">
+    <div class="invitations-container">
+      <div *ngIf="errorMessage" class="error-alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button mat-icon-button (click)="errorMessage = null">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="invitations-panel">
+        <div class="invitations-header">
+          <h2>Pending Invitations</h2>
+          <div class="tab-buttons">
+            <button
+              [ngClass]="{'active': activeTab === 'all'}"
+              (click)="activeTab = 'all'"
+            >
+              All ({{ totalInvitations }})
+            </button>
+            <button
+              [ngClass]="{'active': activeTab === 'projects'}"
+              (click)="activeTab = 'projects'"
+            >
+              Projects ({{ pendingProjectInvitations.length }})
+            </button>
+            <button
+              [ngClass]="{'active': activeTab === 'workspaces'}"
+              (click)="activeTab = 'workspaces'"
+            >
+              Workspaces ({{ pendingWorkspaceInvitations.length }})
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="totalInvitations === 0" class="empty-state">
+          <div class="empty-icon-container">
+            <mat-icon>inbox</mat-icon>
+          </div>
+          <h3>No pending invitations</h3>
+          <p>You don't have any invitations at the moment</p>
+        </div>
+
+        <div *ngIf="totalInvitations > 0" class="invitations-content">
+
+          <div *ngIf="(activeTab === 'all' || activeTab === 'projects') && pendingProjectInvitations.length > 0" class="invitation-section">
+
+            <div *ngFor="let invitation of pendingProjectInvitations" class="invitation-card">
+              <div class="invitation-details">
+                <div class="icon-container project-icon">
+                  <mat-icon>folder</mat-icon>
+                </div>
+                <div class="invitation-info">
+                  <h4>{{ invitation.project.name }}</h4>
+                  <div class="role-badge">
+                    {{ invitation.role }}
+                  </div>
+                </div>
+              </div>
+              <div class="invitation-actions">
+                <button class="decline-button" (click)="rejectProjectInvitation(invitation.id)">
+                  Decline
+                </button>
+                <button class="accept-button" (click)="acceptProjectInvitation(invitation.id)">
+                  Accept
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="(activeTab === 'all' || activeTab === 'workspaces') && pendingWorkspaceInvitations.length > 0" class="invitation-section">
+
+            <div *ngFor="let invitation of pendingWorkspaceInvitations" class="invitation-card">
+              <div class="invitation-details">
+                <div class="icon-container workspace-icon">
+                  <mat-icon>dashboard</mat-icon>
+                </div>
+                <div class="invitation-info">
+                  <h4>{{ invitation.workspace.name }}</h4>
+                  <div class="role-badge">
+                    {{ invitation.role }}
+                  </div>
+                </div>
+              </div>
+              <div class="invitation-actions">
+                <button class="decline-button" (click)="rejectWorkspaceInvitation(invitation.id)">
+                  Decline
+                </button>
+                <button class="accept-button" (click)="acceptWorkspaceInvitation(invitation.id)">
+                  Accept
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <app-clients></app-clients>
+  </div>
+</div>

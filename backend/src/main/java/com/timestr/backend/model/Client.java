@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,8 +20,8 @@ public class Client {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "workspace_id", nullable = false)
-    private Workspace workspace;
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
 
     @NotBlank(message = "Name cannot be blank")
     @Size(max = 100, message = "Name cannot exceed 100 characters")
@@ -54,12 +56,12 @@ public class Client {
         this.id = id;
     }
 
-    public Workspace getWorkspace() {
-        return workspace;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void setWorkspace(Workspace workspace) {
-        this.workspace = workspace;
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getName() {

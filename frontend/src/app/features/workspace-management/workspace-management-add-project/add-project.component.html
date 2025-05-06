@@ -1,7 +1,11 @@
 <div class="container">
   <!-- Error Message -->
   <mat-card *ngIf="errorMessage" class="error-message">
+    <mat-icon>error</mat-icon>
     {{ errorMessage }}
+    <button mat-icon-button (click)="errorMessage = null">
+      <mat-icon>close</mat-icon>
+    </button>
   </mat-card>
 
   <h4 class="mat-display-1">Create a New Project</h4>
@@ -20,22 +24,38 @@
     <div class="row">
       <div class="col s6">
         <h4>Client:</h4>
-        <p>Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <p>Select a client for this project</p>
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Choose your client</mat-label>
-          <mat-select [(ngModel)]="project.client" name="client" placeholder="Choose your client">
-            <mat-option value="" disabled selected>Select client</mat-option>
-            <mat-option *ngFor="let client of clients" [value]="client">{{ client }}</mat-option>
+          <mat-select
+            [(ngModel)]="project.client"
+            name="client"
+            [compareWith]="compareClients"
+            [disabled]="isLoading"
+          >
+            <mat-option [value]="null">No client</mat-option>
+            <mat-option *ngFor="let client of clients" [value]="client">
+              {{ client.name }}
+              <span *ngIf="client.contactEmail" class="client-email">({{ client.contactEmail }})</span>
+            </mat-option>
           </mat-select>
+          <mat-spinner *ngIf="isLoading" matSuffix diameter="24"></mat-spinner>
         </mat-form-field>
       </div>
 
       <div class="col s6">
         <h4>Set Deadline:</h4>
-        <p>Dropdown or search-select (e.g., "Select client" or "Add new client")</p>
+        <p>Select a deadline for this project</p>
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Set deadline</mat-label>
-          <input matInput id="projectDeadline" type="date" [(ngModel)]="project.deadline" name="deadline" placeholder="Set Deadline">
+          <input
+            matInput
+            id="projectDeadline"
+            type="date"
+            [(ngModel)]="project.deadline"
+            name="deadline"
+            placeholder="Set Deadline"
+          >
         </mat-form-field>
       </div>
     </div>
@@ -45,21 +65,33 @@
     <p>Here you can add description for the project.</p>
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Description</mat-label>
-      <textarea matInput id="projectDescription" [(ngModel)]="project.description" name="description" placeholder="Project description"></textarea>
+      <textarea
+        matInput
+        id="projectDescription"
+        [(ngModel)]="project.description"
+        name="description"
+        placeholder="Project description"
+        rows="4"
+      ></textarea>
     </mat-form-field>
 
     <!-- Add Media and Category -->
     <div class="row">
       <div class="col s6">
-        <button class="buttons" color="accent">
+        <button mat-stroked-button type="button" class="buttons" color="accent">
           <img src="assets/images/document.png" alt="Media Icon" class="icon"> Add Media
         </button>
-        <button class="buttons" color="accent" [matMenuTriggerFor]="categoryMenu">Add Category</button>
+        <button mat-stroked-button type="button" class="buttons" color="accent" [matMenuTriggerFor]="categoryMenu">
+          Add Category
+        </button>
         <mat-menu #categoryMenu="matMenu">
           <button mat-menu-item *ngFor="let category of categories" (click)="project.category = category">
             {{ category }}
           </button>
         </mat-menu>
+        <span *ngIf="project.category" class="selected-category">
+          Selected: {{ project.category }}
+        </span>
       </div>
     </div>
 
@@ -68,7 +100,16 @@
     <!-- Submit Button -->
     <div class="row">
       <div class="col s12 right-align">
-        <button mat-raised-button class="custom-submit-button" type="submit">Create Project</button>
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">Create Project</span>
+          <span *ngIf="isSubmitting">Creating...</span>
+          <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+        </button>
       </div>
     </div>
   </form>
