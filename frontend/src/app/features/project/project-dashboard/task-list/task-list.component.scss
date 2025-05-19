@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $primary: #4361ee;
 $primary-light: #4895ef;
 $secondary: #3f37c9;
@@ -205,7 +207,7 @@ $border-color: #e0e0e0;
 
           &.completed {
             background-color: rgba($success, 0.1);
-            color: darken($success, 15%);
+            color: color.adjust($success, $lightness: -15%);
           }
         }
 
@@ -254,7 +256,7 @@ $border-color: #e0e0e0;
         width: 14px;
         height: 14px;
         margin-right: 6px;
-        color: lighten($gray, 15%);
+        color: color.adjust($gray, $lightness: 15%);
       }
 
       span {

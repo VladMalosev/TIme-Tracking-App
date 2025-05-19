@@ -1,0 +1,48 @@
+services:
+  frontend:
+    build:
+      context: ./frontend/
+    ports:
+      - "4200:4200"
+    networks:
+      - TimeStr-network
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/time_tracking_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - TimeStr-network
+      - time_tracking_db-network
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: time_tracking_db
+    ports:
+      - "5432:5432"
+    networks:
+      - time_tracking_db-network
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+networks:
+  TimeStr-network:
+    driver: bridge
+  time_tracking_db-network:
+    driver: bridge

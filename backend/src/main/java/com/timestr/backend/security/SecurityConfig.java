@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -38,11 +38,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        logger.info("Configuring SecurityFilterChain");
+
+        http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login",  "/oauth2/**", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/oauth2/**", "/api/auth/logout").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").authenticated() // Allow access to Swagger UI and API docs
                         .requestMatchers("/ws/**", "/api/reports/**").permitAll()
                         .requestMatchers("/api/clients/**").hasAnyRole("ADMIN", "MANAGER", "USER")
@@ -62,21 +64,18 @@ public class SecurityConfig {
                                 .userService(oAuth2UserService)
                         )
                 )
-                .addFilterBefore(jwtAuthenticationFilter(http), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new SwaggerAccessFilter(jwtTokenProvider, allowedEmail), JwtAuthenticationFilter.class)
-                .build();
+                .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(null), jwtTokenProvider),
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new SwaggerAccessFilter(jwtTokenProvider, allowedEmail),
+                        JwtAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(HttpSecurity http) throws Exception {
-        logger.info("Configuring JwtAuthenticationFilter");
-        return new JwtAuthenticationFilter(authenticationManager(http), jwtTokenProvider);
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         logger.info("Configuring AuthenticationManager");
-        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
@@ -93,4 +92,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    }
+}
