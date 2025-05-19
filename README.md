@@ -19,56 +19,56 @@ This project is a robust time tracking application that enables organizations to
 ## Screenshots
 
 ### Landing Page
-![img_1.png](img_1.png)
-![img_2.png](img_2.png)
-![img_3.png](img_3.png)
-![img_4.png](img_4.png)
-![img_5.png](img_5.png)
+![img_1.png](readme_img/img_1.png)
+![img_2.png](readme_img/img_2.png)
+![img_3.png](readme_img/img_3.png)
+![img_4.png](readme_img/img_4.png)
+![img_5.png](readme_img/img_5.png)
 
 ### Register and Login pages
-![img_6.png](img_6.png)
-![img_7.png](img_7.png)
+![img_6.png](readme_img/img_6.png)
+![img_7.png](readme_img/img_7.png)
 
 ### Dashboard
-![img_8.png](img_8.png)
-![img_9.png](img_9.png)
+![img_8.png](readme_img/img_8.png)
+![img_9.png](readme_img/img_9.png)
 *Main dashboard showing workspace overview and recent activities*
 
 ### Workspace Management
-![img_11.png](img_11.png)
+![img_11.png](readme_img/img_11.png)
 
 ### Project Management
-![img_12.png](img_12.png)
-![img_13.png](img_13.png)
+![img_12.png](readme_img/img_12.png)
+![img_13.png](readme_img/img_13.png)
 
 *Members tab*
-![img_14.png](img_14.png)
-![img_14.png](img_14.png)
-![img_15.png](img_15.png)
+![img_14.png](readme_img/img_14.png)
+![img_14.png](readme_img/img_14.png)
+![img_15.png](readme_img/img_15.png)
 
 *Tasks tab*
-![img_16.png](img_16.png)
-![img_17.png](img_17.png)
-![img_18.png](img_18.png)
+![img_16.png](readme_img/img_16.png)
+![img_17.png](readme_img/img_17.png)
+![img_18.png](readme_img/img_18.png)
 
-![img_19.png](img_19.png)
-![img_20.png](img_20.png)
+![img_19.png](readme_img/img_19.png)
+![img_20.png](readme_img/img_20.png)
 
-![img_21.png](img_21.png)
+![img_21.png](readme_img/img_21.png)
 
-![img_22.png](img_22.png)
-![img_23.png](img_23.png)
+![img_22.png](readme_img/img_22.png)
+![img_23.png](readme_img/img_23.png)
 
 *Task creation tab for admins*
-![img_24.png](img_24.png)
-![img_25.png](img_25.png)
+![img_24.png](readme_img/img_24.png)
+![img_25.png](readme_img/img_25.png)
 
 *Task assignment tab for admins*
-![img_26.png](img_26.png)
-![img_27.png](img_27.png)
+![img_26.png](readme_img/img_26.png)
+![img_27.png](readme_img/img_27.png)
 
 *Report generation tab*
-![img_28.png](img_28.png)
+![img_28.png](readme_img/img_28.png)
 
 ### Prerequisites
 
@@ -108,7 +108,7 @@ This will build and start all necessary containers (backend, frontend, database)
 
 ## Database Structure (sql) v1.2
 
-![img.png](img.png)
+![img.png](readme_img/img.png)
 *Database schema diagram*
 
 Link to the interactive dbdiagram:
